@@ -2,6 +2,7 @@
 MySql binlog Change Data Capture (CDC) connector for .NET Core
 
 Acts as MySql replication client streaming binlog events in real-time.
+
 Designed for reactive push-model applications, event sourcing or derived data systems.
 
 ## Limitations
@@ -19,4 +20,5 @@ Please make sure the following requirements are met:
 
 ## Info
 The project is based on [mysql-binlog-connector-java](https://github.com/shyiko/mysql-binlog-connector-java) library, MariaDB and MySQL  documentation.
-Has a third-party dependency [Pipelines.Sockets.Unofficial](https://github.com/mgravell/Pipelines.Sockets.Unofficial) by Marc Gravell and optimized to use [System.IO.Piplelines] as described in his [series of posts](https://blog.marcgravell.com/2018/07/pipe-dreams-part-1.html).
+
+Has a third-party dependency [Pipelines.Sockets.Unofficial](https://github.com/mgravell/Pipelines.Sockets.Unofficial) by Marc Gravell and optimized to use [System.IO.Pipelines](https://www.nuget.org/packages/System.IO.Pipelines/) as described in his [series of posts](https://blog.marcgravell.com/2018/07/pipe-dreams-part-1.html).
