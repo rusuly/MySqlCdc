@@ -7,7 +7,7 @@ namespace MySql.Cdc.Packets
     /// ERR_Packet indicates that an error occured.
     /// <see cref="https://mariadb.com/kb/en/library/err_packet/"/>
     /// </summary>
-    public class ErrorPacket
+    public class ErrorPacket : IPacket
     {
         public int ErrorCode { get; private set; }
         public string SqlState { get; private set; }
@@ -16,7 +16,6 @@ namespace MySql.Cdc.Packets
         public ErrorPacket(ReadOnlySequence<byte> sequence)
         {
             var reader = new PacketReader(sequence);
-            var header = reader.ReadInt(1);
 
             ErrorCode = reader.ReadInt(2);
 

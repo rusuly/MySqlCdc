@@ -1,10 +1,12 @@
 using System;
-using System.Buffers;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using MySql.Cdc.Commands;
 using MySql.Cdc.Constants;
+using MySql.Cdc.Events;
 using MySql.Cdc.Network;
 using MySql.Cdc.Packets;
+using MySql.Cdc.Protocol;
 
 namespace MySql.Cdc
 {
@@ -21,7 +23,7 @@ namespace MySql.Cdc
             configureOptions(_options);
         }
 
-        public async Task ConnectAsync()
+        private async Task ConnectAsync()
         {
             _channel = new PacketChannel(_options);
             var handshake = await ReceiveHandshakeAsync();
@@ -30,12 +32,12 @@ namespace MySql.Cdc
 
         private async Task<HandshakePacket> ReceiveHandshakeAsync()
         {
-            byte[] packet = await _channel.ReadPacketAsync();
-            if (packet[0] != (byte)ResponseType.Error)
-                return new HandshakePacket(new ReadOnlySequence<byte>(packet));
+            var packet = await _channel.ReadPacketAsync();
 
-            var errorPacket = new ErrorPacket(new ReadOnlySequence<byte>(packet));
-            throw new InvalidOperationException($"Initial handshake error. {errorPacket.ToString()}");
+            if (packet is ErrorPacket error)
+                throw new InvalidOperationException($"Initial handshake error. {error.ToString()}");
+
+            return packet as HandshakePacket;
         }
 
         private async Task AuthenticateAsync(HandshakePacket handshake)
@@ -48,24 +50,21 @@ namespace MySql.Cdc
             }
 
             var authenticateCommand = new AuthenticateCommand(_options, handshake.ServerCollation, handshake.Scramble);
-            await _channel.WritePacketAsync(authenticateCommand, sequenceNumber++);
+            await _channel.WriteCommandAsync(authenticateCommand, sequenceNumber++);
             var packet = await _channel.ReadPacketAsync();
 
-            if (packet[0] == (byte)ResponseType.Ok)
+            if (packet is OkPacket)
                 return;
 
-            if (packet[0] == (byte)ResponseType.Error)
+            if (packet is ErrorPacket error)
+                throw new InvalidOperationException($"Authentication error. {error.ToString()}");
+
+            if (packet is AuthenticationSwitchPacket switchRequest)
             {
-                var errorPacket = new ErrorPacket(new ReadOnlySequence<byte>(packet));
-                throw new InvalidOperationException($"Authentication error. {errorPacket.ToString()}");
-            }
-            if (packet[0] == (byte)ResponseType.AuthenticationSwitch)
-            {
-                var switchRequest = new AuthenticationSwitchPacket(new ReadOnlySequence<byte>(packet));
                 await HandleAuthenticationSwitch(switchRequest, sequenceNumber++);
                 return;
             }
-            throw new InvalidOperationException($"Authentication error. Unknown authentication switch request header: {packet[0]}.");
+            throw new InvalidOperationException($"Authentication error. Unknown authentication switch request header.");
         }
 
         private async Task SendSslRequest(HandshakePacket handshake, byte sequenceNumber)
@@ -76,17 +75,128 @@ namespace MySql.Cdc
 
         private async Task HandleAuthenticationSwitch(AuthenticationSwitchPacket switchRequest, byte sequenceNumber)
         {
-            if (switchRequest.AuthPluginName != "mysql_native_password")
+            if (switchRequest.AuthPluginName != AuthenticationPlugins.MySqlNativePassword)
                 throw new InvalidOperationException($"Authentication switch error. {switchRequest.AuthPluginName} plugin is not supported.");
 
             var switchCommand = new MySqlNativePasswordPluginCommand(_options.Password, switchRequest.AuthPluginData);
-            await _channel.WritePacketAsync(switchCommand, sequenceNumber);
+            await _channel.WriteCommandAsync(switchCommand, sequenceNumber);
             var packet = await _channel.ReadPacketAsync();
 
-            if (packet[0] == (byte)ResponseType.Error)
+            if (packet is ErrorPacket error)
+                throw new InvalidOperationException($"Authentication switch error. {error.ToString()}");
+        }
+
+        public async Task ReplicateAsync(Func<IBinlogEvent, Task> handleEvent)
+        {
+            await ConnectAsync();
+
+            await AdjustStartingPosition();
+            await SetMasterHeartbeat();
+            await SetMasterBinlogChecksum();
+
+            _channel.SwitchToStream();
+
+            long serverId = _options.Blocking ? _options.ServerId : 0;
+            var command = new DumpBinlogCommand(serverId, _options.Binlog.Filename, _options.Binlog.Position);
+            await _channel.WriteCommandAsync(command, 0);
+
+            await ReadEventStreamAsync(handleEvent);
+        }
+
+        private async Task ReadEventStreamAsync(Func<IBinlogEvent, Task> handleEvent)
+        {
+            while (true)
             {
-                var errorPacket = new ErrorPacket(new ReadOnlySequence<byte>(packet));
-                throw new InvalidOperationException($"Authentication switch error. {errorPacket.ToString()}");
+                var packet = await _channel.ReadPacketAsync();
+
+                if (packet is IBinlogEvent binlogEvent)
+                {
+                    // We stop replication if client code throws an exception 
+                    // As a derived database may end up in an inconsistent state.
+                    await handleEvent(binlogEvent);
+                    UpdateBinlogPosition(binlogEvent);
+                }
+
+                else if (packet is ErrorPacket error)
+                    throw new InvalidOperationException($"Event stream error. {error.ToString()}");
+
+                else if (packet is EndOfFilePacket && !_options.Blocking)
+                    return;
+
+                else throw new InvalidOperationException($"Event stream unexpected error.");
+            }
+        }
+
+        private void UpdateBinlogPosition(IBinlogEvent binlogEvent)
+        {
+            if (binlogEvent is RotateEvent rotateEvent)
+            {
+                _options.Binlog.Filename = rotateEvent.BinlogFilename;
+                _options.Binlog.Position = rotateEvent.BinlogPosition;
+            }
+            else if (binlogEvent.Header.NextEventPosition > 0)
+            {
+                _options.Binlog.Position = binlogEvent.Header.NextEventPosition;
+            }
+        }
+
+        private async Task AdjustStartingPosition()
+        {
+            if (_options.Binlog.StartingStrategy != StartingStrategy.FromEnd)
+                return;
+
+            // Ignore if position was read before in case of reconnect.
+            if (_options.Binlog.Filename != null)
+                return;
+
+            var command = new QueryCommand("show master status");
+            await _channel.WriteCommandAsync(command, 0);
+
+            var resultSet = await ReadResultSet();
+            if (resultSet.Count != 1)
+                throw new InvalidOperationException("Could not read master binlog position.");
+
+            _options.Binlog.Filename = resultSet[0].Cells[0];
+            _options.Binlog.Position = long.Parse(resultSet[0].Cells[1]);
+        }
+
+        private async Task SetMasterHeartbeat()
+        {
+            var seconds = (long)_options.HeartbeatInterval.TotalSeconds;
+            var command = new QueryCommand($"set @master_heartbeat_period={seconds * 1000 * 1000 * 1000}");
+            await _channel.WriteCommandAsync(command, 0);
+            var packet = await _channel.ReadPacketAsync();
+
+            if (packet is ErrorPacket error)
+                throw new InvalidOperationException($"Setting master_binlog_checksum error. {error.ToString()}");
+        }
+
+        private async Task SetMasterBinlogChecksum()
+        {
+            var command = new QueryCommand("SET @master_binlog_checksum= @@global.binlog_checksum");
+            await _channel.WriteCommandAsync(command, 0);
+            var packet = await _channel.ReadPacketAsync();
+
+            if (packet is ErrorPacket error)
+                throw new InvalidOperationException($"Setting master_binlog_checksum error. {error.ToString()}");
+        }
+
+        private async Task<List<ResultSetRowPacket>> ReadResultSet()
+        {
+            var resultSet = new List<ResultSetRowPacket>();
+            IPacket packet = null;
+            while (true)
+            {
+                packet = await _channel.ReadPacketAsync();
+
+                if (packet is ErrorPacket error)
+                    throw new InvalidOperationException($"Query result set error. {error.ToString()}");
+
+                if (packet is ResultSetRowPacket row)
+                {
+                    resultSet.Add(row);
+                }
+                else return resultSet;
             }
         }
     }

@@ -7,7 +7,7 @@ namespace MySql.Cdc.Packets
     /// Authentication Switch Request.
     /// <see cref="https://mariadb.com/kb/en/library/connection/#authentication-switch-request"/>
     /// </summary>
-    public class AuthenticationSwitchPacket
+    public class AuthenticationSwitchPacket : IPacket
     {
         public string AuthPluginName { get; private set; }
         public string AuthPluginData { get; private set; }
@@ -15,7 +15,6 @@ namespace MySql.Cdc.Packets
         public AuthenticationSwitchPacket(ReadOnlySequence<byte> sequence)
         {
             var reader = new PacketReader(sequence);
-            var header = reader.ReadInt(1);
 
             AuthPluginName = reader.ReadNullTerminatedString();
             AuthPluginData = reader.ReadNullTerminatedString();

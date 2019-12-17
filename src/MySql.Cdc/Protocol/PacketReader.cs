@@ -139,6 +139,11 @@ namespace MySql.Cdc.Protocol
             return _sequence.IsEmpty;
         }
 
+        public void Skip(int offset)
+        {
+            _sequence = _sequence.Slice(offset);
+        }
+
         /// <summary>
         /// Parses a string from the sequence buffer.
         /// </summary>

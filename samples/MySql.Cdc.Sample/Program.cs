@@ -1,4 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using MySql.Cdc.Events;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace MySql.Cdc.Sample
 {
@@ -12,8 +17,25 @@ namespace MySql.Cdc.Sample
                 options.UseSsl = false;
                 options.Username = "root";
                 options.Password = "Qwertyu1";
+                options.HeartbeatInterval = TimeSpan.FromSeconds(10);
+                options.Blocking = true;
+                options.Binlog = BinlogOptions.FromStart();
             });
-            await client.ConnectAsync();
+
+            await client.ReplicateAsync(async (binlogEvent) =>
+            {
+                await PrintEventAsync(binlogEvent);
+            });
+        }
+
+        private static async Task PrintEventAsync(IBinlogEvent binlogEvent)
+        {
+            var json = JsonConvert.SerializeObject(binlogEvent, Formatting.Indented,
+            new Newtonsoft.Json.JsonSerializerSettings()
+            {
+                Converters = new List<JsonConverter> { new StringEnumConverter() }
+            });
+            await Console.Out.WriteLineAsync(json);
         }
     }
 }
