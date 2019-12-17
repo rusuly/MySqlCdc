@@ -13,10 +13,10 @@ namespace MySql.Cdc.Commands
         public int ClientCollation { get; private set; }
         public int MaxPacketSize { get; private set; }
 
-        public SslRequestCommand(int clientCollation, int maxPackageSize = 0)
+        public SslRequestCommand(int clientCollation, int maxPacketSize = 0)
         {
             ClientCollation = clientCollation;
-            MaxPacketSize = maxPackageSize;
+            MaxPacketSize = maxPacketSize;
 
             ClientCapabilities = (int)CapabilityFlags.LONG_FLAG
                 | (int)CapabilityFlags.PROTOCOL_41

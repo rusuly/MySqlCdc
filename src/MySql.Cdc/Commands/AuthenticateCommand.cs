@@ -19,10 +19,10 @@ namespace MySql.Cdc.Commands
         public string Scramble { get; private set; }
         public string Database { get; private set; }
 
-        public AuthenticateCommand(ConnectionOptions options, int clientCollation, string scramble, int maxPackageSize = 0)
+        public AuthenticateCommand(ConnectionOptions options, int clientCollation, string scramble, int maxPacketSize = 0)
         {
             ClientCollation = clientCollation;
-            MaxPacketSize = maxPackageSize;
+            MaxPacketSize = maxPacketSize;
             Scramble = scramble;
             Username = options.Username;
             Password = options.Password;
