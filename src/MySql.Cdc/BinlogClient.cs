@@ -59,9 +59,9 @@ namespace MySql.Cdc
             if (packet is ErrorPacket error)
                 throw new InvalidOperationException($"Authentication error. {error.ToString()}");
 
-            if (packet is AuthenticationSwitchPacket switchRequest)
+            if (packet is AuthPluginSwitchPacket switchRequest)
             {
-                await HandleAuthenticationSwitch(switchRequest, sequenceNumber++);
+                await HandleAuthPluginSwitch(switchRequest, sequenceNumber++);
                 return;
             }
             throw new InvalidOperationException($"Authentication error. Unknown authentication switch request header.");
@@ -73,9 +73,9 @@ namespace MySql.Cdc
             throw new NotImplementedException();
         }
 
-        private async Task HandleAuthenticationSwitch(AuthenticationSwitchPacket switchRequest, byte sequenceNumber)
+        private async Task HandleAuthPluginSwitch(AuthPluginSwitchPacket switchRequest, byte sequenceNumber)
         {
-            if (switchRequest.AuthPluginName != AuthenticationPlugins.MySqlNativePassword)
+            if (switchRequest.AuthPluginName != AuthPluginNames.MySqlNativePassword)
                 throw new InvalidOperationException($"Authentication switch error. {switchRequest.AuthPluginName} plugin is not supported.");
 
             var switchCommand = new MySqlNativePasswordPluginCommand(_options.Password, switchRequest.AuthPluginData);

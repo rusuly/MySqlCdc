@@ -157,7 +157,7 @@ namespace MySql.Cdc.Network
             }
             else if (status == (int)ResponseType.AuthenticationSwitch)
             {
-                await _channel.Writer.WriteAsync(new AuthenticationSwitchPacket(buffer));
+                await _channel.Writer.WriteAsync(new AuthPluginSwitchPacket(buffer));
             }
             else if (status == (int)ResponseType.Ok)
             {

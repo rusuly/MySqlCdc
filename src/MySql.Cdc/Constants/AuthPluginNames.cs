@@ -1,6 +1,6 @@
 namespace MySql.Cdc.Constants
 {
-    public static class AuthenticationPlugins
+    public static class AuthPluginNames
     {
         /// <summary>
         /// Used by default in MariaDB and MySQL 5.7 Server and prior.
