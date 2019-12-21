@@ -16,13 +16,14 @@ namespace MySql.Cdc.Network
 {
     public class PacketChannel
     {
-        private static readonly BoundedChannelOptions _channelOptions = new BoundedChannelOptions(100)
-        {
-            SingleReader = true,
-            SingleWriter = true
-        };
+        private static readonly BoundedChannelOptions _channelOptions =
+            new BoundedChannelOptions(100)
+            {
+                SingleReader = true,
+                SingleWriter = true
+            };
 
-        private readonly EventDeserializer _eventDeserializer = new EventDeserializer();
+        private readonly EventDeserializer _eventDeserializer;
         private readonly Channel<IPacket> _channel = Channel.CreateBounded<IPacket>(_channelOptions);
         private readonly ConnectionOptions _options;
         private readonly IDuplexPipe _duplexPipe;
@@ -32,9 +33,10 @@ namespace MySql.Cdc.Network
         private int _resultSetPacket = 0;
         private int _resultSetEofNum = 0;
 
-        public PacketChannel(ConnectionOptions options)
+        public PacketChannel(ConnectionOptions options, EventDeserializer eventDeserializer)
         {
             _options = options;
+            _eventDeserializer = eventDeserializer;
 
             var socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
             socket.Connect(new IPEndPoint(IPAddress.Loopback, _options.Port));
@@ -147,26 +149,16 @@ namespace MySql.Cdc.Network
             }
 
             buffer = buffer.Slice(1);
-            if (status == (int)ResponseType.Error)
+
+            IPacket packet = (ResponseType)status switch
             {
-                await _channel.Writer.WriteAsync(new ErrorPacket(buffer));
-            }
-            else if (status == (int)ResponseType.EndOfFile)
-            {
-                await _channel.Writer.WriteAsync(new EndOfFilePacket(buffer));
-            }
-            else if (status == (int)ResponseType.AuthenticationSwitch)
-            {
-                await _channel.Writer.WriteAsync(new AuthPluginSwitchPacket(buffer));
-            }
-            else if (status == (int)ResponseType.Ok)
-            {
-                await _channel.Writer.WriteAsync(new OkPacket(buffer));
-            }
-            else
-            {
-                throw new InvalidOperationException($"Unknown response type {status}");
-            }
+                ResponseType.Ok => new OkPacket(buffer),
+                ResponseType.Error => new ErrorPacket(buffer),
+                ResponseType.EndOfFile => new EndOfFilePacket(buffer),
+                //TODO: Fix ResponseType.AuthPluginSwitch => new AuthPluginSwitchPacket(buffer),
+                _ => throw new InvalidOperationException($"Unknown response type {status}")
+            };
+            await _channel.Writer.WriteAsync(packet);
         }
 
         private async Task OnReceiveStreamPacket(ReadOnlySequence<byte> buffer)
@@ -176,20 +168,15 @@ namespace MySql.Cdc.Network
             buffer = buffer.Slice(1);
 
             // Streaming mode has 3 possible status types.
-            if (status == (int)ResponseType.Error)
+            // We stop replication if deserialize throws an exception 
+            // Since a derived database may end up in an inconsistent state.
+            IPacket packet = (ResponseType)status switch
             {
-                await _channel.Writer.WriteAsync(new ErrorPacket(buffer));
-            }
-            else if (status == (int)ResponseType.EndOfFile)
-            {
-                await _channel.Writer.WriteAsync(new EndOfFilePacket(buffer));
-            }
-            else
-            {
-                // We stop replication if deserializator throws an exception 
-                // As a derived database may end up in an inconsistent state.
-                await _channel.Writer.WriteAsync(_eventDeserializer.DeserializeEvent(buffer));
-            }
+                ResponseType.Error => new ErrorPacket(buffer),
+                ResponseType.EndOfFile => new EndOfFilePacket(buffer),
+                _ => _eventDeserializer.DeserializeEvent(buffer)
+            };
+            await _channel.Writer.WriteAsync(packet);
         }
 
         public ValueTask<IPacket> ReadPacketAsync()

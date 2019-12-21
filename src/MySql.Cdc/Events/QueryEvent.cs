@@ -1,6 +1,3 @@
-using System.Buffers;
-using MySql.Cdc.Protocol;
-
 namespace MySql.Cdc.Events
 {
     /// <summary>
@@ -9,27 +6,28 @@ namespace MySql.Cdc.Events
     /// </summary>
     public class QueryEvent : BinlogEvent
     {
-        public long ThreadId { get; private set; }
-        public long Duration { get; private set; }
-        public int DatabaseNameLength { get; private set; }
-        public int ErrorCode { get; private set; }
-        public int StatusVariableLength { get; private set; }
-        public byte[] StatusVariables { get; private set; }
-        public string DatabaseName { get; private set; }
-        public string SqlStatement { get; private set; }
+        public long ThreadId { get; }
+        public long Duration { get; }
+        public int ErrorCode { get; }
+        public byte[] StatusVariables { get; }
+        public string DatabaseName { get; }
+        public string SqlStatement { get; }
 
-        public QueryEvent(EventHeader header, ReadOnlySequence<byte> sequence) : base(header)
+        public QueryEvent(
+            EventHeader header,
+            long threadId,
+            long duration,
+            int errorCode,
+            byte[] statusVariables,
+            string databaseName,
+            string sqlStatement) : base(header)
         {
-            var reader = new PacketReader(sequence);
-
-            ThreadId = reader.ReadLong(4);
-            Duration = reader.ReadLong(4);
-            DatabaseNameLength = reader.ReadInt(1);
-            ErrorCode = reader.ReadInt(2);
-            StatusVariableLength = reader.ReadInt(2);
-            StatusVariables = reader.ReadByteArraySlow(StatusVariableLength);
-            DatabaseName = reader.ReadNullTerminatedString();
-            SqlStatement = reader.ReadStringToEndOfFile();
+            ThreadId = threadId;
+            Duration = duration;
+            ErrorCode = errorCode;
+            StatusVariables = statusVariables;
+            DatabaseName = databaseName;
+            SqlStatement = sqlStatement;
         }
     }
 }

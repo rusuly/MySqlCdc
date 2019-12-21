@@ -1,6 +1,3 @@
-using System.Buffers;
-using MySql.Cdc.Protocol;
-
 namespace MySql.Cdc.Events
 {
     /// <summary>
@@ -14,15 +11,13 @@ namespace MySql.Cdc.Events
         /// 0x01 - LAST_INSERT_ID.
         /// 0x02 - Insert id (auto_increment).
         /// </summary>
-        public int Type { get; private set; }
-        public long Value { get; private set; }
+        public int Type { get; }
+        public long Value { get; }
 
-        public IntVarEvent(EventHeader header, ReadOnlySequence<byte> sequence) : base(header)
+        public IntVarEvent(EventHeader header, int type, long value) : base(header)
         {
-            var reader = new PacketReader(sequence);
-
-            Type = reader.ReadInt(1);
-            Value = reader.ReadLong(8);
+            Type = type;
+            Value = value;
         }
     }
 }

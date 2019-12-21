@@ -1,6 +1,3 @@
-using System.Buffers;
-using MySql.Cdc.Protocol;
-
 namespace MySql.Cdc.Events
 {
     /// <summary>
@@ -10,15 +7,14 @@ namespace MySql.Cdc.Events
     /// </summary>
     public class RotateEvent : BinlogEvent
     {
-        public long BinlogPosition { get; private set; }
-        public string BinlogFilename { get; private set; }
+        public string BinlogFilename { get; }
+        public long BinlogPosition { get; }
 
-        public RotateEvent(EventHeader header, ReadOnlySequence<byte> sequence) : base(header)
+        public RotateEvent(EventHeader header, string binlogFilename, long binlogPosition)
+            : base(header)
         {
-            var reader = new PacketReader(sequence);
-
-            BinlogPosition = reader.ReadLong(8);
-            BinlogFilename = reader.ReadStringToEndOfFile();
+            BinlogFilename = binlogFilename;
+            BinlogPosition = binlogPosition;
         }
     }
 }

@@ -1,6 +1,3 @@
-using System.Buffers;
-using MySql.Cdc.Protocol;
-
 namespace MySql.Cdc.Events
 {
     /// <summary>
@@ -9,13 +6,11 @@ namespace MySql.Cdc.Events
     /// </summary>
     public class XidEvent : BinlogEvent
     {
-        public long Xid { get; private set; }
+        public long Xid { get; }
 
-        public XidEvent(EventHeader header, ReadOnlySequence<byte> sequence) : base(header)
+        public XidEvent(EventHeader header, long xid) : base(header)
         {
-            var reader = new PacketReader(sequence);
-
-            Xid = reader.ReadLong(8);
+            Xid = xid;
         }
     }
 }

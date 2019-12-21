@@ -5,16 +5,26 @@ Acts as MySql replication client streaming binlog events in real-time.
 
 Designed for reactive push-model applications, event sourcing or derived data systems.
 
+## Warnings
+Be carefull when working with binary log event streaming.
+- Binlog stream includes changes made to all databases on the master server including sql queries with sensitive information and you may leak data from the databases. Consider deploying your database to an isolated instance.
+- Binlog is an append-only file that contains changes to already deleted databases/tables/rows. Make sure you don't reproduce the logs in your application.
+
 ## Limitations
 Please note the lib currently has the following limitations:
-1. Packet compression is not supported.
-2. Reading a binlog file offline is not supported.
-3. Automatic failover is not not supported.
+- Packet compression is not supported.
+- Reading a binlog file offline is not supported.
+- Automatic failover is not not supported.
+- Now only the 'mysql_native_password' auth plugin is supported.
 
 ## Prerequisites
 Please make sure the following requirements are met:
 1. The user is granted REPLICATION SLAVE, REPLICATION CLIENT privileges.
-2. binlog_format = row.
+2. The following settings must be configured on master server:
+```
+binlog_format=row
+binlog_row_image=full
+```
 
 ## Supported versions
 

@@ -1,6 +1,4 @@
-using System.Buffers;
 using MySql.Cdc.Constants;
-using MySql.Cdc.Protocol;
 
 namespace MySql.Cdc.Events
 {
@@ -12,42 +10,19 @@ namespace MySql.Cdc.Events
     /// </summary>
     public class FormatDescriptionEvent : BinlogEvent
     {
-        public int BinlogVersion { get; private set; }
-        public string ServerVersion { get; private set; }
+        public int BinlogVersion { get; }
+        public string ServerVersion { get; }
+        public ChecksumType ChecksumType { get; }
 
-        /// <summary>
-        /// The value is redundant copy of Header.Timestamp.
-        /// </summary>
-        public long Timestamp { get; private set; }
-
-        /// <summary>
-        /// The value should always be 19.
-        /// </summary>
-        public int HeaderLength { get; private set; }
-        public ChecksumType ChecksumType { get; private set; }
-
-        public FormatDescriptionEvent(EventHeader header, ReadOnlySequence<byte> sequence) : base(header)
+        public FormatDescriptionEvent(
+            EventHeader header,
+            int binlogVersion,
+            string serverVersion,
+            ChecksumType checksumType) : base(header)
         {
-            var reader = new PacketReader(sequence);
-
-            BinlogVersion = reader.ReadInt(2);
-            ServerVersion = reader.ReadString(50).Trim((char)0);
-            Timestamp = reader.ReadLong(4);
-            HeaderLength = reader.ReadInt(1);
-
-            // Get size of the event payload to determine beginning of the checksum part
-            reader.Skip((int)EventType.FORMAT_DESCRIPTION_EVENT - 1);
-            var eventPayloadLength = reader.ReadInt(1);
-
-            if (eventPayloadLength == Header.EventLength - HeaderLength)
-            {
-                ChecksumType = ChecksumType.None;
-            }
-            else
-            {
-                reader.Skip(eventPayloadLength - (2 + 50 + 4 + 1 + (int)EventType.FORMAT_DESCRIPTION_EVENT));
-                ChecksumType = (ChecksumType)reader.ReadInt(1);
-            }            
+            BinlogVersion = binlogVersion;
+            ServerVersion = serverVersion;
+            ChecksumType = checksumType;
         }
     }
 }

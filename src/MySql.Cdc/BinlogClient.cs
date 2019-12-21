@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using MySql.Cdc.Checksum;
 using MySql.Cdc.Commands;
 using MySql.Cdc.Constants;
 using MySql.Cdc.Events;
 using MySql.Cdc.Network;
 using MySql.Cdc.Packets;
 using MySql.Cdc.Protocol;
+using MySql.Cdc.Providers;
 
 namespace MySql.Cdc
 {
@@ -16,6 +18,8 @@ namespace MySql.Cdc
     public class BinlogClient
     {
         private readonly ConnectionOptions _options = new ConnectionOptions();
+        private readonly EventDeserializer _eventDeserializer = new EventDeserializer();
+        private readonly IDatabaseProvider _databaseProvider = new MariaDbProvider();
         private PacketChannel _channel;
 
         public BinlogClient(Action<ConnectionOptions> configureOptions)
@@ -25,7 +29,7 @@ namespace MySql.Cdc
 
         private async Task ConnectAsync()
         {
-            _channel = new PacketChannel(_options);
+            _channel = new PacketChannel(_options, _eventDeserializer);
             var handshake = await ReceiveHandshakeAsync();
             await AuthenticateAsync(handshake);
         }
@@ -93,6 +97,7 @@ namespace MySql.Cdc
             await AdjustStartingPosition();
             await SetMasterHeartbeat();
             await SetMasterBinlogChecksum();
+            await _databaseProvider.PrepareAsync(_channel);
 
             _channel.SwitchToStream();
 
@@ -179,6 +184,20 @@ namespace MySql.Cdc
 
             if (packet is ErrorPacket error)
                 throw new InvalidOperationException($"Setting master_binlog_checksum error. {error.ToString()}");
+
+            command = new QueryCommand($"SELECT @master_binlog_checksum");
+            await _channel.WriteCommandAsync(command, 0);
+            var resultSet = await ReadResultSet();
+
+            // When replication is started fake RotateEvent comes before FormatDescriptionEvent.
+            // In order to deserialize the event we have to obtain checksum type length in advance.
+            var checksumType = (ChecksumType)Enum.Parse(typeof(ChecksumType), resultSet[0].Cells[0]);
+            _eventDeserializer.ChecksumStrategy = checksumType switch
+            {
+                ChecksumType.None => new NoneChecksum(),
+                ChecksumType.CRC32 => new Crc32Checksum(),
+                _ => throw new InvalidOperationException("The master checksum type is not supported.")
+            };
         }
 
         private async Task<List<ResultSetRowPacket>> ReadResultSet()

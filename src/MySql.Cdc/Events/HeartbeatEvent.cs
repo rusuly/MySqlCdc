@@ -1,6 +1,3 @@
-using System.Buffers;
-using MySql.Cdc.Protocol;
-
 namespace MySql.Cdc.Events
 {
     /// <summary>
@@ -9,13 +6,11 @@ namespace MySql.Cdc.Events
     /// </summary>
     public class HeartbeatEvent : BinlogEvent
     {
-        public string BinlogFilename { get; private set; }
+        public string BinlogFilename { get; }
 
-        public HeartbeatEvent(EventHeader header, ReadOnlySequence<byte> sequence) : base(header)
+        public HeartbeatEvent(EventHeader header, string binlogFilename) : base(header)
         {
-            var reader = new PacketReader(sequence);
-
-            BinlogFilename = reader.ReadStringToEndOfFile();
+            BinlogFilename = binlogFilename;
         }
     }
 }
