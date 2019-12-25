@@ -14,17 +14,35 @@ namespace MySql.Cdc.Events
         /// </summary>
         public IChecksumStrategy ChecksumStrategy { get; set; }
 
+        /// <summary>
+        /// Rows events depend on TableMapEvent that comes before them.
+        /// </summary>
+        protected readonly Dictionary<long, TableMapEvent> TableMapCache
+            = new Dictionary<long, TableMapEvent>();
+
         protected readonly Dictionary<EventType, IEventParser> EventParsers
             = new Dictionary<EventType, IEventParser>();
 
         public EventDeserializer()
         {
             EventParsers[EventType.FORMAT_DESCRIPTION_EVENT] = new FormatDescriptionEventParser();
+            EventParsers[EventType.TABLE_MAP_EVENT] = new TableMapEventParser();
+            EventParsers[EventType.HEARTBEAT_EVENT] = new HeartbeatEventParser();
             EventParsers[EventType.ROTATE_EVENT] = new RotateEventParser();
+
             EventParsers[EventType.INTVAR_EVENT] = new IntVarEventParser();
             EventParsers[EventType.QUERY_EVENT] = new QueryEventParser();
             EventParsers[EventType.XID_EVENT] = new XidEventParser();
-            EventParsers[EventType.HEARTBEAT_LOG_EVENT] = new HeartbeatEventParser();
+
+            // Rows events used in MariaDB and MySQL from 5.1.15 to 5.6.
+            EventParsers[EventType.WRITE_ROWS_EVENT_V1] = new WriteRowsEventParser(TableMapCache, 1);
+            EventParsers[EventType.UPDATE_ROWS_EVENT_V1] = new UpdateRowsEventParser(TableMapCache, 1);
+            EventParsers[EventType.DELETE_ROWS_EVENT_V1] = new DeleteRowsEventParser(TableMapCache, 1);
+
+            // Rows events used only in MySQL from 5.6 to 8.0.
+            EventParsers[EventType.WRITE_ROWS_EVENT_V2] = new WriteRowsEventParser(TableMapCache, 2);
+            EventParsers[EventType.UPDATE_ROWS_EVENT_V2] = new UpdateRowsEventParser(TableMapCache, 2);
+            EventParsers[EventType.DELETE_ROWS_EVENT_V2] = new DeleteRowsEventParser(TableMapCache, 2);
         }
 
         public virtual IBinlogEvent DeserializeEvent(ReadOnlySequence<byte> buffer)
@@ -56,6 +74,10 @@ namespace MySql.Cdc.Events
                     ChecksumType.CRC32 => new Crc32Checksum(),
                     _ => throw new InvalidOperationException("The master checksum type is not supported.")
                 };
+            }
+            if (binlogEvent is TableMapEvent tableMapEvent)
+            {
+                TableMapCache[tableMapEvent.TableId] = tableMapEvent;
             }
 
             return binlogEvent;

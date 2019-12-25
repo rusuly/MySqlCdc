@@ -1,4 +1,4 @@
-namespace MySql.Cdc.Commands
+namespace MySql.Cdc.Protocol
 {
     /// <summary>
     /// Represents MySql command that the client sends to the server.

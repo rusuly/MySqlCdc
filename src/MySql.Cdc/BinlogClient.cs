@@ -134,6 +134,12 @@ namespace MySql.Cdc
 
         private void UpdateBinlogPosition(IBinlogEvent binlogEvent)
         {
+            // Rows event depends on preceding TableMapEvent & we change the position
+            // after we read them atomically to prevent missing mapping on reconnect.
+            // Figure out something better as TableMapEvent can be followed by several row events.
+            if (binlogEvent is TableMapEvent tableMapEvent)
+                return;
+
             if (binlogEvent is RotateEvent rotateEvent)
             {
                 _options.Binlog.Filename = rotateEvent.BinlogFilename;

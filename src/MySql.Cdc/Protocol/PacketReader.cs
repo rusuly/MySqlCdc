@@ -1,5 +1,7 @@
 using System;
 using System.Buffers;
+using System.Collections;
+using System.Linq;
 using System.Text;
 using MySql.Cdc.Constants;
 
@@ -44,6 +46,32 @@ namespace MySql.Cdc.Protocol
             {
                 reader.TryRead(out byte value);
                 result |= (long)value << (i << 3);
+            }
+            _sequence = _sequence.Slice(length);
+            return result;
+        }
+
+        public int ReadBigEndianInt(int length)
+        {
+            var reader = new SequenceReader<byte>(_sequence);
+            int result = 0;
+            for (int i = 0; i < length; i++)
+            {
+                reader.TryRead(out byte value);
+                result = (result << 8) | (int)value;
+            }
+            _sequence = _sequence.Slice(length);
+            return result;
+        }
+
+        public long ReadBigEndianLong(int length)
+        {
+            var reader = new SequenceReader<byte>(_sequence);
+            long result = 0;
+            for (int i = 0; i < length; i++)
+            {
+                reader.TryRead(out byte value);
+                result = (result << 8) | (long)value;
             }
             _sequence = _sequence.Slice(length);
             return result;
@@ -132,6 +160,22 @@ namespace MySql.Cdc.Protocol
             var bytes = _sequence.Slice(0, length).ToArray();
             _sequence = _sequence.Slice(length);
             return bytes;
+        }
+
+        /// <summary>
+        /// To store N bits (N + 7) / 8 bytes are required
+        /// </summary>
+        public BitArray ReadBitmap(int bitsNumber)
+        {
+            var bitmapBytes = ReadByteArraySlow((bitsNumber + 7) / 8);
+            return new BitArray(bitmapBytes);
+        }
+
+        public BitArray ReadBitmapBigEndian(int bitsNumber)
+        {
+            var bitmapBytes = ReadByteArraySlow((bitsNumber + 7) / 8);
+            bitmapBytes = bitmapBytes.Reverse().ToArray();
+            return new BitArray(bitmapBytes);
         }
 
         public bool IsEmpty()

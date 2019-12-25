@@ -19,7 +19,7 @@ Please note the lib currently has the following limitations:
 
 ## Prerequisites
 Please make sure the following requirements are met:
-1. The user is granted REPLICATION SLAVE, REPLICATION CLIENT privileges.
+1. The user is granted `REPLICATION SLAVE`, `REPLICATION CLIENT` privileges.
 2. The following settings must be configured on master server:
 ```
 binlog_format=row
@@ -27,6 +27,13 @@ binlog_row_image=full
 ```
 
 ## Supported versions
+MySql.Cdc supports both MariaDB & MySQL server.
+
+  | MariaDB  | Status                   |
+  | -------- |:------------------------:|
+  | 10.3     | Did not verify           |
+  | 10.4     | ✅ Supported             |
+
 
 ## Info
 The project is based on [mysql-binlog-connector-java](https://github.com/shyiko/mysql-binlog-connector-java) library, MariaDB and MySQL  documentation.
