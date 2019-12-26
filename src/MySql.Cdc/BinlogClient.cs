@@ -112,7 +112,8 @@ namespace MySql.Cdc
         {
             while (true)
             {
-                var packet = await _channel.ReadPacketAsync();
+                var timeout = _options.HeartbeatInterval.Add(TimeSpan.FromMilliseconds(TimeoutConstants.Delta));
+                var packet = await _channel.ReadPacketAsync().WithTimeout(timeout, TimeoutConstants.Message);
 
                 if (packet is IBinlogEvent binlogEvent)
                 {

@@ -65,7 +65,6 @@ namespace MySql.Cdc.Network
                     var packetSize = PacketConstants.HeaderSize + bodySize;
 
                     // TODO: Implement packet splitting
-                    // TODO: Implement packet compression
                     if (bodySize == PacketConstants.MaxBodyLength)
                         throw new Exception("Packet splitting is currently not supported");
 
@@ -179,9 +178,9 @@ namespace MySql.Cdc.Network
             await _channel.Writer.WriteAsync(packet);
         }
 
-        public ValueTask<IPacket> ReadPacketAsync()
+        public async Task<IPacket> ReadPacketAsync()
         {
-            return _channel.Reader.ReadAsync();
+            return await _channel.Reader.ReadAsync();
         }
 
         public async Task WriteCommandAsync(ICommand command, byte sequenceNumber)
