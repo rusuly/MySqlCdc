@@ -15,7 +15,7 @@ Please note the lib currently has the following limitations:
 - Packet compression is not supported.
 - Reading a binlog file offline is not supported.
 - Automatic failover is not not supported.
-- Now only the 'mysql_native_password' auth plugin is supported.
+- Now only the `mysql_native_password` auth plugin is supported.
 
 ## Prerequisites
 Please make sure the following requirements are met:
@@ -28,32 +28,32 @@ binlog_row_image=full
 
 ## Type mapping notes
 
-  | MySQL Type         | .NET type          |
-  | ------------------ |:------------------:|
-  | DECIMAL            | ❌ Not supported   |
-  | GEOMETRY           | ❌ Not supported   |
-  | JSON               | ❌ Not supported   |
-  | BIT                | BitArray           |
-  | TINY (tinyint)     | int                |
-  | SHORT (smallint)   | int                |
-  | INT24 (mediumint)  | int                |
-  | LONG  (int)        | int                |
-  | LONGLONG (bigint)  | long               |
-  | FLOAT (float)      | float              |
-  | DOUBLE (double)    | double             |
-  | VARCHAR, VARBINARY | string             |
-  | CHAR               | string             |
-  | ENUM               | int                |
-  | SET                | long               |
-  | YEAR               | int                |
-  | DATE               | Nullable<DateTime> |
-  | TIME (old format)  | TimeSpan           |
-  | TIMESTAMP          | DateTimeOffset     |
-  | DATETIME           | Nullable<DateTime> |
-  | TIME2              | TimeSpan           |
-  | TIMESTAMP2         | DateTimeOffset     |
-  | DATETIME2          | Nullable<DateTime> |
-  | BLOB types         | byte[]             |
+  | MySQL Type         | .NET type            |
+  | ------------------ |:--------------------:|
+  | DECIMAL            | ❌ Not supported     |
+  | GEOMETRY           | ❌ Not supported     |
+  | JSON               | ❌ Not supported     |
+  | BIT                | BitArray             |
+  | TINY (tinyint)     | int                  |
+  | SHORT (smallint)   | int                  |
+  | INT24 (mediumint)  | int                  |
+  | LONG  (int)        | int                  |
+  | LONGLONG (bigint)  | long                 |
+  | FLOAT (float)      | float                |
+  | DOUBLE (double)    | double               |
+  | VARCHAR, VARBINARY | string               |
+  | CHAR               | string               |
+  | ENUM               | int                  |
+  | SET                | long                 |
+  | YEAR               | int                  |
+  | DATE               | Nullable&lt;DateTime&gt; |
+  | TIME (old format)  | TimeSpan             |
+  | TIMESTAMP          | DateTimeOffset       |
+  | DATETIME           | Nullable&lt;DateTime&gt; |
+  | TIME2              | TimeSpan             |
+  | TIMESTAMP2         | DateTimeOffset       |
+  | DATETIME2          | Nullable&lt;DateTime&gt; |
+  | BLOB types         | byte[]               |
 
 - Invalid DATE, DATETIME, DATETIME2 values(0000-00-00) are parsed as DateTime null.
 - TIME2, DATETIME2, TIMESTAMP2 will loose microseconds when converting to .NET types.
