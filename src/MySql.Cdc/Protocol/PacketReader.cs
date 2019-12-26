@@ -24,11 +24,10 @@ namespace MySql.Cdc.Protocol
         /// </summary>
         public int ReadInt(int length)
         {
-            var reader = new SequenceReader<byte>(_sequence);
             int result = 0;
             for (int i = 0; i < length; i++)
             {
-                reader.TryRead(out byte value);
+                byte value = _sequence.Slice(i, 1).First.Span[0];
                 result |= value << (i << 3);
             }
             _sequence = _sequence.Slice(length);
@@ -40,11 +39,10 @@ namespace MySql.Cdc.Protocol
         /// </summary>
         public long ReadLong(int length)
         {
-            var reader = new SequenceReader<byte>(_sequence);
             long result = 0;
             for (int i = 0; i < length; i++)
             {
-                reader.TryRead(out byte value);
+                byte value = _sequence.Slice(i, 1).First.Span[0];
                 result |= (long)value << (i << 3);
             }
             _sequence = _sequence.Slice(length);
@@ -53,11 +51,10 @@ namespace MySql.Cdc.Protocol
 
         public int ReadBigEndianInt(int length)
         {
-            var reader = new SequenceReader<byte>(_sequence);
             int result = 0;
             for (int i = 0; i < length; i++)
             {
-                reader.TryRead(out byte value);
+                byte value = _sequence.Slice(i, 1).First.Span[0];
                 result = (result << 8) | (int)value;
             }
             _sequence = _sequence.Slice(length);
@@ -66,11 +63,10 @@ namespace MySql.Cdc.Protocol
 
         public long ReadBigEndianLong(int length)
         {
-            var reader = new SequenceReader<byte>(_sequence);
             long result = 0;
             for (int i = 0; i < length; i++)
             {
-                reader.TryRead(out byte value);
+                byte value = _sequence.Slice(i, 1).First.Span[0];
                 result = (result << 8) | (long)value;
             }
             _sequence = _sequence.Slice(length);
@@ -195,7 +191,7 @@ namespace MySql.Cdc.Protocol
         {
             // Parses string fast from the single buffer Span<T> segment
             if (sequence.IsSingleSegment)
-                return Encoding.UTF8.GetString(sequence.FirstSpan);
+                return GetString(sequence.First.Span);
 
             // Parses string slow copying from multiple buffer Span<T> segments
             byte[] array = null;
@@ -204,12 +200,27 @@ namespace MySql.Cdc.Protocol
                 array = ArrayPool<byte>.Shared.Rent(checked((int)sequence.Length));
                 var span = new Span<byte>(array, 0, (int)sequence.Length);
                 sequence.CopyTo(span);
-                return Encoding.UTF8.GetString(span);
+                return GetString(span);
             }
             finally
             {
                 ArrayPool<byte>.Shared.Return(array);
             }
+        }
+
+        private string GetString(ReadOnlySpan<byte> span)
+        {
+#if NETSTANDARD2_1
+            return Encoding.UTF8.GetString(span);
+#else
+            unsafe
+            {
+                fixed (byte* ptr = span)
+                {
+                    return Encoding.UTF8.GetString(ptr, span.Length);
+                }
+            }
+#endif
         }
     }
 }

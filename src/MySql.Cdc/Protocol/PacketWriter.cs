@@ -37,7 +37,11 @@ namespace MySql.Cdc.Protocol
         /// </summary>
         public void WriteByteArray(byte[] array)
         {
+#if NETSTANDARD2_1
             _stream.Write(array);
+#else
+            _stream.Write(array, 0, array.Length);
+#endif
         }
 
         /// <summary>
@@ -72,7 +76,7 @@ namespace MySql.Cdc.Protocol
             if (value == null)
                 return;
 
-            _stream.Write(Encoding.UTF8.GetBytes(value));
+            WriteByteArray(Encoding.UTF8.GetBytes(value));
         }
 
         /// <summary>
@@ -80,7 +84,7 @@ namespace MySql.Cdc.Protocol
         /// </summary>
         public void WriteNullTerminatedString(string value)
         {
-            _stream.Write(Encoding.UTF8.GetBytes(value));
+            WriteByteArray(Encoding.UTF8.GetBytes(value));
             _stream.WriteByte(PacketConstants.NullTerminator);
         }
 
