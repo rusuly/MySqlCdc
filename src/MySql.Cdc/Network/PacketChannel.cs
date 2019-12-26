@@ -169,18 +169,30 @@ namespace MySql.Cdc.Network
             // Streaming mode has 3 possible status types.
             // We stop replication if deserialize throws an exception 
             // Since a derived database may end up in an inconsistent state.
-            IPacket packet = (ResponseType)status switch
+            try
             {
-                ResponseType.Error => new ErrorPacket(buffer),
-                ResponseType.EndOfFile => new EndOfFilePacket(buffer),
-                _ => _eventDeserializer.DeserializeEvent(buffer)
-            };
-            await _channel.Writer.WriteAsync(packet);
+                IPacket packet = (ResponseType)status switch
+                {
+                    ResponseType.Error => new ErrorPacket(buffer),
+                    ResponseType.EndOfFile => new EndOfFilePacket(buffer),
+                    _ => _eventDeserializer.DeserializeEvent(buffer)
+                };
+                await _channel.Writer.WriteAsync(packet);
+            }
+            catch (System.Exception e)
+            {
+                await _channel.Writer.WriteAsync(new ExceptionPacket(e));
+            }
         }
 
         public async Task<IPacket> ReadPacketAsync()
         {
-            return await _channel.Reader.ReadAsync();
+            var packet = await _channel.Reader.ReadAsync();
+
+            if (packet is ExceptionPacket exceptionPacket)
+                throw new Exception("PacketChannel exception.", exceptionPacket.Exception);
+
+            return packet;
         }
 
         public async Task WriteCommandAsync(ICommand command, byte sequenceNumber)
