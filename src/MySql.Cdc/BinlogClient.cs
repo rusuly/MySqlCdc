@@ -9,6 +9,7 @@ using MySql.Cdc.Network;
 using MySql.Cdc.Packets;
 using MySql.Cdc.Protocol;
 using MySql.Cdc.Providers;
+using MySql.Cdc.Providers.MariaDb;
 
 namespace MySql.Cdc
 {
@@ -18,7 +19,7 @@ namespace MySql.Cdc
     public class BinlogClient
     {
         private readonly ConnectionOptions _options = new ConnectionOptions();
-        private readonly EventDeserializer _eventDeserializer = new EventDeserializer();
+        private readonly EventDeserializer _eventDeserializer = new MariaEventDeserializer();
         private readonly IDatabaseProvider _databaseProvider = new MariaDbProvider();
         private PacketChannel _channel;
 
@@ -97,14 +98,7 @@ namespace MySql.Cdc
             await AdjustStartingPosition();
             await SetMasterHeartbeat();
             await SetMasterBinlogChecksum();
-            await _databaseProvider.PrepareAsync(_channel);
-
-            _channel.SwitchToStream();
-
-            long serverId = _options.Blocking ? _options.ServerId : 0;
-            var command = new DumpBinlogCommand(serverId, _options.Binlog.Filename, _options.Binlog.Position);
-            await _channel.WriteCommandAsync(command, 0);
-
+            await _databaseProvider.DumpBinlogAsync(_channel, _options);
             await ReadEventStreamAsync(handleEvent);
         }
 

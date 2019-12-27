@@ -19,7 +19,7 @@ namespace MySql.Cdc.Sample
                 options.Password = "Qwertyu1";
                 options.HeartbeatInterval = TimeSpan.FromSeconds(10);
                 options.Blocking = true;
-                options.Binlog = BinlogOptions.FromStart();
+                options.Binlog = BinlogOptions.FromGtid("0-1-270");
             });
 
             await client.ReplicateAsync(async (binlogEvent) =>

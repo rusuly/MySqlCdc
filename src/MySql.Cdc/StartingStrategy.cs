@@ -4,6 +4,7 @@ namespace MySql.Cdc
     {
         FromStart,
         FromEnd,
-        FromPosition
+        FromPosition,
+        FromGtid
     }
 }

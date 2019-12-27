@@ -24,5 +24,7 @@ namespace MySql.Cdc.Constants
         DELAYED_INSERT,
         CHANGE_USER,
         BINLOG_DUMP,
+
+        REGISTER_SLAVE = 21
     }
 }

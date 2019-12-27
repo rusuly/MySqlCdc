@@ -5,6 +5,6 @@ namespace MySql.Cdc.Providers
 {
     public interface IDatabaseProvider
     {
-        Task PrepareAsync(PacketChannel channel);
+        Task DumpBinlogAsync(PacketChannel channel, ConnectionOptions options);
     }
 }
