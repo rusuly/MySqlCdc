@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MySql.Cdc.Checksum;
@@ -7,9 +8,7 @@ using MySql.Cdc.Constants;
 using MySql.Cdc.Events;
 using MySql.Cdc.Network;
 using MySql.Cdc.Packets;
-using MySql.Cdc.Protocol;
 using MySql.Cdc.Providers;
-using MySql.Cdc.Providers.MariaDb;
 
 namespace MySql.Cdc
 {
@@ -19,9 +18,8 @@ namespace MySql.Cdc
     public class BinlogClient
     {
         private readonly ConnectionOptions _options = new ConnectionOptions();
-        private readonly EventDeserializer _eventDeserializer = new MariaEventDeserializer();
-        private readonly IDatabaseProvider _databaseProvider = new MariaDbProvider();
-        private PacketChannel _channel;
+        private IDatabaseProvider _databaseProvider;
+        private DatabaseConnection _channel;
 
         public BinlogClient(Action<ConnectionOptions> configureOptions)
         {
@@ -30,19 +28,21 @@ namespace MySql.Cdc
 
         private async Task ConnectAsync()
         {
-            _channel = new PacketChannel(_options, _eventDeserializer);
+            _channel = new DatabaseConnection(_options);
             var handshake = await ReceiveHandshakeAsync();
+
+            _databaseProvider = handshake.ServerVersion.IndexOf("MariaDB", StringComparison.InvariantCultureIgnoreCase) >= 0
+            ? (IDatabaseProvider)new MariaDbProvider()
+            : new MySqlProvider();
+
             await AuthenticateAsync(handshake);
         }
 
         private async Task<HandshakePacket> ReceiveHandshakeAsync()
         {
-            var packet = await _channel.ReadPacketAsync();
-
-            if (packet is ErrorPacket error)
-                throw new InvalidOperationException($"Initial handshake error. {error.ToString()}");
-
-            return packet as HandshakePacket;
+            var packet = await _channel.ReadPacketSlowAsync();
+            ThrowIfErrorPacket(packet, "Initial handshake error.");
+            return new HandshakePacket(new ReadOnlySequence<byte>(packet));
         }
 
         private async Task AuthenticateAsync(HandshakePacket handshake)
@@ -56,16 +56,17 @@ namespace MySql.Cdc
 
             var authenticateCommand = new AuthenticateCommand(_options, handshake.ServerCollation, handshake.Scramble);
             await _channel.WriteCommandAsync(authenticateCommand, sequenceNumber++);
-            var packet = await _channel.ReadPacketAsync();
+            var packet = await _channel.ReadPacketSlowAsync();
 
-            if (packet is OkPacket)
+            ThrowIfErrorPacket(packet, "Authentication error.");
+
+            if (packet[0] == (byte)ResponseType.Ok)
                 return;
 
-            if (packet is ErrorPacket error)
-                throw new InvalidOperationException($"Authentication error. {error.ToString()}");
-
-            if (packet is AuthPluginSwitchPacket switchRequest)
+            if (packet[0] == (byte)ResponseType.AuthPluginSwitch)
             {
+                var body = new ReadOnlySequence<byte>(packet, 1, packet.Length - 1);
+                var switchRequest = new AuthPluginSwitchPacket(body);
                 await HandleAuthPluginSwitch(switchRequest, sequenceNumber++);
                 return;
             }
@@ -85,10 +86,8 @@ namespace MySql.Cdc
 
             var switchCommand = new MySqlNativePasswordPluginCommand(_options.Password, switchRequest.AuthPluginData);
             await _channel.WriteCommandAsync(switchCommand, sequenceNumber);
-            var packet = await _channel.ReadPacketAsync();
-
-            if (packet is ErrorPacket error)
-                throw new InvalidOperationException($"Authentication switch error. {error.ToString()}");
+            var packet = await _channel.ReadPacketSlowAsync();
+            ThrowIfErrorPacket(packet, "Authentication switch error.");
         }
 
         public async Task ReplicateAsync(Func<IBinlogEvent, Task> handleEvent)
@@ -104,10 +103,11 @@ namespace MySql.Cdc
 
         private async Task ReadEventStreamAsync(Func<IBinlogEvent, Task> handleEvent)
         {
+            var channel = new EventStreamChannel(_databaseProvider.Deserializer, _channel.Stream);
             while (true)
             {
                 var timeout = _options.HeartbeatInterval.Add(TimeSpan.FromMilliseconds(TimeoutConstants.Delta));
-                var packet = await _channel.ReadPacketAsync().WithTimeout(timeout, TimeoutConstants.Message);
+                var packet = await channel.ReadPacketAsync().WithTimeout(timeout, TimeoutConstants.Message);
 
                 if (packet is IBinlogEvent binlogEvent)
                 {
@@ -171,20 +171,16 @@ namespace MySql.Cdc
             var seconds = (long)_options.HeartbeatInterval.TotalSeconds;
             var command = new QueryCommand($"set @master_heartbeat_period={seconds * 1000 * 1000 * 1000}");
             await _channel.WriteCommandAsync(command, 0);
-            var packet = await _channel.ReadPacketAsync();
-
-            if (packet is ErrorPacket error)
-                throw new InvalidOperationException($"Setting master_binlog_checksum error. {error.ToString()}");
+            var packet = await _channel.ReadPacketSlowAsync();
+            ThrowIfErrorPacket(packet, "Setting master_binlog_checksum error.");
         }
 
         private async Task SetMasterBinlogChecksum()
         {
             var command = new QueryCommand("SET @master_binlog_checksum= @@global.binlog_checksum");
             await _channel.WriteCommandAsync(command, 0);
-            var packet = await _channel.ReadPacketAsync();
-
-            if (packet is ErrorPacket error)
-                throw new InvalidOperationException($"Setting master_binlog_checksum error. {error.ToString()}");
+            var packet = await _channel.ReadPacketSlowAsync();
+            ThrowIfErrorPacket(packet, "Setting master_binlog_checksum error.");
 
             command = new QueryCommand($"SELECT @master_binlog_checksum");
             await _channel.WriteCommandAsync(command, 0);
@@ -193,7 +189,7 @@ namespace MySql.Cdc
             // When replication is started fake RotateEvent comes before FormatDescriptionEvent.
             // In order to deserialize the event we have to obtain checksum type length in advance.
             var checksumType = (ChecksumType)Enum.Parse(typeof(ChecksumType), resultSet[0].Cells[0]);
-            _eventDeserializer.ChecksumStrategy = checksumType switch
+            _databaseProvider.Deserializer.ChecksumStrategy = checksumType switch
             {
                 ChecksumType.None => new NoneChecksum(),
                 ChecksumType.CRC32 => new Crc32Checksum(),
@@ -203,20 +199,37 @@ namespace MySql.Cdc
 
         private async Task<List<ResultSetRowPacket>> ReadResultSet()
         {
-            var resultSet = new List<ResultSetRowPacket>();
-            IPacket packet = null;
+            var packet = await _channel.ReadPacketSlowAsync();
+            ThrowIfErrorPacket(packet, "Reading result set error.");
+
             while (true)
             {
-                packet = await _channel.ReadPacketAsync();
+                // Skip through metadata
+                packet = await _channel.ReadPacketSlowAsync();
+                if (packet[0] == (byte)ResponseType.EndOfFile)
+                    break;
+            }
 
-                if (packet is ErrorPacket error)
-                    throw new InvalidOperationException($"Query result set error. {error.ToString()}");
+            var resultSet = new List<ResultSetRowPacket>();
+            while (true)
+            {
+                packet = await _channel.ReadPacketSlowAsync();
+                ThrowIfErrorPacket(packet, "Query result set error.");
 
-                if (packet is ResultSetRowPacket row)
-                {
-                    resultSet.Add(row);
-                }
-                else return resultSet;
+                if (packet[0] == (byte)ResponseType.EndOfFile)
+                    break;
+
+                resultSet.Add(new ResultSetRowPacket(new ReadOnlySequence<byte>(packet)));
+            }
+            return resultSet;
+        }
+
+        private void ThrowIfErrorPacket(byte[] packet, string message)
+        {
+            if (packet[0] == (byte)ResponseType.Error)
+            {
+                var error = new ErrorPacket(new ReadOnlySequence<byte>(packet, 1, packet.Length - 1));
+                throw new InvalidOperationException($"{message} {error.ToString()}");
             }
         }
     }

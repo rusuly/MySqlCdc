@@ -1,16 +1,18 @@
 using System.Threading.Tasks;
 using MySql.Cdc.Commands;
+using MySql.Cdc.Events;
 using MySql.Cdc.Network;
 using MySql.Cdc.Protocol;
+using MySql.Cdc.Providers.MySql;
 
 namespace MySql.Cdc.Providers
 {
     public class MySqlProvider : IDatabaseProvider
     {
-        public async Task DumpBinlogAsync(PacketChannel channel, ConnectionOptions options)
-        {
-            channel.SwitchToStream();
+        public EventDeserializer Deserializer { get; } = new MySqlEventDeserializer();
 
+        public async Task DumpBinlogAsync(DatabaseConnection channel, ConnectionOptions options)
+        {
             long serverId = options.Blocking ? options.ServerId : 0;
             ICommand command = null;
 
@@ -22,7 +24,7 @@ namespace MySql.Cdc.Providers
             {
                 command = new DumpBinlogCommand(serverId, options.Binlog.Filename, options.Binlog.Position);
             }
-            
+
             await channel.WriteCommandAsync(command, 0);
         }
     }
