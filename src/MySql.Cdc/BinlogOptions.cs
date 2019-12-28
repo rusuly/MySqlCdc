@@ -72,7 +72,9 @@ namespace MySql.Cdc
             return new BinlogOptions
             {
                 StartingStrategy = StartingStrategy.FromGtid,
-                Gtid = gtid
+                Gtid = gtid,
+                Filename = string.Empty,
+                Position = EventConstants.FirstEventPosition
             };
         }
     }

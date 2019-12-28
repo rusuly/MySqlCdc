@@ -26,9 +26,10 @@ namespace MySql.Cdc.Constants
 
         // Used in MySQL only from MySQL 5.6.x
         // Extra-data fields are added compared to V1.
-        WRITE_ROWS_EVENT_V2 = 30,
-        UPDATE_ROWS_EVENT_V2 = 31,
-        DELETE_ROWS_EVENT_V2 = 32,
+        MYSQL_WRITE_ROWS_EVENT_V2 = 30,
+        MYSQL_UPDATE_ROWS_EVENT_V2 = 31,
+        MYSQL_DELETE_ROWS_EVENT_V2 = 32,
+        MYSQL_GTID_EVENT = 33,
 
         // Used in MariaDB only.
         MARIADB_ANNOTATE_ROWS_EVENT = 160,

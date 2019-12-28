@@ -15,6 +15,7 @@ Please note the lib currently has the following limitations:
 - Packet compression is not supported.
 - Reading a binlog file offline is not supported.
 - Automatic failover is not not supported.
+- Multi-source replication & multi-master topology setup are not supported.
 - Now only the `mysql_native_password` auth plugin is supported.
 
 ## Prerequisites
@@ -30,9 +31,9 @@ binlog_row_image=full
 
   | MySQL Type         | .NET type            |
   | ------------------ |:--------------------:|
-  | DECIMAL            | ❌ Not supported     |
-  | GEOMETRY           | ❌ Not supported     |
-  | JSON               | ❌ Not supported     |
+  | DECIMAL            | Not supported ❌     |
+  | GEOMETRY           | Not supported ❌     |
+  | JSON               | Not supported ❌     |
   | BIT                | BitArray             |
   | TINY (tinyint)     | int                  |
   | SHORT (smallint)   | int                  |
@@ -66,8 +67,13 @@ MySql.Cdc supports both MariaDB & MySQL server.
   | MariaDB  | Status                   |
   | -------- |:------------------------:|
   | 10.3     | Did not verify           |
-  | 10.4     | ✅ Supported             |
+  | 10.4     | Supported ✅             |
 
+  | MySQL    | Status                   |
+  | -------- |:------------------------:|
+  | 5.6      | Did not verify           |
+  | 5.7      | Supported ✅             |
+  | 8.0      | Supported ✅             |
 
 ## Info
 The project is based on [mysql-binlog-connector-java](https://github.com/shyiko/mysql-binlog-connector-java) library, MariaDB and MySQL  documentation.
@@ -77,7 +83,7 @@ Has a third-party dependency [Pipelines.Sockets.Unofficial](https://github.com/m
 ## Q&A
 Are uncommited changes written to binlog?
 - If you make [transactional changes](https://dev.mysql.com/doc/refman/5.7/en/replication-features-transactions.html) binlog will only include commited transactions in their commit order to provide consistency.
-- If you make non-transactional changes binlog will include changes from uncommited transactions even if the transaction is rolled back.
+- If you make non-transactional changes binlog will include changes from uncommited transactions even if the transactions are rolled back.
 
 ## License
 The library is provided under the [MIT License](LICENSE).

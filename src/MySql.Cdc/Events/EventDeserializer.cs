@@ -40,9 +40,9 @@ namespace MySql.Cdc.Events
             EventParsers[EventType.DELETE_ROWS_EVENT_V1] = new DeleteRowsEventParser(TableMapCache, 1);
 
             // Rows events used only in MySQL from 5.6 to 8.0.
-            EventParsers[EventType.WRITE_ROWS_EVENT_V2] = new WriteRowsEventParser(TableMapCache, 2);
-            EventParsers[EventType.UPDATE_ROWS_EVENT_V2] = new UpdateRowsEventParser(TableMapCache, 2);
-            EventParsers[EventType.DELETE_ROWS_EVENT_V2] = new DeleteRowsEventParser(TableMapCache, 2);
+            EventParsers[EventType.MYSQL_WRITE_ROWS_EVENT_V2] = new WriteRowsEventParser(TableMapCache, 2);
+            EventParsers[EventType.MYSQL_UPDATE_ROWS_EVENT_V2] = new UpdateRowsEventParser(TableMapCache, 2);
+            EventParsers[EventType.MYSQL_DELETE_ROWS_EVENT_V2] = new DeleteRowsEventParser(TableMapCache, 2);
         }
 
         public virtual IBinlogEvent DeserializeEvent(ReadOnlySequence<byte> buffer)

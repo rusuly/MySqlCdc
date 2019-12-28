@@ -25,6 +25,7 @@ namespace MySql.Cdc.Constants
         CHANGE_USER,
         BINLOG_DUMP,
 
-        REGISTER_SLAVE = 21
+        REGISTER_SLAVE = 21,
+        BINLOG_DUMP_GTID = 30
     }
 }

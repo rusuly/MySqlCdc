@@ -96,7 +96,7 @@ namespace MySql.Cdc.Protocol
             {
                 try
                 {
-                    // TODO: Find out why other clients throw exception if number is long
+                    // Max theoretical length of .NET string is Int32.MaxValue
                     return checked((int)ReadLong(8));
                 }
                 catch (OverflowException)

@@ -31,7 +31,7 @@ namespace MySql.Cdc.Parsers
 
             if (!reader.IsEmpty())
             {
-                // TODO: Read MySQL 5.6+ optional metadata. Not supported in MariaDB.
+                // Consider reading MySQL 5.6+ optional metadata which is not supported in MariaDB.
             }
 
             return new TableMapEvent(header, tableId, databaseName, tableName, columnTypes, metadata, nullBitmap);

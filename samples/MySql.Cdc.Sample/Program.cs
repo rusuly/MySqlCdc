@@ -19,7 +19,12 @@ namespace MySql.Cdc.Sample
                 options.Password = "Qwertyu1";
                 options.HeartbeatInterval = TimeSpan.FromSeconds(10);
                 options.Blocking = true;
+                
+                // MariaDB format
                 options.Binlog = BinlogOptions.FromGtid("0-1-270");
+
+                // MySQL format
+                options.Binlog = BinlogOptions.FromGtid("f442510a-2881-11ea-b1dd-27916133dbb2:1-7");
             });
 
             await client.ReplicateAsync(async (binlogEvent) =>

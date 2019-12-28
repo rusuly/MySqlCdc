@@ -37,7 +37,7 @@ namespace MySql.Cdc.Parsers
             if (RowsEventVersion == 2)
             {
                 var extraDataLength = reader.ReadInt(2);
-                reader.Skip(extraDataLength); //TODO: Figure out if (extraDataLength-2) should be used instead
+                reader.Skip(extraDataLength - 2);
             }
 
             var columnsNumber = (int)reader.ReadLengthEncodedNumber();
@@ -93,7 +93,7 @@ namespace MySql.Cdc.Parsers
                 ColumnType.LONGLONG => reader.ReadLong(8),
                 ColumnType.FLOAT => BitConverter.ToSingle(BitConverter.GetBytes(reader.ReadInt(4)), 0),
                 ColumnType.DOUBLE => BitConverter.ToDouble(BitConverter.GetBytes(reader.ReadLong(8)), 0),
-                
+
                 /* Variable strings, includes varchar  varbinary */
                 ColumnType.VARCHAR => ParseVariableString(reader, metadata),
                 ColumnType.VAR_STRING => ParseVariableString(reader, metadata),
