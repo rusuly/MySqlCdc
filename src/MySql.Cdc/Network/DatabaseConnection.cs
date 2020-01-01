@@ -1,5 +1,8 @@
+using System.IO;
 using System.Net;
+using System.Net.Security;
 using System.Net.Sockets;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using MySql.Cdc.Constants;
 using MySql.Cdc.Protocol;
@@ -11,7 +14,7 @@ namespace MySql.Cdc.Network
         private readonly ConnectionOptions _options;
         private readonly Socket _socket;
 
-        public NetworkStream Stream { get; }
+        public Stream Stream { get; private set; }
 
         public DatabaseConnection(ConnectionOptions options)
         {
@@ -20,6 +23,11 @@ namespace MySql.Cdc.Network
             _socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
             _socket.Connect(new IPEndPoint(IPAddress.Loopback, _options.Port));
             Stream = new NetworkStream(_socket);
+        }
+
+        public async Task WriteBytesAsync(byte[] array)
+        {
+            await Stream.WriteAsync(array, 0, array.Length);
         }
 
         public async Task WriteCommandAsync(ICommand command, byte sequenceNumber)
@@ -43,6 +51,21 @@ namespace MySql.Cdc.Network
             await Stream.ReadAsync(body, 0, body.Length);
 
             return body;
+        }
+
+        public void UpgradeToSsl()
+        {
+            var sslStream = new SslStream(Stream, false, new RemoteCertificateValidationCallback(ValidateServerCertificate), null);
+            sslStream.AuthenticateAsClient(_options.Hostname);
+            Stream = sslStream;
+        }
+
+        private bool ValidateServerCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        {
+            if (sslPolicyErrors == SslPolicyErrors.None)
+                return true;
+
+            return false;
         }
     }
 }

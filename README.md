@@ -8,7 +8,7 @@ Designed for reactive push-model applications, event sourcing or derived data sy
 ## Warnings
 Be carefull when working with binary log event streaming.
 - Binlog stream includes changes made to all databases on the master server including sql queries with sensitive information and you may leak data from the databases. Consider deploying your database to an isolated instance.
-- Binlog is an append-only file that contains changes to already deleted databases/tables/rows. Make sure you don't reproduce the logs in your application.
+- Binlog is an append-only file. It includes changes for databases/tables that you deleted and then recreated. Make sure you don't replay the events in your application.
 
 ## Limitations
 Please note the lib currently has the following limitations:
@@ -16,7 +16,7 @@ Please note the lib currently has the following limitations:
 - Reading a binlog file offline is not supported.
 - Automatic failover is not not supported.
 - Multi-source replication & multi-master topology setup are not supported.
-- Now only the `mysql_native_password` auth plugin is supported.
+- Supported auth plugins are `mysql_native_password` and `caching_sha2_password`.
 
 ## Prerequisites
 Please make sure the following requirements are met:

@@ -21,7 +21,8 @@ namespace MySql.Cdc.Commands
             ClientCapabilities = (int)CapabilityFlags.LONG_FLAG
                 | (int)CapabilityFlags.PROTOCOL_41
                 | (int)CapabilityFlags.SECURE_CONNECTION
-                | (int)CapabilityFlags.SSL;
+                | (int)CapabilityFlags.SSL
+                | (int)CapabilityFlags.PLUGIN_AUTH;
         }
 
         public byte[] CreatePacket(byte sequenceNumber)

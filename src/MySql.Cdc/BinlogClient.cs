@@ -1,6 +1,8 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 using MySql.Cdc.Checksum;
 using MySql.Cdc.Commands;
@@ -8,6 +10,7 @@ using MySql.Cdc.Constants;
 using MySql.Cdc.Events;
 using MySql.Cdc.Network;
 using MySql.Cdc.Packets;
+using MySql.Cdc.Protocol;
 using MySql.Cdc.Providers;
 
 namespace MySql.Cdc
@@ -17,6 +20,11 @@ namespace MySql.Cdc
     /// </summary>
     public class BinlogClient
     {
+        private readonly List<string> _allowedAuthPlugins = new List<string>
+        {
+            AuthPluginNames.MySqlNativePassword,
+            AuthPluginNames.CachingSha2Password
+        };
         private readonly ConnectionOptions _options = new ConnectionOptions();
         private IDatabaseProvider _databaseProvider;
         private DatabaseConnection _channel;
@@ -29,7 +37,13 @@ namespace MySql.Cdc
         private async Task ConnectAsync()
         {
             _channel = new DatabaseConnection(_options);
-            var handshake = await ReceiveHandshakeAsync();
+
+            var packet = await _channel.ReadPacketSlowAsync();
+            ThrowIfErrorPacket(packet, "Initial handshake error.");
+            var handshake = new HandshakePacket(new ReadOnlySequence<byte>(packet));
+
+            if (!_allowedAuthPlugins.Contains(handshake.AuthPluginName))
+                throw new InvalidOperationException($"Authentication plugin {handshake.AuthPluginName} is not supported.");
 
             _databaseProvider = handshake.ServerVersion.IndexOf("MariaDB", StringComparison.InvariantCultureIgnoreCase) >= 0
             ? (IDatabaseProvider)new MariaDbProvider()
@@ -38,25 +52,22 @@ namespace MySql.Cdc
             await AuthenticateAsync(handshake);
         }
 
-        private async Task<HandshakePacket> ReceiveHandshakeAsync()
-        {
-            var packet = await _channel.ReadPacketSlowAsync();
-            ThrowIfErrorPacket(packet, "Initial handshake error.");
-            return new HandshakePacket(new ReadOnlySequence<byte>(packet));
-        }
-
         private async Task AuthenticateAsync(HandshakePacket handshake)
         {
             byte sequenceNumber = 1;
 
             if (_options.UseSsl)
             {
-                await SendSslRequest(handshake, sequenceNumber++);
+                var command = new SslRequestCommand(handshake.ServerCollation);
+                await _channel.WriteCommandAsync(command, sequenceNumber);
+                sequenceNumber += 1;
+                _channel.UpgradeToSsl();
             }
 
-            var authenticateCommand = new AuthenticateCommand(_options, handshake.ServerCollation, handshake.Scramble);
-            await _channel.WriteCommandAsync(authenticateCommand, sequenceNumber++);
+            var authenticateCommand = new AuthenticateCommand(_options, handshake.ServerCollation, handshake.Scramble, handshake.AuthPluginName);
+            await _channel.WriteCommandAsync(authenticateCommand, sequenceNumber);
             var packet = await _channel.ReadPacketSlowAsync();
+            sequenceNumber += 2;
 
             ThrowIfErrorPacket(packet, "Authentication error.");
 
@@ -67,27 +78,80 @@ namespace MySql.Cdc
             {
                 var body = new ReadOnlySequence<byte>(packet, 1, packet.Length - 1);
                 var switchRequest = new AuthPluginSwitchPacket(body);
-                await HandleAuthPluginSwitch(switchRequest, sequenceNumber++);
-                return;
+                await HandleAuthPluginSwitch(switchRequest, sequenceNumber);
             }
-            throw new InvalidOperationException($"Authentication error. Unknown authentication switch request header.");
-        }
-
-        private async Task SendSslRequest(HandshakePacket handshake, byte sequenceNumber)
-        {
-            //TODO: Implement SSL/TLS
-            throw new NotImplementedException();
+            else
+            {
+                await AuthenticateSha256Async(packet, handshake.Scramble, sequenceNumber);
+            }
         }
 
         private async Task HandleAuthPluginSwitch(AuthPluginSwitchPacket switchRequest, byte sequenceNumber)
         {
-            if (switchRequest.AuthPluginName != AuthPluginNames.MySqlNativePassword)
-                throw new InvalidOperationException($"Authentication switch error. {switchRequest.AuthPluginName} plugin is not supported.");
+            if (!_allowedAuthPlugins.Contains(switchRequest.AuthPluginName))
+                throw new InvalidOperationException($"Authentication plugin {switchRequest.AuthPluginName} is not supported.");
 
-            var switchCommand = new MySqlNativePasswordPluginCommand(_options.Password, switchRequest.AuthPluginData);
+            var switchCommand = new AuthPluginSwitchCommand(_options.Password, switchRequest.AuthPluginData, switchRequest.AuthPluginName);
             await _channel.WriteCommandAsync(switchCommand, sequenceNumber);
             var packet = await _channel.ReadPacketSlowAsync();
+            sequenceNumber += 2;
             ThrowIfErrorPacket(packet, "Authentication switch error.");
+
+            if (switchRequest.AuthPluginName == AuthPluginNames.CachingSha2Password)
+            {
+                await AuthenticateSha256Async(packet, switchRequest.AuthPluginData, sequenceNumber);
+            }
+        }
+
+        private async Task AuthenticateSha256Async(byte[] packet, string scramble, byte sequenceNumber)
+        {
+            // See https://mariadb.com/kb/en/caching_sha2_password-authentication-plugin/
+            // Success authentication.
+            if (packet[0] == 0x01 && packet[1] == 0x03)
+                return;
+
+            // Send clear password if ssl is used.
+            var writer = new PacketWriter(sequenceNumber);
+            if (_options.UseSsl)
+            {
+                writer.WriteNullTerminatedString(_options.Password);
+                await _channel.WriteBytesAsync(writer.CreatePacket());
+                packet = await _channel.ReadPacketSlowAsync();
+                ThrowIfErrorPacket(packet, "Sending caching_sha2_password clear password error.");
+                return;
+            }
+
+            // Request public key.
+            writer = new PacketWriter(sequenceNumber);
+            writer.WriteByte(0x02);
+            await _channel.WriteBytesAsync(writer.CreatePacket());
+            packet = await _channel.ReadPacketSlowAsync();
+            sequenceNumber += 2;
+            ThrowIfErrorPacket(packet, "Requesting caching_sha2_password public key.");
+
+            // Extract public key.
+            var publicKeyString = Encoding.UTF8.GetString(new ReadOnlySequence<byte>(packet, 1, packet.Length - 1).ToArray());
+            publicKeyString = publicKeyString
+                .Replace("-----BEGIN PUBLIC KEY-----", "")
+                .Replace("-----END PUBLIC KEY-----", "")
+                .Replace("\n", "");
+            byte[] publicKey = Convert.FromBase64String(publicKeyString);
+
+            // Password must be null terminated. Not documented in MariaDB.
+            var password = Encoding.UTF8.GetBytes(_options.Password += '\0');
+            var encryptedPassword = AuthenticateCommand.Xor(password, Encoding.UTF8.GetBytes(scramble));
+
+            using (var rsa = RSA.Create())
+            {
+                rsa.ImportSubjectPublicKeyInfo(publicKey, out _);
+                var encryptedBody = rsa.Encrypt(encryptedPassword, RSAEncryptionPadding.OaepSHA1);
+
+                writer = new PacketWriter(sequenceNumber);
+                writer.WriteByteArray(encryptedBody);
+                await _channel.WriteBytesAsync(writer.CreatePacket());
+                packet = await _channel.ReadPacketSlowAsync();
+                ThrowIfErrorPacket(packet, "Authentication error.");
+            }
         }
 
         public async Task ReplicateAsync(Func<IBinlogEvent, Task> handleEvent)

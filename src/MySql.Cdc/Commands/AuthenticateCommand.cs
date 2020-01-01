@@ -1,4 +1,6 @@
+using System;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using MySql.Cdc.Constants;
 using MySql.Cdc.Protocol;
@@ -18,8 +20,9 @@ namespace MySql.Cdc.Commands
         public string Password { get; private set; }
         public string Scramble { get; private set; }
         public string Database { get; private set; }
+        public string AuthPluginName { get; private set; }
 
-        public AuthenticateCommand(ConnectionOptions options, int clientCollation, string scramble, int maxPacketSize = 0)
+        public AuthenticateCommand(ConnectionOptions options, int clientCollation, string scramble, string authPluginName, int maxPacketSize = 0)
         {
             ClientCollation = clientCollation;
             MaxPacketSize = maxPacketSize;
@@ -27,10 +30,12 @@ namespace MySql.Cdc.Commands
             Username = options.Username;
             Password = options.Password;
             Database = options.Database;
+            AuthPluginName = authPluginName;
 
             ClientCapabilities = (int)CapabilityFlags.LONG_FLAG
                 | (int)CapabilityFlags.PROTOCOL_41
-                | (int)CapabilityFlags.SECURE_CONNECTION;
+                | (int)CapabilityFlags.SECURE_CONNECTION
+                | (int)CapabilityFlags.PLUGIN_AUTH;
 
             if (Database != null)
                 ClientCapabilities |= (int)CapabilityFlags.CONNECT_WITH_DB;
@@ -48,49 +53,37 @@ namespace MySql.Cdc.Commands
                 writer.WriteByte(0);
 
             writer.WriteNullTerminatedString(Username);
-            byte[] sha1 = GetMySqlNativePasswordHash(Password, Scramble);
-            writer.WriteByte((byte)sha1.Length);
-            writer.WriteByteArray(sha1);
+            byte[] encryptedPassword = GetEncryptedPassword(Password, Scramble, AuthPluginName);
+            writer.WriteByte((byte)encryptedPassword.Length);
+            writer.WriteByteArray(encryptedPassword);
 
             if (Database != null)
                 writer.WriteNullTerminatedString(Database);
 
+            writer.WriteNullTerminatedString(AuthPluginName);
             return writer.CreatePacket();
         }
 
-        public static byte[] GetMySqlNativePasswordHash(string password, string scramble)
+        public static byte[] GetEncryptedPassword(string password, string scramble, string authPluginName)
         {
-            var sha1 = System.Security.Cryptography.SHA1.Create();
-            var passwordHash = sha1.ComputeHash(Encoding.UTF8.GetBytes(password));
-            var concatHash = Encoding.UTF8.GetBytes(scramble).Concat(sha1.ComputeHash(passwordHash)).ToArray();
-            return Xor(passwordHash, sha1.ComputeHash(concatHash));
+            HashAlgorithm sha = authPluginName switch
+            {
+                AuthPluginNames.MySqlNativePassword => SHA1.Create(),
+                AuthPluginNames.CachingSha2Password => SHA256.Create(),
+                _ => throw new NotSupportedException()
+            };
+
+            var passwordHash = sha.ComputeHash(Encoding.UTF8.GetBytes(password));
+            var concatHash = Encoding.UTF8.GetBytes(scramble).Concat(sha.ComputeHash(passwordHash)).ToArray();
+            return Xor(passwordHash, sha.ComputeHash(concatHash));
         }
 
-        private static byte[] Xor(byte[] array1, byte[] array2)
+        public static byte[] Xor(byte[] array1, byte[] array2)
         {
             byte[] result = new byte[array1.Length];
             for (int i = 0; i < result.Length; i++)
                 result[i] = (byte)(array1[i] ^ array2[i]);
             return result;
-        }
-    }
-
-    public class MySqlNativePasswordPluginCommand : ICommand
-    {
-        public string Password { get; private set; }
-        public string Scramble { get; private set; }
-
-        public MySqlNativePasswordPluginCommand(string password, string scramble)
-        {
-            Password = password;
-            Scramble = scramble;
-        }
-
-        public byte[] CreatePacket(byte sequenceNumber)
-        {
-            var writer = new PacketWriter(sequenceNumber);
-            writer.WriteByteArray(AuthenticateCommand.GetMySqlNativePasswordHash(Password, Scramble));
-            return writer.CreatePacket();
         }
     }
 }
