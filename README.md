@@ -1,9 +1,11 @@
-# MySql.Cdc
+# MySqlCdc
 MySql binlog Change Data Capture (CDC) connector for .NET Core
 
 Acts as MySql replication client streaming binlog events in real-time.
 
 Designed for reactive push-model applications, event sourcing or derived data systems.
+
+NuGet feed: [MySqlCdc](https://www.nuget.org/packages/MySqlCdc)
 
 ## Warnings
 Be carefull when working with binary log event streaming.
@@ -62,7 +64,7 @@ binlog_row_image=full
 - DECIMAL, JSON, GEOMETRY types are not supported now.
 
 ## Supported versions
-MySql.Cdc supports both MariaDB & MySQL server.
+MySqlCdc supports both MariaDB & MySQL server.
 
   | MariaDB  | Status                   |
   | -------- |:------------------------:|

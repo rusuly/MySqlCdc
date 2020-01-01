@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <PackageId>MySqlCdc</PackageId>
+    <Version>1.0.0-preview2</Version>
+    <Authors>Ruslan Ulianets</Authors>
+    <PackageTags>MySQL;MariaDB;Binlog;CDC;Replication</PackageTags>
+    <Description>MySQL binlog Change Data Capture (CDC) connector for .NET Core</Description>
+    <PackageLicenseUrl>https://github.com/rusuly/MySqlCdc/blob/master/LICENSE</PackageLicenseUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Pipelines.Sockets.Unofficial" Version="2.1.1" />
+    <PackageReference Include="System.Threading.Channels" Version="4.7.0" />
+  </ItemGroup>
+
+</Project>
