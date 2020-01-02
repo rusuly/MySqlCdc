@@ -19,6 +19,7 @@ Please note the lib currently has the following limitations:
 - Automatic failover is not not supported.
 - Multi-source replication & multi-master topology setup are not supported.
 - Supported auth plugins are `mysql_native_password` and `caching_sha2_password`.
+- Currently the lib supports connecting to 'localhost' without SSL encryption.
 
 ## Prerequisites
 Please make sure the following requirements are met:

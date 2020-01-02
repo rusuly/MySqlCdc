@@ -1,12 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>8.0</LangVersion>
     <PackageId>MySqlCdc</PackageId>
-    <Version>1.0.0-preview2</Version>
+    <Version>1.0.0-preview3</Version>
     <Authors>Ruslan Ulianets</Authors>
-    <PackageTags>MySQL;MariaDB;Binlog;CDC;Replication</PackageTags>
+    <PackageTags>MySQL;MariaDB;Binlog;CDC;Change Data Capture;Replication</PackageTags>
     <Description>MySQL binlog Change Data Capture (CDC) connector for .NET Core</Description>
+    <PackageProjectUrl>https://github.com/rusuly/MySqlCdc</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/rusuly/MySqlCdc/blob/master/LICENSE</PackageLicenseUrl>
   </PropertyGroup>
 

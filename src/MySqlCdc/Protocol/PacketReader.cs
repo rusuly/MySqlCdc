@@ -210,6 +210,9 @@ namespace MySqlCdc.Protocol
 
         private string GetString(ReadOnlySpan<byte> span)
         {
+            if (span.Length == 0)
+                return null;
+
 #if NETSTANDARD2_1
             return Encoding.UTF8.GetString(span);
 #else
