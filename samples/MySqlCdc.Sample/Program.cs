@@ -17,14 +17,25 @@ namespace MySqlCdc.Sample
                 options.UseSsl = false;
                 options.Username = "root";
                 options.Password = "Qwertyu1";
-                options.HeartbeatInterval = TimeSpan.FromSeconds(10);
+                options.HeartbeatInterval = TimeSpan.FromSeconds(30);
                 options.Blocking = true;
                 
-                // MariaDB format
-                options.Binlog = BinlogOptions.FromGtid("0-1-270");
+                // Start replication from MariaDB GTID
+                //options.Binlog = BinlogOptions.FromGtid("0-1-270");
 
-                // MySQL format
-                options.Binlog = BinlogOptions.FromGtid("f442510a-2881-11ea-b1dd-27916133dbb2:1-7");
+                // Start replication from MySQL GTID
+                //options.Binlog = BinlogOptions.FromGtid("f442510a-2881-11ea-b1dd-27916133dbb2:1-7");
+                
+                // Start replication from the position
+                //options.Binlog = BinlogOptions.FromPosition("binlog.000008", binlog.000008);
+
+                // Start replication from last master position.
+                // Useful when you are only interested in new changes.
+                //options.Binlog = BinlogOptions.FromEnd();
+
+                // Start replication from first event of first available master binlog.
+                // Note that binlog files by default have expiration time and deleted.
+                options.Binlog = BinlogOptions.FromStart();
             });
 
             await client.ReplicateAsync(async (binlogEvent) =>
