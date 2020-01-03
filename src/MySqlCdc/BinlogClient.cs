@@ -45,10 +45,7 @@ namespace MySqlCdc
             if (!_allowedAuthPlugins.Contains(handshake.AuthPluginName))
                 throw new InvalidOperationException($"Authentication plugin {handshake.AuthPluginName} is not supported.");
 
-            _databaseProvider = handshake.ServerVersion.IndexOf("MariaDB", StringComparison.InvariantCultureIgnoreCase) >= 0
-            ? (IDatabaseProvider)new MariaDbProvider()
-            : new MySqlProvider();
-
+            _databaseProvider = handshake.ServerVersion.Contains("MariaDB") ? (IDatabaseProvider)new MariaDbProvider() : new MySqlProvider();
             await AuthenticateAsync(handshake);
         }
 

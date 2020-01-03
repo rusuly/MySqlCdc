@@ -27,7 +27,7 @@ namespace MySqlCdc.Sample
                 //options.Binlog = BinlogOptions.FromGtid("f442510a-2881-11ea-b1dd-27916133dbb2:1-7");
                 
                 // Start replication from the position
-                //options.Binlog = BinlogOptions.FromPosition("binlog.000008", binlog.000008);
+                //options.Binlog = BinlogOptions.FromPosition("mysql-bin.000008", 195);
 
                 // Start replication from last master position.
                 // Useful when you are only interested in new changes.
