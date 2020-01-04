@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Net;
 using System.Net.Security;
@@ -19,10 +20,24 @@ namespace MySqlCdc.Network
         public DatabaseConnection(ConnectionOptions options)
         {
             _options = options;
+            Exception ex = null;
 
             _socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
-            _socket.Connect(new IPEndPoint(IPAddress.Loopback, _options.Port));
-            Stream = new NetworkStream(_socket);
+            foreach (var ip in Dns.GetHostAddresses(options.Hostname))
+            {
+                try
+                {
+                    _socket.Connect(new IPEndPoint(ip, _options.Port));
+                    Stream = new NetworkStream(_socket);
+                }
+                catch (Exception e)
+                {
+                    ex = e;
+                }
+            }
+
+            if (ex != null && Stream == null)
+                throw ex;
         }
 
         public async Task WriteBytesAsync(byte[] array)
