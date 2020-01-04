@@ -19,12 +19,12 @@ Please note the lib currently has the following limitations:
 - Automatic failover is not supported.
 - Multi-source replication & multi-master topology setup are not supported.
 - Supported auth plugins are `mysql_native_password` and `caching_sha2_password`.
-- Currently the lib supports connecting to 'localhost' without SSL encryption.
+- Currently the library doesn't support SSL encryption.
 
 ## Prerequisites
 Please make sure the following requirements are met:
 1. The user is granted `REPLICATION SLAVE`, `REPLICATION CLIENT` privileges.
-2. The following settings must be configured on master server:
+2. Binary logging must be enabled. The following settings must be configured on master server:
 ```conf
 binlog_format=row
 binlog_row_image=full
