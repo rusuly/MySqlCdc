@@ -14,8 +14,6 @@ Be carefull when working with binary log event streaming.
 
 ## Limitations
 Please note the lib currently has the following limitations:
-- Packet compression is not supported.
-- Reading a binlog file offline is not supported.
 - Automatic failover is not supported.
 - Multi-source replication & multi-master topology setup are not supported.
 - Supported auth plugins are `mysql_native_password` and `caching_sha2_password`.
@@ -99,6 +97,30 @@ A typical transaction has the following structure.
   - One or many `UpdateRowsEvent` events.
   - One or many `DeleteRowsEvent` events.
 3. `XidEvent` indicating commit of the transaction.
+
+In some cases you will need to parse binlog files offline from file system.
+This can be done using BinlogFileReader class.
+```csharp
+static async Task Start()
+{
+    using (FileStream fs = File.OpenRead("mariadb-bin.000002"))
+    {
+        var reader = new BinlogFileReader(new MariaEventDeserializer(), fs);
+        while (true)
+        {
+            var @event = await reader.ReadEventAsync();
+            if (@event != null)
+            {
+                await PrintEventAsync(@event);
+            }
+            else
+            {
+                break;
+            }
+        }
+    }
+}
+```
 
 ## Type mapping notes
 

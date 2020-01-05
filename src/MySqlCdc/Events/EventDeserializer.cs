@@ -12,7 +12,7 @@ namespace MySqlCdc.Events
         /// <summary>
         /// The checksum algorithm type used in a binlog file.
         /// </summary>
-        public IChecksumStrategy ChecksumStrategy { get; set; }
+        public IChecksumStrategy ChecksumStrategy { get; set; } = new NoneChecksum();
 
         /// <summary>
         /// Rows events depend on TableMapEvent that comes before them.
