@@ -9,7 +9,6 @@ using MySqlCdc.Constants;
 using MySqlCdc.Events;
 using MySqlCdc.Packets;
 using MySqlCdc.Protocol;
-using Pipelines.Sockets.Unofficial;
 
 namespace MySqlCdc
 {
@@ -35,7 +34,7 @@ namespace MySqlCdc
                 throw new InvalidOperationException("Invalid binary log file header");
 
             _eventDeserializer = eventDeserializer;
-            _pipeReader = StreamConnection.GetReader(stream);
+            _pipeReader = PipeReader.Create(stream);
             _ = Task.Run(async () => await ReceivePacketsAsync(_pipeReader));
         }
 

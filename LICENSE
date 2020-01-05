@@ -26,6 +26,3 @@ Third Party Licenses:
 
 The project uses ideas from https://github.com/shyiko/mysql-binlog-connector-java library by Stanley Shyiko which is licensed under Apache 2.0.
 The full license information can be found at http://www.apache.org/licenses/LICENSE-2.0
-
-The project uses Pipelines.Sockets.Unofficial nuget package by Marc Gravell which is licensed under MIT.
-The full license information can be found at https://github.com/mgravell/Pipelines.Sockets.Unofficial/blob/master/LICENSE

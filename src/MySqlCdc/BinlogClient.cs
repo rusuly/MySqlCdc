@@ -168,7 +168,8 @@ namespace MySqlCdc
 
         private async Task ReadEventStreamAsync(Func<IBinlogEvent, Task> handleEvent)
         {
-            var channel = new EventStreamChannel(_databaseProvider.Deserializer, _channel.Stream);
+            var eventStreamReader = new EventStreamReader(_databaseProvider.Deserializer);
+            var channel = new EventStreamChannel(eventStreamReader, _channel.Stream);
             while (true)
             {
                 var timeout = _options.HeartbeatInterval.Add(TimeSpan.FromMilliseconds(TimeoutConstants.Delta));

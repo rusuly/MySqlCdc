@@ -5,7 +5,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>8.0</LangVersion>
     <PackageId>MySqlCdc</PackageId>
-    <Version>1.0.0-preview5</Version>
+    <Version>1.0.0-preview6</Version>
     <Authors>Ruslan Ulianets</Authors>
     <PackageTags>MySQL;MariaDB;Binlog;CDC;Change Data Capture;Replication</PackageTags>
     <Description>MySQL binlog Change Data Capture (CDC) connector for .NET Core</Description>
@@ -15,7 +15,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Pipelines.Sockets.Unofficial" Version="2.1.1" />
+    <PackageReference Include="System.IO.Pipelines" Version="4.7.0" />
     <PackageReference Include="System.Threading.Channels" Version="4.7.0" />
   </ItemGroup>
 

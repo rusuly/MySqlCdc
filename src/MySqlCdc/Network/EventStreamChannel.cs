@@ -1,14 +1,14 @@
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipelines;
+using System.Linq;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using MySqlCdc.Constants;
-using MySqlCdc.Events;
 using MySqlCdc.Packets;
 using MySqlCdc.Protocol;
-using Pipelines.Sockets.Unofficial;
 
 namespace MySqlCdc.Network
 {
@@ -21,14 +21,15 @@ namespace MySqlCdc.Network
                 SingleWriter = true
             });
 
-        private readonly EventDeserializer _eventDeserializer;
-        private readonly IDuplexPipe _duplexPipe;
+        private readonly IEventStreamReader _eventStreamReader;
+        private readonly PipeReader _pipeReader;
+        private List<PacketSegment> _multipacket;
 
-        public EventStreamChannel(EventDeserializer eventDeserializer, Stream stream)
+        public EventStreamChannel(IEventStreamReader eventStreamReader, Stream stream)
         {
-            _eventDeserializer = eventDeserializer;
-            _duplexPipe = StreamConnection.GetDuplex(stream);
-            _ = Task.Run(async () => await ReceivePacketsAsync(_duplexPipe.Input));
+            _eventStreamReader = eventStreamReader;
+            _pipeReader = PipeReader.Create(stream);
+            _ = Task.Run(async () => await ReceivePacketsAsync(_pipeReader));
         }
 
         private async Task ReceivePacketsAsync(PipeReader reader)
@@ -46,19 +47,15 @@ namespace MySqlCdc.Network
 
                     // Make sure the packet fits in the buffer
                     // See: https://mariadb.com/kb/en/library/0-packet/
-                    var header = buffer.Slice(0, PacketConstants.HeaderSize).ToArray();
-                    var bodySize = header[0] + (header[1] << 8) + (header[2] << 16);
+                    var packetReader = new PacketReader(buffer.Slice(0, PacketConstants.HeaderSize));
+                    var bodySize = packetReader.ReadInt(3);
                     var packetSize = PacketConstants.HeaderSize + bodySize;
-
-                    // TODO: Implement packet splitting
-                    if (bodySize == PacketConstants.MaxBodyLength)
-                        throw new Exception("Packet splitting is currently not supported");
 
                     if (buffer.Length < packetSize)
                         break;
 
                     // Process packet and repeat in case there are more packets in the buffer
-                    await OnReceivePacket(buffer.Slice(0, packetSize));
+                    await OnReceivePacket(buffer.Slice(PacketConstants.HeaderSize, bodySize));
                     buffer = buffer.Slice(buffer.GetPosition(packetSize));
                 }
 
@@ -71,34 +68,33 @@ namespace MySqlCdc.Network
             await reader.CompleteAsync();
         }
 
-        private async Task OnReceivePacket(ReadOnlySequence<byte> sequence)
+        private async Task OnReceivePacket(ReadOnlySequence<byte> buffer)
         {
-            var buffer = sequence.Slice(PacketConstants.HeaderSize);
-            try
+            if (_multipacket != null || buffer.Length == PacketConstants.MaxBodyLength)
             {
-                await OnReceiveStreamPacket(buffer);
-            }
-            catch (Exception e)
-            {
-                // We stop replication if deserialize throws an exception 
-                // Since a derived database may end up in an inconsistent state.
-                await _channel.Writer.WriteAsync(new ExceptionPacket(e));
-            }
-        }
+                var array = new byte[buffer.Length];
+                buffer.CopyTo(array);
 
-        private async Task OnReceiveStreamPacket(ReadOnlySequence<byte> buffer)
-        {
-            var packetReader = new PacketReader(buffer);
-            var status = packetReader.ReadInt(1);
-            buffer = buffer.Slice(1);
+                if (_multipacket == null)
+                {
+                    _multipacket = new List<PacketSegment> { new PacketSegment(array) };
+                }
+                else
+                {
+                    var lastNode = _multipacket.Last();
+                    _multipacket.Add(lastNode.Add(array));
+                }
 
-            // Network stream has 3 possible status types.
-            IPacket packet = (ResponseType)status switch
-            {
-                ResponseType.Error => new ErrorPacket(buffer),
-                ResponseType.EndOfFile => new EndOfFilePacket(buffer),
-                _ => _eventDeserializer.DeserializeEvent(buffer)
-            };
+                if (buffer.Length == PacketConstants.MaxBodyLength)
+                    return;
+
+                var firstSegment = _multipacket.First();
+                var lastSegment = _multipacket.Last();
+                buffer = new ReadOnlySequence<byte>(firstSegment, 0, lastSegment, lastSegment.Memory.Length);
+                _multipacket = null;
+            }
+
+            var packet = await _eventStreamReader.ReadPacketAsync(buffer);
             await _channel.Writer.WriteAsync(packet);
         }
 
