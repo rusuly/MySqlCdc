@@ -82,7 +82,7 @@ namespace MySqlCdc.Commands
         {
             byte[] result = new byte[array1.Length];
             for (int i = 0; i < result.Length; i++)
-                result[i] = (byte)(array1[i] ^ array2[i]);
+                result[i] = (byte)(array1[i] ^ (array2[i % array2.Length]));
             return result;
         }
     }

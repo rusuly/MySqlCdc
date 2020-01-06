@@ -14,7 +14,7 @@ namespace MySqlCdc
 {
     public class BinlogFileReader
     {
-        private static byte[] MagicNumbner = new byte[] { 0xfe, 0x62, 0x69, 0x6e };
+        private static byte[] MagicNumber = new byte[] { 0xfe, 0x62, 0x69, 0x6e };
         private readonly Channel<IPacket> _channel = Channel.CreateBounded<IPacket>(
             new BoundedChannelOptions(100)
             {
@@ -30,7 +30,7 @@ namespace MySqlCdc
             byte[] header = new byte[EventConstants.FirstEventPosition];
             stream.Read(header, 0, EventConstants.FirstEventPosition);
 
-            if (!header.SequenceEqual(MagicNumbner))
+            if (!header.SequenceEqual(MagicNumber))
                 throw new InvalidOperationException("Invalid binary log file header");
 
             _eventDeserializer = eventDeserializer;

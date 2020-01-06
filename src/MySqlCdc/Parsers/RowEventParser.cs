@@ -2,7 +2,6 @@ using System;
 using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using MySqlCdc.Constants;
 using MySqlCdc.Events;
 using MySqlCdc.Protocol;
@@ -50,7 +49,7 @@ namespace MySqlCdc.Parsers
                 throw new InvalidOperationException("No preceding TableMapEvent event was found for the row event. You possibly started replication in the middle of logical event group.");
 
             var row = new object[tableMap.ColumnTypes.Length];
-            var cellsNumber = columnsPresent.Cast<bool>().Where(x => x).Count();
+            var cellsNumber = GetBitsNumber(columnsPresent);
             var nullBitmap = reader.ReadBitmap(cellsNumber);
 
             for (int i = 0, skippedColumns = 0; i < tableMap.ColumnTypes.Length; i++)
@@ -284,6 +283,17 @@ namespace MySqlCdc.Parsers
         {
             long result = value >> totalSize - (startIndex + length);
             return (int)(result & ((1 << length) - 1));
+        }
+
+        private int GetBitsNumber(BitArray bitmap)
+        {
+            int value = 0;
+            for (int i = 0; i < bitmap.Length; i++)
+            {
+                if (bitmap[i])
+                    value++;
+            }
+            return value;
         }
 
         private void GetActualStringType(ref int columnType, ref int metadata, ref int length)

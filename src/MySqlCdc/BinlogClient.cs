@@ -55,13 +55,13 @@ namespace MySqlCdc
 
             if (_options.UseSsl)
             {
-                var command = new SslRequestCommand(handshake.ServerCollation);
+                var command = new SslRequestCommand(PacketConstants.Utf8Mb4GeneralCi);
                 await _channel.WriteCommandAsync(command, sequenceNumber);
                 sequenceNumber += 1;
                 _channel.UpgradeToSsl();
             }
 
-            var authenticateCommand = new AuthenticateCommand(_options, handshake.ServerCollation, handshake.Scramble, handshake.AuthPluginName);
+            var authenticateCommand = new AuthenticateCommand(_options, PacketConstants.Utf8Mb4GeneralCi, handshake.Scramble, handshake.AuthPluginName);
             await _channel.WriteCommandAsync(authenticateCommand, sequenceNumber);
             var packet = await _channel.ReadPacketSlowAsync();
             sequenceNumber += 2;
@@ -170,9 +170,10 @@ namespace MySqlCdc
         {
             var eventStreamReader = new EventStreamReader(_databaseProvider.Deserializer);
             var channel = new EventStreamChannel(eventStreamReader, _channel.Stream);
+            var timeout = _options.HeartbeatInterval.Add(TimeSpan.FromMilliseconds(TimeoutConstants.Delta));
+            
             while (true)
-            {
-                var timeout = _options.HeartbeatInterval.Add(TimeSpan.FromMilliseconds(TimeoutConstants.Delta));
+            {                
                 var packet = await channel.ReadPacketAsync().WithTimeout(timeout, TimeoutConstants.Message);
 
                 if (packet is IBinlogEvent binlogEvent)
