@@ -24,10 +24,17 @@ namespace MySqlCdc.Protocol
         /// </summary>
         public int ReadInt(int length)
         {
+#if NETSTANDARD2_1
+            var reader = new SequenceReader<byte>(_sequence);
+#endif
             int result = 0;
             for (int i = 0; i < length; i++)
             {
+#if NETSTANDARD2_1
+                reader.TryRead(out byte value);
+#else
                 byte value = _sequence.Slice(i, 1).First.Span[0];
+#endif
                 result |= value << (i << 3);
             }
             _sequence = _sequence.Slice(length);
@@ -39,10 +46,17 @@ namespace MySqlCdc.Protocol
         /// </summary>
         public long ReadLong(int length)
         {
+#if NETSTANDARD2_1
+            var reader = new SequenceReader<byte>(_sequence);
+#endif
             long result = 0;
             for (int i = 0; i < length; i++)
             {
+#if NETSTANDARD2_1
+                reader.TryRead(out byte value);
+#else
                 byte value = _sequence.Slice(i, 1).First.Span[0];
+#endif
                 result |= (long)value << (i << 3);
             }
             _sequence = _sequence.Slice(length);
@@ -51,10 +65,17 @@ namespace MySqlCdc.Protocol
 
         public int ReadBigEndianInt(int length)
         {
+#if NETSTANDARD2_1
+            var reader = new SequenceReader<byte>(_sequence);
+#endif
             int result = 0;
             for (int i = 0; i < length; i++)
             {
+#if NETSTANDARD2_1
+                reader.TryRead(out byte value);
+#else
                 byte value = _sequence.Slice(i, 1).First.Span[0];
+#endif
                 result = (result << 8) | (int)value;
             }
             _sequence = _sequence.Slice(length);
@@ -63,10 +84,17 @@ namespace MySqlCdc.Protocol
 
         public long ReadBigEndianLong(int length)
         {
+#if NETSTANDARD2_1
+            var reader = new SequenceReader<byte>(_sequence);
+#endif
             long result = 0;
             for (int i = 0; i < length; i++)
             {
+#if NETSTANDARD2_1
+                reader.TryRead(out byte value);
+#else
                 byte value = _sequence.Slice(i, 1).First.Span[0];
+#endif
                 result = (result << 8) | (long)value;
             }
             _sequence = _sequence.Slice(length);
