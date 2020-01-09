@@ -1,4 +1,3 @@
-using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using MySqlCdc.Events;
@@ -13,20 +12,19 @@ namespace MySqlCdc.Parsers
         {
         }
 
-        public override IBinlogEvent ParseEvent(EventHeader header, ReadOnlySequence<byte> buffer)
+        public override IBinlogEvent ParseEvent(EventHeader header, ref PacketReader reader)
         {
-            var reader = new PacketReader(buffer);
-            var shared = ParseHeader(reader);
+            var shared = ParseHeader(ref reader);
 
             var columnsBeforeUpdate = reader.ReadBitmap(shared.columnsNumber);
             var columnsAfterUpdate = reader.ReadBitmap(shared.columnsNumber);
 
-            var rows = ParseUpdateRows(reader, shared.tableId, columnsBeforeUpdate, columnsAfterUpdate);
+            var rows = ParseUpdateRows(ref reader, shared.tableId, columnsBeforeUpdate, columnsAfterUpdate);
             return new UpdateRowsEvent(header, shared.tableId, shared.flags, shared.columnsNumber, columnsBeforeUpdate, columnsAfterUpdate, rows);
         }
 
         private IReadOnlyList<UpdateColumnData> ParseUpdateRows(
-            PacketReader reader,
+            ref PacketReader reader,
             long tableId,
             BitArray columnsBeforeUpdate,
             BitArray columnsAfterUpdate)
@@ -34,8 +32,8 @@ namespace MySqlCdc.Parsers
             var rows = new List<UpdateColumnData>();
             while (!reader.IsEmpty())
             {
-                var rowBeforeUpdate = ParseRow(reader, tableId, columnsBeforeUpdate);
-                var rowAfterUpdate = ParseRow(reader, tableId, columnsAfterUpdate);
+                var rowBeforeUpdate = ParseRow(ref reader, tableId, columnsBeforeUpdate);
+                var rowAfterUpdate = ParseRow(ref reader, tableId, columnsAfterUpdate);
 
                 rows.Add(new UpdateColumnData(rowBeforeUpdate, rowAfterUpdate));
             }

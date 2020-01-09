@@ -1,4 +1,3 @@
-using System.Buffers;
 using MySqlCdc.Events;
 using MySqlCdc.Protocol;
 
@@ -6,10 +5,8 @@ namespace MySqlCdc.Parsers
 {
     public class IntVarEventParser : IEventParser
     {
-        public IBinlogEvent ParseEvent(EventHeader header, ReadOnlySequence<byte> buffer)
+        public IBinlogEvent ParseEvent(EventHeader header, ref PacketReader reader)
         {
-            var reader = new PacketReader(buffer);
-
             var type = reader.ReadInt(1);
             var value = reader.ReadLong(8);
 

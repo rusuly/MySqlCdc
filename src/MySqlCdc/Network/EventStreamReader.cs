@@ -1,6 +1,5 @@
 using System;
 using System.Buffers;
-using System.Threading.Tasks;
 using MySqlCdc.Constants;
 using MySqlCdc.Events;
 using MySqlCdc.Packets;
@@ -20,7 +19,7 @@ namespace MySqlCdc.Network
             _eventDeserializer = eventDeserializer;
         }
 
-        public async Task<IPacket> ReadPacketAsync(ReadOnlySequence<byte> buffer)
+        public IPacket ReadPacket(ReadOnlySequence<byte> buffer)
         {
             var packetReader = new PacketReader(buffer);
             var status = packetReader.ReadInt(1);

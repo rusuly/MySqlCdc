@@ -12,8 +12,10 @@ namespace MySqlCdc.Network
 
         public PacketSegment Add(ReadOnlyMemory<byte> memory)
         {
-            var segment = new PacketSegment(memory);
-            segment.RunningIndex = RunningIndex + this.Memory.Length;
+            var segment = new PacketSegment(memory)
+            {
+                RunningIndex = this.RunningIndex + this.Memory.Length
+            };
             Next = segment;
             return segment;
         }

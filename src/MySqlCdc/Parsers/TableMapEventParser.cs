@@ -1,4 +1,3 @@
-using System.Buffers;
 using MySqlCdc.Constants;
 using MySqlCdc.Events;
 using MySqlCdc.Protocol;
@@ -7,10 +6,8 @@ namespace MySqlCdc.Parsers
 {
     public class TableMapEventParser : IEventParser
     {
-        public IBinlogEvent ParseEvent(EventHeader header, ReadOnlySequence<byte> buffer)
+        public IBinlogEvent ParseEvent(EventHeader header, ref PacketReader reader)
         {
-            var reader = new PacketReader(buffer);
-
             var tableId = reader.ReadLong(6);
 
             // Reserved bytes and database name length 
@@ -25,7 +22,7 @@ namespace MySqlCdc.Parsers
             var columnTypes = reader.ReadByteArraySlow(columnsNumber);
 
             var metadataLength = (int)reader.ReadLengthEncodedNumber();
-            var metadata = ParseMetadata(reader, columnTypes);
+            var metadata = ParseMetadata(ref reader, columnTypes);
 
             var nullBitmap = reader.ReadBitmap(columnsNumber);
 
@@ -37,7 +34,7 @@ namespace MySqlCdc.Parsers
             return new TableMapEvent(header, tableId, databaseName, tableName, columnTypes, metadata, nullBitmap);
         }
 
-        private int[] ParseMetadata(PacketReader reader, byte[] columnTypes)
+        private int[] ParseMetadata(ref PacketReader reader, byte[] columnTypes)
         {
             int[] metadata = new int[columnTypes.Length];
             for (int i = 0; i < columnTypes.Length; i++)

@@ -10,13 +10,13 @@ namespace MySqlCdc.Protocol
     /// <summary>
     /// Constructs server reply from byte packet response.
     /// </summary>
-    public class PacketReader
+    public ref struct PacketReader
     {
-        private ReadOnlySequence<byte> _sequence;
+        private SequenceReader<byte> _reader;
 
         public PacketReader(ReadOnlySequence<byte> sequence)
         {
-            _sequence = sequence;
+            _reader = new SequenceReader<byte>(sequence);
         }
 
         /// <summary>
@@ -24,20 +24,12 @@ namespace MySqlCdc.Protocol
         /// </summary>
         public int ReadInt(int length)
         {
-#if NETSTANDARD2_1
-            var reader = new SequenceReader<byte>(_sequence);
-#endif
             int result = 0;
             for (int i = 0; i < length; i++)
             {
-#if NETSTANDARD2_1
-                reader.TryRead(out byte value);
-#else
-                byte value = _sequence.Slice(i, 1).First.Span[0];
-#endif
+                _reader.TryRead(out byte value);
                 result |= value << (i << 3);
             }
-            _sequence = _sequence.Slice(length);
             return result;
         }
 
@@ -46,58 +38,34 @@ namespace MySqlCdc.Protocol
         /// </summary>
         public long ReadLong(int length)
         {
-#if NETSTANDARD2_1
-            var reader = new SequenceReader<byte>(_sequence);
-#endif
             long result = 0;
             for (int i = 0; i < length; i++)
             {
-#if NETSTANDARD2_1
-                reader.TryRead(out byte value);
-#else
-                byte value = _sequence.Slice(i, 1).First.Span[0];
-#endif
+                _reader.TryRead(out byte value);
                 result |= (long)value << (i << 3);
             }
-            _sequence = _sequence.Slice(length);
             return result;
         }
 
         public int ReadBigEndianInt(int length)
         {
-#if NETSTANDARD2_1
-            var reader = new SequenceReader<byte>(_sequence);
-#endif
             int result = 0;
             for (int i = 0; i < length; i++)
             {
-#if NETSTANDARD2_1
-                reader.TryRead(out byte value);
-#else
-                byte value = _sequence.Slice(i, 1).First.Span[0];
-#endif
+                _reader.TryRead(out byte value);
                 result = (result << 8) | (int)value;
             }
-            _sequence = _sequence.Slice(length);
             return result;
         }
 
         public long ReadBigEndianLong(int length)
         {
-#if NETSTANDARD2_1
-            var reader = new SequenceReader<byte>(_sequence);
-#endif
             long result = 0;
             for (int i = 0; i < length; i++)
             {
-#if NETSTANDARD2_1
-                reader.TryRead(out byte value);
-#else
-                byte value = _sequence.Slice(i, 1).First.Span[0];
-#endif
+                _reader.TryRead(out byte value);
                 result = (result << 8) | (long)value;
             }
-            _sequence = _sequence.Slice(length);
             return result;
         }
 
@@ -140,9 +108,9 @@ namespace MySqlCdc.Protocol
         /// </summary>
         public string ReadString(int length)
         {
-            var str = ParseString(_sequence.Slice(0, length));
-            _sequence = _sequence.Slice(length);
-            return str;
+            var sequence = _reader.Sequence.Slice(_reader.Consumed, length);
+            _reader.Advance(length);
+            return ParseString(sequence);
         }
 
         /// <summary>
@@ -150,9 +118,8 @@ namespace MySqlCdc.Protocol
         /// </summary>
         public string ReadStringToEndOfFile()
         {
-            var str = ParseString(_sequence);
-            _sequence = _sequence.Slice(_sequence.End);
-            return str;
+            var sequence = _reader.Sequence.Slice(_reader.Consumed);
+            return ParseString(sequence);
         }
 
         /// <summary>
@@ -160,10 +127,8 @@ namespace MySqlCdc.Protocol
         /// </summary>
         public string ReadNullTerminatedString()
         {
-            var position = _sequence.PositionOf(PacketConstants.NullTerminator);
-            var str = ParseString(_sequence.Slice(0, position.Value));
-            _sequence = _sequence.Slice(_sequence.GetPosition(1, position.Value));
-            return str;
+            _reader.TryReadTo(out ReadOnlySequence<byte> sequence, PacketConstants.NullTerminator);
+            return ParseString(sequence);
         }
 
         /// <summary>
@@ -181,9 +146,9 @@ namespace MySqlCdc.Protocol
         /// </summary>
         public byte[] ReadByteArraySlow(int length)
         {
-            var bytes = _sequence.Slice(0, length).ToArray();
-            _sequence = _sequence.Slice(length);
-            return bytes;
+            var sequence = _reader.Sequence.Slice(_reader.Consumed, length);
+            _reader.Advance(length);
+            return sequence.ToArray();
         }
 
         /// <summary>
@@ -191,25 +156,48 @@ namespace MySqlCdc.Protocol
         /// </summary>
         public BitArray ReadBitmap(int bitsNumber)
         {
-            var bitmapBytes = ReadByteArraySlow((bitsNumber + 7) / 8);
-            return new BitArray(bitmapBytes);
+            var result = new BitArray(bitsNumber);
+            var bytesNumber = (bitsNumber + 7) / 8;
+            for (int i = 0; i < bytesNumber; i++)
+            {
+                _reader.TryRead(out byte value);
+                for (int y = 0; y < 8; y++)
+                {
+                    int index = (i << 3) + y;
+                    if (index == bitsNumber)
+                        break;
+                    result[index] = (value & (1 << y)) > 0;
+                }
+            }
+            return result;
         }
 
         public BitArray ReadBitmapBigEndian(int bitsNumber)
         {
-            var bitmapBytes = ReadByteArraySlow((bitsNumber + 7) / 8);
-            bitmapBytes = bitmapBytes.Reverse().ToArray();
-            return new BitArray(bitmapBytes);
+            var result = new BitArray(bitsNumber);
+            var bytesNumber = (bitsNumber + 7) / 8;
+            for (int i = 0; i < bytesNumber; i++)
+            {
+                _reader.TryRead(out byte value);
+                for (int y = 0; y < 8; y++)
+                {
+                    int index = ((bytesNumber - i - 1) << 3) + y;
+                    if (index >= bitsNumber)
+                        continue;
+                    result[index] = (value & (1 << y)) > 0;
+                }
+            }
+            return result;
         }
 
         public bool IsEmpty()
         {
-            return _sequence.IsEmpty;
+            return _reader.Remaining == 0;
         }
 
         public void Skip(int offset)
         {
-            _sequence = _sequence.Slice(offset);
+            _reader.Advance(offset);
         }
 
         /// <summary>

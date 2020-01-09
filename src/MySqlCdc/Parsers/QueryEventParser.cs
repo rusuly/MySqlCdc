@@ -1,4 +1,3 @@
-using System.Buffers;
 using MySqlCdc.Events;
 using MySqlCdc.Protocol;
 
@@ -6,10 +5,8 @@ namespace MySqlCdc.Parsers
 {
     public class QueryEventParser : IEventParser
     {
-        public IBinlogEvent ParseEvent(EventHeader header, ReadOnlySequence<byte> buffer)
+        public IBinlogEvent ParseEvent(EventHeader header, ref PacketReader reader)
         {
-            var reader = new PacketReader(buffer);
-
             var threadId = reader.ReadLong(4);
             var duration = reader.ReadLong(4);
 

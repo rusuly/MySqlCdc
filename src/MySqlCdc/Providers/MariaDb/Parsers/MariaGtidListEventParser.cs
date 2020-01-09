@@ -1,4 +1,3 @@
-using System.Buffers;
 using System.Collections.Generic;
 using MySqlCdc.Events;
 using MySqlCdc.Parsers;
@@ -8,10 +7,8 @@ namespace MySqlCdc.Providers.MariaDb
 {
     public class MariaGtidListEventParser : IEventParser
     {
-        public IBinlogEvent ParseEvent(EventHeader header, ReadOnlySequence<byte> buffer)
+        public IBinlogEvent ParseEvent(EventHeader header, ref PacketReader reader)
         {
-            var reader = new PacketReader(buffer);
-
             var gtidListLength = reader.ReadLong(4);
 
             var gtidList = new List<string>();

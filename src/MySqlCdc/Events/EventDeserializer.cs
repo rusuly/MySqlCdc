@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using MySqlCdc.Checksum;
 using MySqlCdc.Constants;
 using MySqlCdc.Parsers;
+using MySqlCdc.Protocol;
 
 namespace MySqlCdc.Events
 {
@@ -59,7 +60,8 @@ namespace MySqlCdc.Events
             IBinlogEvent binlogEvent = null;
             if (EventParsers.TryGetValue(eventHeader.EventType, out var eventParser))
             {
-                binlogEvent = eventParser.ParseEvent(eventHeader, eventBuffer);
+                var reader = new PacketReader(eventBuffer);
+                binlogEvent = eventParser.ParseEvent(eventHeader, ref reader);
             }
             else
             {

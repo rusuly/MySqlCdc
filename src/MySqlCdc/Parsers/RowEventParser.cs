@@ -1,5 +1,4 @@
 using System;
-using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using MySqlCdc.Constants;
@@ -25,9 +24,9 @@ namespace MySqlCdc.Parsers
             RowsEventVersion = rowsEventVersion;
         }
 
-        public abstract IBinlogEvent ParseEvent(EventHeader header, ReadOnlySequence<byte> buffer);
+        public abstract IBinlogEvent ParseEvent(EventHeader header, ref PacketReader reader);
 
-        protected (long tableId, int flags, int columnsNumber) ParseHeader(PacketReader reader)
+        protected (long tableId, int flags, int columnsNumber) ParseHeader(ref PacketReader reader)
         {
             var tableId = reader.ReadLong(6);
             var flags = reader.ReadInt(2);
@@ -43,7 +42,7 @@ namespace MySqlCdc.Parsers
             return (tableId, flags, columnsNumber);
         }
 
-        protected ColumnData ParseRow(PacketReader reader, long tableId, BitArray columnsPresent)
+        protected ColumnData ParseRow(ref PacketReader reader, long tableId, BitArray columnsPresent)
         {
             if (!TableMapCache.TryGetValue(tableId, out var tableMap))
                 throw new InvalidOperationException("No preceding TableMapEvent event was found for the row event. You possibly started replication in the middle of logical event group.");
@@ -72,19 +71,19 @@ namespace MySqlCdc.Parsers
                     {
                         GetActualStringType(ref columnType, ref metadata, ref length);
                     }
-                    row[i] = ParseCell(reader, columnType, metadata, length);
+                    row[i] = ParseCell(ref reader, columnType, metadata, length);
                 }
             }
             return new ColumnData(row);
         }
 
-        private object ParseCell(PacketReader reader, int columnType, int metadata, int length)
+        private object ParseCell(ref PacketReader reader, int columnType, int metadata, int length)
         {
             return (ColumnType)columnType switch
             {
                 /* Numeric types. The only place where numbers can be negative */
-                ColumnType.DECIMAL => ParseDecimal(reader, metadata),
-                ColumnType.BIT => ParseBit(reader, metadata),
+                ColumnType.DECIMAL => ParseDecimal(ref reader, metadata),
+                ColumnType.BIT => ParseBit(ref reader, metadata),
                 ColumnType.TINY => (reader.ReadInt(1) << 24) >> 24,
                 ColumnType.SHORT => (reader.ReadInt(2) << 16) >> 16,
                 ColumnType.INT24 => (reader.ReadInt(3) << 8) >> 8,
@@ -94,65 +93,65 @@ namespace MySqlCdc.Parsers
                 ColumnType.DOUBLE => BitConverter.ToDouble(BitConverter.GetBytes(reader.ReadLong(8)), 0),
 
                 /* Variable strings, includes varchar  varbinary */
-                ColumnType.VARCHAR => ParseVariableString(reader, metadata),
-                ColumnType.VAR_STRING => ParseVariableString(reader, metadata),
+                ColumnType.VARCHAR => ParseVariableString(ref reader, metadata),
+                ColumnType.VAR_STRING => ParseVariableString(ref reader, metadata),
 
                 /* CHAR(BINARY), ENUM, SET types share same metadata */
-                ColumnType.STRING => ParseFixedString(reader, length),
+                ColumnType.STRING => ParseFixedString(ref reader, length),
                 ColumnType.ENUM => reader.ReadInt(length),
                 ColumnType.SET => reader.ReadLong(length),
 
                 /* Date and time types */
                 ColumnType.YEAR => 1900 + reader.ReadInt(1),
-                ColumnType.DATE => ParseDate(reader),
+                ColumnType.DATE => ParseDate(ref reader),
 
-                ColumnType.TIME => ParseTime(reader),
-                ColumnType.TIMESTAMP => ParseTimeStamp(reader),
-                ColumnType.DATETIME => ParseDateTime(reader),
+                ColumnType.TIME => ParseTime(ref reader),
+                ColumnType.TIMESTAMP => ParseTimeStamp(ref reader),
+                ColumnType.DATETIME => ParseDateTime(ref reader),
 
-                ColumnType.TIME2 => ParseTime2(reader, metadata),
-                ColumnType.TIMESTAMP2 => ParseTimeStamp2(reader, metadata),
-                ColumnType.DATETIME2 => ParseDateTime2(reader, metadata),
+                ColumnType.TIME2 => ParseTime2(ref reader, metadata),
+                ColumnType.TIMESTAMP2 => ParseTimeStamp2(ref reader, metadata),
+                ColumnType.DATETIME2 => ParseDateTime2(ref reader, metadata),
 
                 /* Blob types. MariaDB always creates BLOB for first three */
-                ColumnType.TINY_BLOB => ParseBlob(reader, metadata),
-                ColumnType.MEDIUM_BLOB => ParseBlob(reader, metadata),
-                ColumnType.LONG_BLOB => ParseBlob(reader, metadata),
-                ColumnType.BLOB => ParseBlob(reader, metadata),
+                ColumnType.TINY_BLOB => ParseBlob(ref reader, metadata),
+                ColumnType.MEDIUM_BLOB => ParseBlob(ref reader, metadata),
+                ColumnType.LONG_BLOB => ParseBlob(ref reader, metadata),
+                ColumnType.BLOB => ParseBlob(ref reader, metadata),
 
                 /* MySQL-specific data types */
-                ColumnType.GEOMETRY => ParseBlob(reader, metadata),
-                ColumnType.JSON => ParseBlob(reader, metadata),
+                ColumnType.GEOMETRY => ParseBlob(ref reader, metadata),
+                ColumnType.JSON => ParseBlob(ref reader, metadata),
 
                 _ => throw new InvalidOperationException($"Column type is not supported")
             };
         }
 
-        private BitArray ParseBit(PacketReader reader, int metadata)
+        private BitArray ParseBit(ref PacketReader reader, int metadata)
         {
             int length = (metadata >> 8) * 8 + (metadata & 0xFF);
             return reader.ReadBitmapBigEndian(length);
         }
 
-        private object ParseDecimal(PacketReader reader, int metadata)
+        private object ParseDecimal(ref PacketReader reader, int metadata)
         {
             // TODO: Implement Decimal type
             throw new NotImplementedException("Parsing Decimal type is not supported");
         }
 
-        private string ParseVariableString(PacketReader reader, int metadata)
+        private string ParseVariableString(ref PacketReader reader, int metadata)
         {
             var length = metadata > 255 ? reader.ReadInt(2) : reader.ReadInt(1);
             return reader.ReadString(length);
         }
 
-        private string ParseFixedString(PacketReader reader, int length)
+        private string ParseFixedString(ref PacketReader reader, int length)
         {
             length = length > 255 ? reader.ReadInt(2) : reader.ReadInt(1);
             return reader.ReadString(length);
         }
 
-        private DateTime? ParseDate(PacketReader reader)
+        private DateTime? ParseDate(ref PacketReader reader)
         {
             // Bits 1-5 store the day. Bits 6-9 store the month. The remaining bits store the year.
             int value = reader.ReadInt(3);
@@ -166,7 +165,7 @@ namespace MySqlCdc.Parsers
             return new DateTime(year, month, day);
         }
 
-        private TimeSpan ParseTime(PacketReader reader)
+        private TimeSpan ParseTime(ref PacketReader reader)
         {
             int value = reader.ReadInt(3);
             int seconds = value % 100;
@@ -177,13 +176,13 @@ namespace MySqlCdc.Parsers
             return new TimeSpan(hours, minutes, seconds);
         }
 
-        private DateTimeOffset ParseTimeStamp(PacketReader reader)
+        private DateTimeOffset ParseTimeStamp(ref PacketReader reader)
         {
             long seconds = reader.ReadLong(4);
             return DateTimeOffset.FromUnixTimeSeconds(seconds);
         }
 
-        private DateTime? ParseDateTime(PacketReader reader)
+        private DateTime? ParseDateTime(ref PacketReader reader)
         {
             long value = reader.ReadLong(8);
             int second = (int)value % 100;
@@ -204,7 +203,7 @@ namespace MySqlCdc.Parsers
             return new DateTime(year, month, day, hour, minute, second);
         }
 
-        private TimeSpan ParseTime2(PacketReader reader, int metadata)
+        private TimeSpan ParseTime2(ref PacketReader reader, int metadata)
         {
             //  See https://dev.mysql.com/doc/internals/en/date-and-time-data-type-representation.html
             //  1 bit sign    (1 = non-negative, 0 = negative)
@@ -216,7 +215,7 @@ namespace MySqlCdc.Parsers
             // 24 bits = 3 bytes
 
             long value = reader.ReadBigEndianLong(3);
-            int millisecond = ParseFractionalPart(reader, metadata) / 1000;
+            int millisecond = ParseFractionalPart(ref reader, metadata) / 1000;
 
             int hours = GetBitSliceValue(value, 2, 10, 24);
             int minutes = GetBitSliceValue(value, 12, 6, 24);
@@ -225,16 +224,16 @@ namespace MySqlCdc.Parsers
             return new TimeSpan(0, hours, minutes, seconds, millisecond);
         }
 
-        private DateTimeOffset ParseTimeStamp2(PacketReader reader, int metadata)
+        private DateTimeOffset ParseTimeStamp2(ref PacketReader reader, int metadata)
         {
             long seconds = reader.ReadBigEndianLong(4);
-            int millisecond = ParseFractionalPart(reader, metadata) / 1000;
+            int millisecond = ParseFractionalPart(ref reader, metadata) / 1000;
             long timestamp = seconds * 1000 + millisecond;
 
             return DateTimeOffset.FromUnixTimeMilliseconds(timestamp);
         }
 
-        private DateTime? ParseDateTime2(PacketReader reader, int metadata)
+        private DateTime? ParseDateTime2(ref PacketReader reader, int metadata)
         {
             //  See https://dev.mysql.com/doc/internals/en/date-and-time-data-type-representation.html
             //  1 bit  sign           (1 = non-negative, 0 = negative)
@@ -247,7 +246,7 @@ namespace MySqlCdc.Parsers
             // 40 bits = 5 bytes
 
             long value = reader.ReadBigEndianLong(5);
-            int millisecond = ParseFractionalPart(reader, metadata) / 1000;
+            int millisecond = ParseFractionalPart(ref reader, metadata) / 1000;
 
             int yearMonth = GetBitSliceValue(value, 1, 17, 40);
             int year = yearMonth / 13;
@@ -263,7 +262,7 @@ namespace MySqlCdc.Parsers
             return new DateTime(year, month, day, hour, minute, second, millisecond);
         }
 
-        private int ParseFractionalPart(PacketReader reader, int metadata)
+        private int ParseFractionalPart(ref PacketReader reader, int metadata)
         {
             int length = (metadata + 1) / 2;
             if (length == 0)
@@ -273,7 +272,7 @@ namespace MySqlCdc.Parsers
             return fraction * (int)Math.Pow(100, 3 - length);
         }
 
-        private byte[] ParseBlob(PacketReader reader, int metadata)
+        private byte[] ParseBlob(ref PacketReader reader, int metadata)
         {
             var length = reader.ReadInt(metadata);
             return reader.ReadByteArraySlow(length);

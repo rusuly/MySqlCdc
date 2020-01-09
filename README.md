@@ -1,5 +1,5 @@
 # MySqlCdc
-MySql binlog Change Data Capture (CDC) connector for .NET Core
+MySql binlog Change Data Capture (CDC) connector for .NET and .NET Core
 
 Acts as MySql replication client streaming binlog events in real-time.
 
@@ -99,7 +99,7 @@ A typical transaction has the following structure.
 3. `XidEvent` indicating commit of the transaction.
 
 In some cases you will need to parse binlog files offline from file system.
-This can be done using BinlogFileReader class.
+This can be done using `BinlogFileReader` class.
 ```csharp
 static async Task Start()
 {

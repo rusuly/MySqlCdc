@@ -47,8 +47,7 @@ namespace MySqlCdc.Network
 
                     // Make sure the packet fits in the buffer
                     // See: https://mariadb.com/kb/en/library/0-packet/
-                    var packetReader = new PacketReader(buffer.Slice(0, PacketConstants.HeaderSize));
-                    var bodySize = packetReader.ReadInt(3);
+                    var bodySize = GetBodySize(buffer);
                     var packetSize = PacketConstants.HeaderSize + bodySize;
 
                     if (buffer.Length < packetSize)
@@ -68,7 +67,14 @@ namespace MySqlCdc.Network
             await reader.CompleteAsync();
         }
 
-        private async Task OnReceivePacket(ReadOnlySequence<byte> buffer)
+        private int GetBodySize(ReadOnlySequence<byte> buffer)
+        {
+            var packetReader = new PacketReader(buffer.Slice(0, PacketConstants.HeaderSize));
+            var bodySize = packetReader.ReadInt(3);
+            return bodySize;
+        }
+
+        private async ValueTask OnReceivePacket(ReadOnlySequence<byte> buffer)
         {
             if (_multipacket != null || buffer.Length == PacketConstants.MaxBodyLength)
             {
@@ -94,7 +100,7 @@ namespace MySqlCdc.Network
                 _multipacket = null;
             }
 
-            var packet = await _eventStreamReader.ReadPacketAsync(buffer);
+            var packet = _eventStreamReader.ReadPacket(buffer);
             await _channel.Writer.WriteAsync(packet);
         }
 

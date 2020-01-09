@@ -1,4 +1,3 @@
-using System.Buffers;
 using System.Text;
 using MySqlCdc.Events;
 using MySqlCdc.Parsers;
@@ -8,10 +7,8 @@ namespace MySqlCdc.Providers.MySql
 {
     public class MySqlGtidEventParser : IEventParser
     {
-        public IBinlogEvent ParseEvent(EventHeader header, ReadOnlySequence<byte> buffer)
+        public IBinlogEvent ParseEvent(EventHeader header, ref PacketReader reader)
         {
-            var reader = new PacketReader(buffer);
-
             var flags = reader.ReadInt(1);
             var sourceId = reader.ReadByteArraySlow(16);
             var transactionId = reader.ReadLong(8);

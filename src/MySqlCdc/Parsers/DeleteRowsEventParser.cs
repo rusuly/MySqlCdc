@@ -1,4 +1,3 @@
-using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using MySqlCdc.Events;
@@ -13,23 +12,22 @@ namespace MySqlCdc.Parsers
         {
         }
 
-        public override IBinlogEvent ParseEvent(EventHeader header, ReadOnlySequence<byte> buffer)
+        public override IBinlogEvent ParseEvent(EventHeader header, ref PacketReader reader)
         {
-            var reader = new PacketReader(buffer);
-            var shared = ParseHeader(reader);
+            var shared = ParseHeader(ref reader);
 
             var columnsPresent = reader.ReadBitmap(shared.columnsNumber);
-            var rows = ParseDeleteRows(reader, shared.tableId, columnsPresent);
+            var rows = ParseDeleteRows(ref reader, shared.tableId, columnsPresent);
 
             return new DeleteRowsEvent(header, shared.tableId, shared.flags, shared.columnsNumber, columnsPresent, rows);
         }
 
-        private IReadOnlyList<ColumnData> ParseDeleteRows(PacketReader reader, long tableId, BitArray columnsPresent)
+        private IReadOnlyList<ColumnData> ParseDeleteRows(ref PacketReader reader, long tableId, BitArray columnsPresent)
         {
             var rows = new List<ColumnData>();
             while (!reader.IsEmpty())
             {
-                rows.Add(ParseRow(reader, tableId, columnsPresent));
+                rows.Add(ParseRow(ref reader, tableId, columnsPresent));
             }
             return rows;
         }

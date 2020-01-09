@@ -1,4 +1,3 @@
-using System.Buffers;
 using MySqlCdc.Constants;
 using MySqlCdc.Events;
 using MySqlCdc.Protocol;
@@ -7,10 +6,8 @@ namespace MySqlCdc.Parsers
 {
     public class FormatDescriptionEventParser : IEventParser
     {
-        public IBinlogEvent ParseEvent(EventHeader header, ReadOnlySequence<byte> buffer)
+        public IBinlogEvent ParseEvent(EventHeader header, ref PacketReader reader)
         {
-            var reader = new PacketReader(buffer);
-
             var binlogVersion = reader.ReadInt(2);
             var serverVersion = reader.ReadString(50).Trim((char)0);
 

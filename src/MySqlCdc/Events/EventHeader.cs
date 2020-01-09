@@ -14,12 +14,12 @@ namespace MySqlCdc.Events
         /// <summary>
         /// Provides creation time in seconds from Unix.
         /// </summary>
-        public long Timestamp { get; private set; }
-        public EventType EventType { get; private set; }
-        public long ServerId { get; private set; }
-        public long EventLength { get; private set; }
-        public long NextEventPosition { get; private set; }
-        public int EventFlags { get; private set; }
+        public long Timestamp { get; }
+        public EventType EventType { get; }
+        public long ServerId { get; }
+        public long EventLength { get; }
+        public long NextEventPosition { get; }
+        public int EventFlags { get; }
 
         public EventHeader(ReadOnlySequence<byte> sequence)
         {
