@@ -9,7 +9,7 @@ namespace MySqlCdc.Tests.Network
     public class EventStreamChannelTests
     {
         [Fact]
-        public async Task Test_SplitPacket_Combined()
+        public async Task Test_LargeSplitPacket_Combined()
         {
             using var stream = new MemoryStream();
             int lastPacketLength = 150;

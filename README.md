@@ -1,5 +1,5 @@
 # MySqlCdc
-MySql binlog Change Data Capture (CDC) connector for .NET and .NET Core
+MySql binlog Change Data Capture (CDC) connector for .NET
 
 Acts as MySql replication client streaming binlog events in real-time.
 
@@ -126,9 +126,9 @@ static async Task Start()
 
   | MySQL Type         | .NET type            |
   | ------------------ |:--------------------:|
-  | DECIMAL            | Not supported ❌     |
-  | GEOMETRY           | Not supported ❌     |
-  | JSON (MySQL)       | Not supported ❌     |
+  | DECIMAL            | ❌ Not supported     |
+  | GEOMETRY           | ❌ Not supported     |
+  | JSON (MySQL)       | ❌ Not supported     |
   | JSON (MariaDB)     | byte[]               |
   | BIT                | BitArray             |
   | TINY (tinyint)     | int                  |
@@ -163,13 +163,13 @@ MySqlCdc supports both MariaDB & MySQL server.
   | MariaDB  | Status                   |
   | -------- |:------------------------:|
   | 10.3     | Did not verify           |
-  | 10.4     | Supported ✅             |
+  | 10.4     | ✅ Supported             |
 
   | MySQL    | Status                   |
   | -------- |:------------------------:|
-  | 5.6      | Did not verify           |
-  | 5.7      | Supported ✅             |
-  | 8.0      | Supported ✅             |
+  | 5.6      | ✅ Supported             |
+  | 5.7      | ✅ Supported             |
+  | 8.0      | ✅ Supported             |
 
 ## Info
 The project is based on [mysql-binlog-connector-java](https://github.com/shyiko/mysql-binlog-connector-java) library, MariaDB and MySQL  documentation.
