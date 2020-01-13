@@ -8,7 +8,7 @@ Designed for reactive push-model applications, event sourcing or derived data sy
 NuGet feed: [MySqlCdc](https://www.nuget.org/packages/MySqlCdc)
 
 ## Warnings
-Be carefull when working with binary log event streaming.
+Be careful when working with binary log event streaming.
 - Binlog stream includes changes made to all databases on the master server including sql queries with sensitive information and you may leak data from the databases. Consider deploying your database to an isolated instance.
 - Binlog is an append-only file. It includes changes for databases/tables that you deleted and then recreated. Make sure you don't replay the phantom events in your application.
 
@@ -17,12 +17,12 @@ Please note the lib currently has the following limitations:
 - Automatic failover is not supported.
 - Multi-source replication & multi-master topology setup are not supported.
 - Supported auth plugins are `mysql_native_password` and `caching_sha2_password`.
-- Currently the library doesn't support SSL encryption.
+- Currently, the library doesn't support SSL encryption.
 
 ## Prerequisites
 Please make sure the following requirements are met:
 1. The user is granted `REPLICATION SLAVE`, `REPLICATION CLIENT` privileges.
-2. Binary logging must be enabled. The following settings must be configured on master server:
+2. Binary logging must be enabled. The following settings must be configured on the master server:
 ```conf
 binlog_format=row
 binlog_row_image=full
@@ -98,7 +98,7 @@ A typical transaction has the following structure.
   - One or many `DeleteRowsEvent` events.
 3. `XidEvent` indicating commit of the transaction.
 
-In some cases you will need to parse binlog files offline from file system.
+In some cases you will need to parse binlog files offline from the file system.
 This can be done using `BinlogFileReader` class.
 ```csharp
 static async Task Start()
@@ -153,8 +153,8 @@ static async Task Start()
   | BLOB types         | byte[]               |
 
 - Invalid DATE, DATETIME, DATETIME2 values(0000-00-00) are parsed as DateTime null.
-- TIME2, DATETIME2, TIMESTAMP2 will loose microseconds when converting to .NET types.
-- The lib doesn't distinguish between unsigned and signed. Client should cast to unsigned manually.
+- TIME2, DATETIME2, TIMESTAMP2 will lose microseconds when converting to .NET types.
+- The lib doesn't distinguish between unsigned and signed. The client should cast to unsigned manually.
 - DECIMAL, JSON, GEOMETRY types are not supported now.
 
 ## Supported versions
@@ -177,9 +177,9 @@ The project is based on [mysql-binlog-connector-java](https://github.com/shyiko/
 Data streaming is optimized & based on [System.IO.Pipelines](https://www.nuget.org/packages/System.IO.Pipelines/) as described in [series of posts](https://blog.marcgravell.com/2018/07/pipe-dreams-part-1.html) by Marc Gravell.
 
 ## Q&A
-Are uncommited changes written to binlog?
-- If you make [transactional changes](https://dev.mysql.com/doc/refman/5.7/en/replication-features-transactions.html) binlog will only include commited transactions in their commit order to provide consistency.
-- If you make non-transactional changes binlog will include changes from uncommited transactions even if the transactions are rolled back.
+Are uncommitted changes written to binlog?
+- If you make [transactional changes](https://dev.mysql.com/doc/refman/5.7/en/replication-features-transactions.html) binlog will only include committed transactions in their commit order to provide consistency.
+- If you make non-transactional changes binlog will include changes from uncommitted transactions even if the transactions are rolled back.
 
 ## License
 The library is provided under the [MIT License](LICENSE).
