@@ -1,6 +1,8 @@
 using System;
+using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using MySqlCdc.Constants;
 using MySqlCdc.Events;
 using MySqlCdc.Protocol;
@@ -15,6 +17,8 @@ namespace MySqlCdc.Parsers
     /// </summary>
     public abstract class RowEventParser : IEventParser
     {
+        private static readonly int[] CompressedBytes = new int[] { 0, 1, 1, 2, 2, 3, 3, 4, 4, 4 };
+
         protected int RowsEventVersion { get; }
         protected Dictionary<long, TableMapEvent> TableMapCache { get; }
 
@@ -82,7 +86,6 @@ namespace MySqlCdc.Parsers
             return (ColumnType)columnType switch
             {
                 /* Numeric types. The only place where numbers can be negative */
-                ColumnType.DECIMAL => ParseDecimal(ref reader, metadata),
                 ColumnType.BIT => ParseBit(ref reader, metadata),
                 ColumnType.TINY => (reader.ReadInt(1) << 24) >> 24,
                 ColumnType.SHORT => (reader.ReadInt(2) << 16) >> 16,
@@ -91,6 +94,7 @@ namespace MySqlCdc.Parsers
                 ColumnType.LONGLONG => reader.ReadLong(8),
                 ColumnType.FLOAT => BitConverter.ToSingle(BitConverter.GetBytes(reader.ReadInt(4)), 0),
                 ColumnType.DOUBLE => BitConverter.ToDouble(BitConverter.GetBytes(reader.ReadLong(8)), 0),
+                ColumnType.NEWDECIMAL => ParseNewDecimal(ref reader, metadata),
 
                 /* Variable strings, includes varchar  varbinary */
                 ColumnType.VARCHAR => ParseVariableString(ref reader, metadata),
@@ -133,10 +137,59 @@ namespace MySqlCdc.Parsers
             return reader.ReadBitmapBigEndian(length);
         }
 
-        private object ParseDecimal(ref PacketReader reader, int metadata)
+        private object ParseNewDecimal(ref PacketReader reader, int metadata)
         {
-            // TODO: Implement Decimal type
-            throw new NotImplementedException("Parsing Decimal type is not supported");
+            // See: https://github.com/noplay/python-mysql-replication/blob/511b42c8ac2c1682a6e2fd4d6691658245b57987/pymysqlreplication/row_event.py#L347
+            const int digitsPerInt = 9;
+
+            int precision = metadata & 0xFF;
+            int scale = metadata >> 8;
+            int integral = precision - scale;
+
+            int uncompressedIntegral = integral / digitsPerInt;
+            int uncompressedFractional = scale / digitsPerInt;
+            int compressedIntegral = integral - (uncompressedIntegral * digitsPerInt);
+            int compressedFractional = scale - (uncompressedFractional * digitsPerInt);
+            int length =
+                (uncompressedIntegral << 2) + CompressedBytes[compressedIntegral] +
+                (uncompressedFractional << 2) + CompressedBytes[compressedFractional];
+
+            byte[] value = reader.ReadByteArraySlow(length);
+            var result = new StringBuilder();
+
+            bool negative = (value[0] & 0x80) == 0;
+            value[0] ^= 0x80;
+
+            if (negative)
+            {
+                result.Append("-");
+                for (int i = 0; i < value.Length; i++)
+                    value[i] ^= 0xFF;
+            }
+
+            var buffer = new PacketReader(new ReadOnlySequence<byte>(value));
+            
+            int size = CompressedBytes[compressedIntegral];
+            if (size > 0)
+            {
+                result.Append(buffer.ReadBigEndianInt(size));
+            }
+            for (int i = 0; i < uncompressedIntegral; i++)
+            {
+                result.Append(buffer.ReadBigEndianInt(4).ToString("D9"));
+            }
+            result.Append(".");
+
+            size = CompressedBytes[compressedFractional];
+            for (int i = 0; i < uncompressedFractional; i++)
+            {
+                result.Append(buffer.ReadBigEndianInt(4).ToString("D9"));
+            }
+            if (size > 0)
+            {
+                result.Append(buffer.ReadBigEndianInt(size));
+            }
+            return result.ToString();
         }
 
         private string ParseVariableString(ref PacketReader reader, int metadata)

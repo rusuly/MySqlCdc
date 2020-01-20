@@ -119,6 +119,7 @@ namespace MySqlCdc.Protocol
         public string ReadStringToEndOfFile()
         {
             var sequence = _reader.Sequence.Slice(_reader.Consumed);
+            _reader.Advance(_reader.Remaining);
             return ParseString(sequence);
         }
 

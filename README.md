@@ -7,6 +7,15 @@ Designed for reactive push-model applications, event sourcing or derived data sy
 
 NuGet feed: [MySqlCdc](https://www.nuget.org/packages/MySqlCdc)
 
+## Use cases
+- Event sourcing.
+- Cache invalidation.
+- Reactive programming.
+- Real-time chat/messenger using web sockets.
+- Synchronizing web/mobile client state with backend.
+- Replicating MySQL database to Memcached/Redis cache. 
+- Replicating MySQL database to NoSQL/Elasticsearch. Denormalization. Derived data system.
+
 ## Warnings
 Be careful when working with binary log event streaming.
 - Binlog stream includes changes made to all databases on the master server including sql queries with sensitive information and you may leak data from the databases. Consider deploying your database to an isolated instance.
@@ -16,7 +25,7 @@ Be careful when working with binary log event streaming.
 Please note the lib currently has the following limitations:
 - Automatic failover is not supported.
 - Multi-source replication & multi-master topology setup are not supported.
-- Supported auth plugins are `mysql_native_password` and `caching_sha2_password`.
+- Supports only standard auth plugins `mysql_native_password` and `caching_sha2_password`.
 - Currently, the library doesn't support SSL encryption.
 
 ## Prerequisites
@@ -126,7 +135,6 @@ static async Task Start()
 
   | MySQL Type         | .NET type            |
   | ------------------ |:--------------------:|
-  | DECIMAL            | ❌ Not supported     |
   | GEOMETRY           | ❌ Not supported     |
   | JSON (MySQL)       | ❌ Not supported     |
   | JSON (MariaDB)     | byte[]               |
@@ -138,6 +146,7 @@ static async Task Start()
   | LONGLONG (bigint)  | long                 |
   | FLOAT (float)      | float                |
   | DOUBLE (double)    | double               |
+  | DECIMAL            | string               |
   | VARCHAR, VARBINARY | string               |
   | CHAR               | string               |
   | ENUM               | int                  |
@@ -155,7 +164,13 @@ static async Task Start()
 - Invalid DATE, DATETIME, DATETIME2 values(0000-00-00) are parsed as DateTime null.
 - TIME2, DATETIME2, TIMESTAMP2 will lose microseconds when converting to .NET types.
 - The lib doesn't distinguish between unsigned and signed. The client should cast to unsigned manually.
-- DECIMAL, JSON, GEOMETRY types are not supported now.
+- JSON, GEOMETRY types are not supported now.
+- DECIMAL type is parsed to string as MySql decimal has bigger range(65 digits) than .NET decimal.
+
+## Similar projects
+- Java: https://github.com/shyiko/mysql-binlog-connector-java
+- PHP: https://github.com/krowinski/php-mysql-replication
+- Python: https://github.com/noplay/python-mysql-replication
 
 ## Supported versions
 MySqlCdc supports both MariaDB & MySQL server.

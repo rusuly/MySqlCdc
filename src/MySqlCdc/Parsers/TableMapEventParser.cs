@@ -57,10 +57,9 @@ namespace MySqlCdc.Parsers
                         break;
 
                     case ColumnType.BIT:
-                    case ColumnType.NEWDECIMAL:
-                    case ColumnType.DECIMAL:
                     case ColumnType.VARCHAR:
                     case ColumnType.VAR_STRING:
+                    case ColumnType.NEWDECIMAL:
                         metadata[i] = reader.ReadInt(2);
                         break;
 
