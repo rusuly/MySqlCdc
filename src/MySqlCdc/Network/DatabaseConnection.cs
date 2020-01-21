@@ -10,7 +10,7 @@ using MySqlCdc.Protocol;
 
 namespace MySqlCdc.Network
 {
-    public class DatabaseConnection
+    internal class DatabaseConnection
     {
         private readonly ConnectionOptions _options;
         private readonly Socket _socket;

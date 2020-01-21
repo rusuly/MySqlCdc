@@ -10,7 +10,7 @@ using MySqlCdc.Providers.MariaDb;
 
 namespace MySqlCdc.Providers
 {
-    public class MariaDbProvider : IDatabaseProvider
+    internal class MariaDbProvider : IDatabaseProvider
     {
         public EventDeserializer Deserializer { get; } = new MariaEventDeserializer();
 

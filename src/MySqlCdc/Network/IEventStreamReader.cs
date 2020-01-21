@@ -3,7 +3,7 @@ using MySqlCdc.Protocol;
 
 namespace MySqlCdc.Network
 {
-    public interface IEventStreamReader
+    internal interface IEventStreamReader
     {
         IPacket ReadPacket(ReadOnlySequence<byte> buffer);
     }

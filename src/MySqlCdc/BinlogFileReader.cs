@@ -89,6 +89,10 @@ namespace MySqlCdc
             }
         }
 
+        /// <summary>
+        /// Reads parsed event from binlog file.
+        /// </summary>
+        /// <returns>Binlog event instance. Null if there are no more events</returns>
         public async Task<IBinlogEvent> ReadEventAsync()
         {
             await _channel.Reader.WaitToReadAsync();

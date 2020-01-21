@@ -1,6 +1,6 @@
 namespace MySqlCdc.Constants
 {
-    public class PacketConstants
+    internal class PacketConstants
     {
         public const int HeaderSize = 4;
         public const int MaxBodyLength = 16777215;

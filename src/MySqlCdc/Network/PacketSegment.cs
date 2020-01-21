@@ -3,7 +3,7 @@ using System.Buffers;
 
 namespace MySqlCdc.Network
 {
-    public class PacketSegment : ReadOnlySequenceSegment<byte>
+    internal class PacketSegment : ReadOnlySequenceSegment<byte>
     {
         public PacketSegment(ReadOnlyMemory<byte> memory)
         {

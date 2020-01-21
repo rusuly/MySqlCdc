@@ -12,7 +12,7 @@ using MySqlCdc.Protocol;
 
 namespace MySqlCdc.Network
 {
-    public class EventStreamChannel
+    internal class EventStreamChannel
     {
         private readonly Channel<IPacket> _channel = Channel.CreateBounded<IPacket>(
             new BoundedChannelOptions(100)

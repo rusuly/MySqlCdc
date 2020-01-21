@@ -11,7 +11,7 @@ namespace MySqlCdc.Network
     /// Reads binlog event packets from network stream.
     /// <a href="https://mariadb.com/kb/en/3-binlog-network-stream/">See more</a>
     /// </summary>
-    public class EventStreamReader : IEventStreamReader
+    internal class EventStreamReader : IEventStreamReader
     {
         private readonly EventDeserializer _eventDeserializer;
 

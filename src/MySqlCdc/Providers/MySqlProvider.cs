@@ -7,7 +7,7 @@ using MySqlCdc.Providers.MySql;
 
 namespace MySqlCdc.Providers
 {
-    public class MySqlProvider : IDatabaseProvider
+    internal class MySqlProvider : IDatabaseProvider
     {
         public EventDeserializer Deserializer { get; } = new MySqlEventDeserializer();
 
