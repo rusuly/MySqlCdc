@@ -6,7 +6,7 @@ namespace MySqlCdc.Events
     /// <summary>
     /// Represents one or many updated rows in row based replication.
     /// Includes versions before and after update.
-    /// <see cref="https://mariadb.com/kb/en/library/rows_event_v1/"/>
+    /// <a href="https://mariadb.com/kb/en/library/rows_event_v1/">See more</a>
     /// </summary>
     public class UpdateRowsEvent : BinlogEvent
     {

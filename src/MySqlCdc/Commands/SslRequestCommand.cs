@@ -5,9 +5,9 @@ namespace MySqlCdc.Commands
 {
     /// <summary>
     /// SSLRequest packet used in SSL/TLS connection.
-    /// <see cref="https://mariadb.com/kb/en/library/connection/#sslrequest-packet"/>
+    /// <a href="https://mariadb.com/kb/en/library/connection/#sslrequest-packet">See more</a>
     /// </summary>
-    public class SslRequestCommand : ICommand
+    internal class SslRequestCommand : ICommand
     {
         public int ClientCapabilities { get; private set; }
         public int ClientCollation { get; private set; }

@@ -40,7 +40,7 @@ namespace MySqlCdc
 
         /// <summary>
         /// Specifies the slave server id and used only in blocking mode. Defaults to 1.
-        /// <see cref="https://dev.mysql.com/doc/refman/8.0/en/mysqlbinlog-server-id.html"/>
+        /// <a href="https://dev.mysql.com/doc/refman/8.0/en/mysqlbinlog-server-id.html">See more</a>
         /// </summary>
         public long ServerId { get; set; } = 1;
 

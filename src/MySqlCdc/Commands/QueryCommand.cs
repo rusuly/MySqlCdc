@@ -5,9 +5,9 @@ namespace MySqlCdc.Commands
 {
     /// <summary>
     /// COM_QUERY sends the server an SQL statement to be executed immediately.
-    /// <see cref="https://mariadb.com/kb/en/library/com_query/"/>
+    /// <a href="https://mariadb.com/kb/en/library/com_query/">See more</a>
     /// </summary>
-    public class QueryCommand : ICommand
+    internal class QueryCommand : ICommand
     {
         public string Sql { get; private set; }
 

@@ -6,7 +6,7 @@ namespace MySqlCdc.Packets
     /// <summary>
     /// Passes an exception from packet channel thread to application code.
     /// </summary>
-    public class ExceptionPacket : IPacket
+    internal class ExceptionPacket : IPacket
     {
         public Exception Exception { get; }
 

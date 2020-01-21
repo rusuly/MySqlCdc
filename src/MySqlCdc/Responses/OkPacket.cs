@@ -5,9 +5,9 @@ namespace MySqlCdc.Packets
 {
     /// <summary>
     /// Indicates a successful completion of a command.
-    /// <see cref="https://mariadb.com/kb/en/library/ok_packet/"/>
+    /// <a href="https://mariadb.com/kb/en/library/ok_packet/">See more</a>
     /// </summary>
-    public class OkPacket : IPacket
+    internal class OkPacket : IPacket
     {
         public OkPacket(ReadOnlySequence<byte> sequence)
         {

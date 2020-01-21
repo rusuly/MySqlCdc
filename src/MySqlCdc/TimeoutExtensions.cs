@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace MySqlCdc
 {
-    public static class TimeoutExtensions
+    internal static class TimeoutExtensions
     {
         public static async Task<TResult> WithTimeout<TResult>(this Task<TResult> task, TimeSpan timeoutSpan, string timeoutMessage)
         {

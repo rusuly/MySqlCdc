@@ -2,7 +2,7 @@ namespace MySqlCdc.Events
 {
     /// <summary>
     /// Marks start of a new event group(transaction).
-    /// <see cref="https://mariadb.com/kb/en/gtid_event/"/>
+    /// <a href="https://mariadb.com/kb/en/gtid_event/">See more</a>
     /// </summary>
     public class GtidEvent : BinlogEvent
     {

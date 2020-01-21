@@ -11,9 +11,9 @@ namespace MySqlCdc.Parsers
 {
     /// <summary>
     /// Base class for parsing row based events.
-    /// <see cref="https://mariadb.com/kb/en/library/rows_event_v1/"/>
-    /// <see cref="https://dev.mysql.com/doc/internals/en/rows-event.html#write-rows-eventv2"/>
-    /// See AbstractRowsEventDataDeserializer from <see cref="https://github.com/shyiko/mysql-binlog-connector-java"/>
+    /// See <a href="https://mariadb.com/kb/en/library/rows_event_v1/">MariaDB rows version 1</a>
+    /// See <a href="https://dev.mysql.com/doc/internals/en/rows-event.html#write-rows-eventv2">MySQL rows version 1/2</a>
+    /// See <a href="https://github.com/shyiko/mysql-binlog-connector-java">AbstractRowsEventDataDeserializer</a>
     /// </summary>
     public abstract class RowEventParser : IEventParser
     {

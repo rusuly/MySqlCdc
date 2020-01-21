@@ -4,7 +4,7 @@ namespace MySqlCdc.Events
 {
     /// <summary>
     /// The event has table defition for row events.
-    /// <see cref="https://mariadb.com/kb/en/library/table_map_event/"/>
+    /// <a href="https://mariadb.com/kb/en/library/table_map_event/">See more</a>
     /// </summary>
     public class TableMapEvent : BinlogEvent
     {

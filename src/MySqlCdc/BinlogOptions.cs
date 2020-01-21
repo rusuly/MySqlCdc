@@ -20,8 +20,8 @@ namespace MySqlCdc
 
         /// <summary>
         /// Global Transaction ID position to start replication from.
-        /// <see cref="https://dev.mysql.com/doc/refman/8.0/en/replication-gtids-concepts.html"/>
-        /// <see cref="https://mariadb.com/kb/en/library/gtid/"/>
+        /// See <a href="https://dev.mysql.com/doc/refman/8.0/en/replication-gtids-concepts.html">MySQL GTID</a>
+        /// See <a href="https://mariadb.com/kb/en/library/gtid/">MariaDB GTID</a>
         /// </summary>
         public string Gtid { get; set; }
 

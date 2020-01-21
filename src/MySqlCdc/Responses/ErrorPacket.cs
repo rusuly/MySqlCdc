@@ -5,9 +5,9 @@ namespace MySqlCdc.Packets
 {
     /// <summary>
     /// ERR_Packet indicates that an error occured.
-    /// <see cref="https://mariadb.com/kb/en/library/err_packet/"/>
+    /// <a href="https://mariadb.com/kb/en/library/err_packet/">See more</a>
     /// </summary>
-    public class ErrorPacket : IPacket
+    internal class ErrorPacket : IPacket
     {
         public int ErrorCode { get; private set; }
         public string SqlState { get; private set; }

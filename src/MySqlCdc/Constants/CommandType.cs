@@ -3,7 +3,7 @@ namespace MySqlCdc.Constants
     /// <summary>
     /// Command types are included in body headers to identify the commands
     /// </summary>
-    public enum CommandType : byte
+    internal enum CommandType : byte
     {
         SLEEP,
         QUIT,

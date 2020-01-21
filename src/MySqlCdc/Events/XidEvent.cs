@@ -2,7 +2,7 @@ namespace MySqlCdc.Events
 {
     /// <summary>
     /// Generated for a commit of a transaction.
-    /// <see cref="https://mariadb.com/kb/en/library/xid_event/"/>
+    /// <a href="https://mariadb.com/kb/en/library/xid_event/">See more</a>
     /// </summary>
     public class XidEvent : BinlogEvent
     {

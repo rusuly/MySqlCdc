@@ -12,6 +12,9 @@ using MySqlCdc.Protocol;
 
 namespace MySqlCdc
 {
+    /// <summary>
+    /// Reads binlog files offline from the file system.
+    /// </summary>
     public class BinlogFileReader
     {
         private static byte[] MagicNumber = new byte[] { 0xfe, 0x62, 0x69, 0x6e };

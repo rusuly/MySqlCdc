@@ -7,9 +7,9 @@ namespace MySqlCdc.Packets
 {
     /// <summary>
     /// Initial handshake packet sent by the server.
-    /// <see cref="https://mariadb.com/kb/en/library/connection/#initial-handshake-packet"/>
+    /// <a href="https://mariadb.com/kb/en/library/connection/#initial-handshake-packet">See more</a>
     /// </summary>
-    public class HandshakePacket : IPacket
+    internal class HandshakePacket : IPacket
     {
         public int ProtocolVersion { get; private set; }
         public string ServerVersion { get; private set; }

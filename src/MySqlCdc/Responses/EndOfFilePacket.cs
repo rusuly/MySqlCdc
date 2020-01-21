@@ -5,9 +5,9 @@ namespace MySqlCdc.Packets
 {
     /// <summary>
     /// EOF packet marks the end of a resultset and returns status and warnings.
-    /// <see cref="https://mariadb.com/kb/en/library/eof_packet/"/>
+    /// <a href="https://mariadb.com/kb/en/library/eof_packet/">See more</a>
     /// </summary>
-    public class EndOfFilePacket : IPacket
+    internal class EndOfFilePacket : IPacket
     {
         public int WarningCount { get; private set; }
         public int ServerStatus { get; private set; }

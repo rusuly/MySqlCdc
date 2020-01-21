@@ -11,7 +11,7 @@ namespace MySqlCdc
     /// Used in netstandard2.0 to parse MySQL certificate.
     /// Info is taken from https://stackoverflow.com/a/32243171
     /// </summary>
-    public static class CertificateImporter
+    internal static class CertificateImporter
     {
         /// <summary>
         /// Encoded OID sequence for PKCS #1 rsaEncryption szOID_RSA_RSA = "1.2.840.113549.1.1.1"

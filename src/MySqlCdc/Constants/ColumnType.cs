@@ -2,10 +2,10 @@ namespace MySqlCdc.Constants
 {
     /// <summary>
     /// MySql column types.
-    /// <see cref="https://mariadb.com/kb/en/library/resultset/#column-definition-packet"/>
-    /// <see cref="https://dev.mysql.com/doc/internals/en/com-query-response.html#column-type"/>
+    /// See <a href="https://mariadb.com/kb/en/library/resultset/#column-definition-packet">MariaDB docs</a>
+    /// See <a href="https://dev.mysql.com/doc/internals/en/com-query-response.html#column-type">MySQL docs</a>
     /// </summary>
-    public enum ColumnType
+    internal enum ColumnType
     {
         DECIMAL = 0,
         TINY,

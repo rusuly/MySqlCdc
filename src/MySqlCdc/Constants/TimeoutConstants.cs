@@ -1,6 +1,6 @@
 namespace MySqlCdc.Constants
 {
-    public class TimeoutConstants
+    internal class TimeoutConstants
     {
         /// <summary>
         /// Takes into account network latency.

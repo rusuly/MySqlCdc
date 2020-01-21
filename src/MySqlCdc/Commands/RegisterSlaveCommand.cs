@@ -5,10 +5,10 @@ namespace MySqlCdc.Commands
 {
     /// <summary>
     /// Used for MariaDB Gtid replication.
-    /// <see cref="https://mariadb.com/kb/en/com_register_slave/"/>
-    /// <see cref="https://dev.mysql.com/doc/internals/en/com-register-slave.html"/>
+    /// See <a href="https://mariadb.com/kb/en/com_register_slave/">MariaDB docs</a>
+    /// See <a href="https://dev.mysql.com/doc/internals/en/com-register-slave.html">MySQL docs</a>
     /// </summary>
-    public class RegisterSlaveCommand : ICommand
+    internal class RegisterSlaveCommand : ICommand
     {
         public long ServerId { get; private set; }
 

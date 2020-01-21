@@ -1,6 +1,6 @@
 namespace MySqlCdc.Constants
 {
-    public enum ResponseType
+    internal enum ResponseType
     {
         Ok = 0x00,
         Error = 0xFF,

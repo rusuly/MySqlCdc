@@ -2,7 +2,7 @@ using MySqlCdc.Protocol;
 
 namespace MySqlCdc.Commands
 {
-    public class AuthPluginSwitchCommand : ICommand
+    internal class AuthPluginSwitchCommand : ICommand
     {
         public string Password { get; private set; }
         public string Scramble { get; private set; }

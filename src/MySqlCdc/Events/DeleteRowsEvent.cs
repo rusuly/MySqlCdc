@@ -5,7 +5,7 @@ namespace MySqlCdc.Events
 {
     /// <summary>
     /// Represents one or many deleted rows in row based replication.
-    /// <see cref="https://mariadb.com/kb/en/library/rows_event_v1/"/>
+    /// <a href="https://mariadb.com/kb/en/library/rows_event_v1/">See more</a>
     /// </summary>
     public class DeleteRowsEvent : BinlogEvent
     {

@@ -4,10 +4,10 @@ namespace MySqlCdc.Constants
 {
     /// <summary>
     /// Server and client capability flags
-    /// <see cref="https://mariadb.com/kb/en/library/connection/#capabilities"/>
+    /// <a href="https://mariadb.com/kb/en/library/connection/#capabilities">See more</a>
     /// </summary>
     [Flags]
-    public enum CapabilityFlags
+    internal enum CapabilityFlags
     {
         LONG_PASSWORD = 1 << 0,
         FOUND_ROWS = 1 << 1,

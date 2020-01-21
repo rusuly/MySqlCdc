@@ -7,9 +7,9 @@ namespace MySqlCdc.Commands
 {
     /// <summary>
     /// Requests binlog event stream by Gtid.
-    /// <see cref="https://mariadb.com/kb/en/library/com_binlog_dump/"/>
+    /// <a href="https://mariadb.com/kb/en/library/com_binlog_dump/">See more</a>
     /// </summary>
-    public class DumpBinlogGtidCommand : ICommand
+    internal class DumpBinlogGtidCommand : ICommand
     {
         public long ServerId { get; private set; }
         public string BinlogFilename { get; private set; }

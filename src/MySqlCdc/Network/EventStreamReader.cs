@@ -8,7 +8,8 @@ using MySqlCdc.Protocol;
 namespace MySqlCdc.Network
 {
     /// <summary>
-    /// <see cref="https://mariadb.com/kb/en/3-binlog-network-stream/"/>
+    /// Reads binlog event packets from network stream.
+    /// <a href="https://mariadb.com/kb/en/3-binlog-network-stream/">See more</a>
     /// </summary>
     public class EventStreamReader : IEventStreamReader
     {

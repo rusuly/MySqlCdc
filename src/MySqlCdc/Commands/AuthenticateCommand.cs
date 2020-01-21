@@ -9,9 +9,9 @@ namespace MySqlCdc.Commands
 {
     /// <summary>
     /// Client handshake response to the server initial handshake packet.
-    /// <see cref="https://mariadb.com/kb/en/library/connection/#handshake-response-packet"/>
+    /// <a href="https://mariadb.com/kb/en/library/connection/#handshake-response-packet">See more</a>
     /// </summary>
-    public class AuthenticateCommand : ICommand
+    internal class AuthenticateCommand : ICommand
     {
         public int ClientCapabilities { get; private set; }
         public int ClientCollation { get; private set; }

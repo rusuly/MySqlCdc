@@ -2,7 +2,7 @@ namespace MySqlCdc.Events
 {
     /// <summary>
     /// Represents sql statement in binary log.
-    /// <see cref="https://mariadb.com/kb/en/library/query_event/"/>
+    /// <a href="https://mariadb.com/kb/en/library/query_event/">See more</a>
     /// </summary>
     public class QueryEvent : BinlogEvent
     {

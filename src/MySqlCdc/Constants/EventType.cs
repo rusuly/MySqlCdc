@@ -2,9 +2,9 @@ namespace MySqlCdc.Constants
 {
     /// <summary>
     /// Binlog event types.
-    /// <see cref="https://mariadb.com/kb/en/library/2-binlog-event-header/"/>
-    /// <see cref="https://dev.mysql.com/doc/internals/en/binlog-event-type.html"/>
-    /// <see cref="https://dev.mysql.com/doc/internals/en/rows-event.html#write-rows-eventv2"/>
+    /// See <a href="https://mariadb.com/kb/en/library/2-binlog-event-header/">event header docs</a>
+    /// See <a href="https://dev.mysql.com/doc/internals/en/binlog-event-type.html">list of event types</a>
+    /// See <a href="https://dev.mysql.com/doc/internals/en/rows-event.html#write-rows-eventv2">rows event docs</a>
     /// </summary>
     public enum EventType
     {

@@ -4,7 +4,7 @@ namespace MySqlCdc.Events
 {
     /// <summary>
     /// Shows current replication state with list of last gtid for each replication domain.
-    /// <see cref="https://mariadb.com/kb/en/gtid_list_event/"/>
+    /// <a href="https://mariadb.com/kb/en/gtid_list_event/">See more</a>
     /// </summary>
     public class GtidListEvent : BinlogEvent
     {

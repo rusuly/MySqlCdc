@@ -5,9 +5,9 @@ namespace MySqlCdc.Packets
 {
     /// <summary>
     /// Authentication Switch Request.
-    /// <see cref="https://mariadb.com/kb/en/library/connection/#authentication-switch-request"/>
+    /// <a href="https://mariadb.com/kb/en/library/connection/#authentication-switch-request">See more</a>
     /// </summary>
-    public class AuthPluginSwitchPacket : IPacket
+    internal class AuthPluginSwitchPacket : IPacket
     {
         public string AuthPluginName { get; private set; }
         public string AuthPluginData { get; private set; }

@@ -6,9 +6,9 @@ namespace MySqlCdc.Packets
 {
     /// <summary>
     /// Returned in response to a QueryCommand.
-    /// <see cref="https://mariadb.com/kb/en/library/resultset/"/>
+    /// <a href="https://mariadb.com/kb/en/library/resultset/">See more</a>
     /// </summary>
-    public class ResultSetRowPacket : IPacket
+    internal class ResultSetRowPacket : IPacket
     {
         public string[] Cells { get; private set; }
 
