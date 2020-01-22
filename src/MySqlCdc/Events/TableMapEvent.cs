@@ -1,4 +1,5 @@
 using System.Collections;
+using MySqlCdc.Providers.MySql;
 
 namespace MySqlCdc.Events
 {
@@ -14,6 +15,7 @@ namespace MySqlCdc.Events
         public byte[] ColumnTypes { get; }
         public int[] ColumnMetadata { get; }
         public BitArray NullBitmap { get; }
+        public TableMetadata TableMetadata { get; }
 
         public TableMapEvent(
             EventHeader header,
@@ -22,7 +24,8 @@ namespace MySqlCdc.Events
             string tableName,
             byte[] columnTypes,
             int[] columnMetadata,
-            BitArray nullBitmap) : base(header)
+            BitArray nullBitmap,
+            TableMetadata tableMetadata) : base(header)
         {
             TableId = tableId;
             DatabaseName = databaseName;
@@ -30,6 +33,7 @@ namespace MySqlCdc.Events
             ColumnTypes = columnTypes;
             ColumnMetadata = columnMetadata;
             NullBitmap = nullBitmap;
+            TableMetadata = tableMetadata;
         }
     }
 }

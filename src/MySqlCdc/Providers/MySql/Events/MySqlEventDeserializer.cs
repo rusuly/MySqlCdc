@@ -8,6 +8,7 @@ namespace MySqlCdc.Providers.MySql
         public MySqlEventDeserializer()
         {
             EventParsers[EventType.MYSQL_GTID_EVENT] = new MySqlGtidEventParser();
+            EventParsers[EventType.MYSQL_ROWS_QUERY_EVENT] = new RowsQueryEventParser();
         }
     }
 }

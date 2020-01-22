@@ -1,6 +1,7 @@
 using MySqlCdc.Constants;
 using MySqlCdc.Events;
 using MySqlCdc.Protocol;
+using MySqlCdc.Providers.MySql;
 
 namespace MySqlCdc.Parsers
 {
@@ -26,12 +27,14 @@ namespace MySqlCdc.Parsers
 
             var nullBitmap = reader.ReadBitmap(columnsNumber);
 
+            TableMetadata tableMetadata = null;
             if (!reader.IsEmpty())
             {
-                // Consider reading MySQL 5.6+ optional metadata which is not supported in MariaDB.
+                // Read MySQL 5.6+ metadata. Not supported in MariaDB.
+                tableMetadata = new TableMetadata(ref reader, columnTypes);
             }
 
-            return new TableMapEvent(header, tableId, databaseName, tableName, columnTypes, metadata, nullBitmap);
+            return new TableMapEvent(header, tableId, databaseName, tableName, columnTypes, metadata, nullBitmap, tableMetadata);
         }
 
         private int[] ParseMetadata(ref PacketReader reader, byte[] columnTypes)

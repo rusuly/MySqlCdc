@@ -76,7 +76,7 @@ namespace MySqlCdc.Protocol
         /// 0xFD - Integer value is encoded in the next 3 bytes (4 bytes total)
         /// 0xFE - Integer value is encoded in the next 8 bytes (9 bytes total)
         /// </summary>
-        public int? ReadLengthEncodedNumber()
+        public int ReadLengthEncodedNumber()
         {
             int firstByte = ReadInt(1);
 
@@ -138,7 +138,7 @@ namespace MySqlCdc.Protocol
         public string ReadLengthEncodedString()
         {
             var length = ReadLengthEncodedNumber();
-            return ReadString(length.Value);
+            return ReadString(length);
         }
 
         /// <summary>

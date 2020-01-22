@@ -9,6 +9,7 @@ namespace MySqlCdc.Providers.MariaDb
         {
             EventParsers[EventType.MARIADB_GTID_EVENT] = new MariaGtidEventParser();
             EventParsers[EventType.MARIADB_GTID_LIST_EVENT] = new MariaGtidListEventParser();
+            EventParsers[EventType.MARIADB_ANNOTATE_ROWS_EVENT] = new AnnotateRowsEventParser();
         }
     }
 }

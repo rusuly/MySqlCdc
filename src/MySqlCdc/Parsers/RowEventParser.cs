@@ -187,7 +187,7 @@ namespace MySqlCdc.Parsers
             }
             if (size > 0)
             {
-                result.Append(buffer.ReadBigEndianInt(size));
+                result.Append(buffer.ReadBigEndianInt(size).ToString($"D{compressedFractional}"));
             }
             return result.ToString();
         }
