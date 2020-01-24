@@ -5,14 +5,14 @@ using MySqlCdc.Protocol;
 
 namespace MySqlCdc.Parsers
 {
-    public class UpdateRowsEventParser : RowEventParser
+    public class UpdateRowsEventParser : RowEventParser, IEventParser
     {
         public UpdateRowsEventParser(Dictionary<long, TableMapEvent> tableMapCache, int rowsEventVersion)
             : base(tableMapCache, rowsEventVersion)
         {
         }
 
-        public override IBinlogEvent ParseEvent(EventHeader header, ref PacketReader reader)
+        public IBinlogEvent ParseEvent(EventHeader header, ref PacketReader reader)
         {
             var shared = ParseHeader(ref reader);
 
