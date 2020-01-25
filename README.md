@@ -8,9 +8,10 @@ Designed for reactive push-model applications, event sourcing or derived data sy
 NuGet feed: [MySqlCdc](https://www.nuget.org/packages/MySqlCdc)
 
 ## Use cases
+Transaction log events are immutable and appended in strictly sequential order. This simplifies your concurrency model and allows you to avoid distributed locks that handle race conditions from parallel database requests.
 - Event sourcing.
 - Cache invalidation.
-- Reactive programming.
+- OLAP. Analytics. Data Warehouse.
 - Real-time chat/messenger using web sockets.
 - Synchronizing web/mobile client state with backend.
 - Replicating MySQL database to Memcached/Redis cache. 
@@ -19,22 +20,46 @@ NuGet feed: [MySqlCdc](https://www.nuget.org/packages/MySqlCdc)
 ## Warnings
 Be careful when working with binary log event streaming.
 - Binlog stream includes changes made to all databases on the master server including sql queries with sensitive information and you may leak data from the databases. Consider deploying your database to an isolated instance.
-- Binlog is an append-only file. It includes changes for databases/tables that you deleted and then recreated. Make sure you don't replay the phantom events in your application.
+- Transaction log represents a sequence of append-only files. It includes changes for databases/tables that you deleted and then recreated. Make sure you don't replay the phantom events in your application.
 
 ## Limitations
 Please note the lib currently has the following limitations:
 - Automatic failover is not supported.
+- Packet compression is not supported.
 - Multi-source replication & multi-master topology setup are not supported.
 - Supports only standard auth plugins `mysql_native_password` and `caching_sha2_password`.
-- Currently, the library doesn't support SSL encryption.
+- **Currently, the library doesn't fully support SSL encryption.**
 
 ## Prerequisites
 Please make sure the following requirements are met:
 1. The user is granted `REPLICATION SLAVE`, `REPLICATION CLIENT` privileges.
-2. Binary logging must be enabled. The following settings must be configured on the master server:
+2. Binary logging is enabled(it's done by default in MySQL 8). To enable binary logging configure the following settings on the master server and restart the service:
 ```conf
 binlog_format=row
 binlog_row_image=full
+```
+MySQL 5.6/5.7 also require the following line:
+```conf
+server-id=1
+```
+3. Optionally you can enable logging table metadata in MySQL(like column names, see `TableMetadata` class). Note the metadata is not supported in MariaDB.
+```conf
+binlog_row_metadata = FULL
+```
+4. Optionally you can enable logging SQL queries that precede row based events and listen to `RowsQueryEvent`.
+
+MySQL
+```conf
+binlog_rows_query_log_events = ON
+```
+
+MariaDB
+```conf
+binlog_annotate_row_events = ON
+```
+5. Also note that there are `expire_logs_days`, `binlog_expire_logs_seconds` settings that control how long binlog files live. **By default MySQL/MariaDB have expiration time set and delete expired binlog files.** You can disable automatic purging of binlog files this way:
+```conf
+expire_logs_days = 0
 ```
 
 ## Example
@@ -139,13 +164,13 @@ static async Task Start()
   | JSON (MySQL)       | ❌ Not supported     |
   | JSON (MariaDB)     | byte[]               |
   | BIT                | BitArray             |
-  | TINY (tinyint)     | int                  |
-  | SHORT (smallint)   | int                  |
-  | INT24 (mediumint)  | int                  |
-  | LONG  (int)        | int                  |
-  | LONGLONG (bigint)  | long                 |
-  | FLOAT (float)      | float                |
-  | DOUBLE (double)    | double               |
+  | TINYINT            | int                  |
+  | SMALLINT           | int                  |
+  | MEDIUMINT          | int                  |
+  | INT                | int                  |
+  | BIGING             | long                 |
+  | FLOAT              | float                |
+  | DOUBLE             | double               |
   | DECIMAL            | string               |
   | VARCHAR, VARBINARY | string               |
   | CHAR               | string               |
@@ -153,17 +178,14 @@ static async Task Start()
   | SET                | long                 |
   | YEAR               | int                  |
   | DATE               | Nullable&lt;DateTime&gt; |
-  | TIME (old format)  | TimeSpan             |
+  | TIME               | TimeSpan             |
   | TIMESTAMP          | DateTimeOffset       |
   | DATETIME           | Nullable&lt;DateTime&gt; |
-  | TIME2              | TimeSpan             |
-  | TIMESTAMP2         | DateTimeOffset       |
-  | DATETIME2          | Nullable&lt;DateTime&gt; |
   | BLOB types         | byte[]               |
 
-- Invalid DATE, DATETIME, DATETIME2 values(0000-00-00) are parsed as DateTime null.
-- TIME2, DATETIME2, TIMESTAMP2 will lose microseconds when converting to .NET types.
-- The lib doesn't distinguish between unsigned and signed. The client should cast to unsigned manually.
+- Invalid DATE, DATETIME values(0000-00-00) are parsed as DateTime null.
+- TIME, DATETIME, TIMESTAMP (MySQL 5.6.4+) will lose microseconds when converted to .NET types as MySQL types have bigger fractional part than corresponding .NET types can store.
+- Signedness of numeric columns cannot be determined in MariaDB(and MySQL 5.5) so the library stores all numeric columns as signed `int` or `long`. The client has the information and should manually cast to `uint` and `ulong`.
 - JSON, GEOMETRY types are not supported now.
 - DECIMAL type is parsed to string as MySql decimal has bigger range(65 digits) than .NET decimal.
 
