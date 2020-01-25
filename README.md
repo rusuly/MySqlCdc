@@ -34,33 +34,43 @@ Please note the lib currently has the following limitations:
 Please make sure the following requirements are met:
 1. The user is granted `REPLICATION SLAVE`, `REPLICATION CLIENT` privileges.
 2. Binary logging is enabled(it's done by default in MySQL 8). To enable binary logging configure the following settings on the master server and restart the service:
-```conf
-binlog_format=row
-binlog_row_image=full
-```
-MySQL 5.6/5.7 also require the following line:
-```conf
-server-id=1
-```
+
+    ```conf
+    binlog_format=row
+    binlog_row_image=full
+    ```
+
+   MySQL 5.6/5.7 also require the following line:
+
+    ```conf
+    server-id=1
+    ```
+
 3. Optionally you can enable logging table metadata in MySQL(like column names, see `TableMetadata` class). Note the metadata is not supported in MariaDB.
-```conf
-binlog_row_metadata = FULL
-```
+
+    ```conf
+    binlog_row_metadata = FULL
+    ```
+
 4. Optionally you can enable logging SQL queries that precede row based events and listen to `RowsQueryEvent`.
 
-MySQL
-```conf
-binlog_rows_query_log_events = ON
-```
+   MySQL
 
-MariaDB
-```conf
-binlog_annotate_row_events = ON
-```
+    ```conf
+    binlog_rows_query_log_events = ON
+    ```
+
+   MariaDB
+
+    ```conf
+    binlog_annotate_row_events = ON
+    ```
+
 5. Also note that there are `expire_logs_days`, `binlog_expire_logs_seconds` settings that control how long binlog files live. **By default MySQL/MariaDB have expiration time set and delete expired binlog files.** You can disable automatic purging of binlog files this way:
-```conf
-expire_logs_days = 0
-```
+
+    ```conf
+    expire_logs_days = 0
+    ```
 
 ## Example
 You have to obtain columns ordinal position of the table that you are interested in.
@@ -71,6 +81,13 @@ from INFORMATION_SCHEMA.COLUMNS
 where TABLE_NAME='AspNetUsers' and TABLE_SCHEMA='Identity'
 order by ORDINAL_POSITION;
 ```
+Alternatively, in MySQL 5.6 and newer(but not in MariaDB) you can obtain column names by logging full metadata (see `TableMetadataEvent.Metadata`).
+This way the metadata is logged with each `TableMapEvent` which impacts bandwidth. 
+```conf
+binlog_row_metadata = FULL
+```
+
+### Binlog event stream replication
 Data is stored in Cells property of row events in the same order. See the sample project.
 ```csharp
 static async Task Main(string[] args)
@@ -127,12 +144,13 @@ static async Task Main(string[] args)
 A typical transaction has the following structure.
 1. `GtidEvent` if gtid mode is enabled.
 2. One or many `TableMapEvent` events.
-  - One or many `WriteRowsEvent` events.
-  - One or many `UpdateRowsEvent` events.
-  - One or many `DeleteRowsEvent` events.
+   - One or many `WriteRowsEvent` events.
+   - One or many `UpdateRowsEvent` events.
+   - One or many `DeleteRowsEvent` events.
 3. `XidEvent` indicating commit of the transaction.
 
-In some cases you will need to parse binlog files offline from the file system.
+### Reading binlog files offline
+In some cases you will need to read binlog files offline from the file system.
 This can be done using `BinlogFileReader` class.
 ```csharp
 static async Task Start()
