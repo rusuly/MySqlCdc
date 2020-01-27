@@ -4,8 +4,17 @@ using MySqlCdc.Protocol;
 
 namespace MySqlCdc.Parsers
 {
+    /// <summary>
+    /// Parses <see cref="FormatDescriptionEvent"/> events.
+    /// Supports all versions of MariaDB and MySQL 5.0+ (V4 header format).
+    /// </summary>
     public class FormatDescriptionEventParser : IEventParser
     {
+        private const int EventTypesOffset = 2 + 50 + 4 + 1;
+
+        /// <summary>
+        /// Parses <see cref="FormatDescriptionEvent"/> from the buffer.
+        /// </summary>       
         public IBinlogEvent ParseEvent(EventHeader header, ref PacketReader reader)
         {
             var binlogVersion = reader.ReadInt(2);
@@ -21,7 +30,7 @@ namespace MySqlCdc.Parsers
             var checksumType = ChecksumType.None;
             if (eventPayloadLength != header.EventLength - EventConstants.HeaderSize)
             {
-                reader.Skip(eventPayloadLength - (2 + 50 + 4 + 1 + (int)EventType.FORMAT_DESCRIPTION_EVENT));
+                reader.Skip(eventPayloadLength - (EventTypesOffset + (int)EventType.FORMAT_DESCRIPTION_EVENT));
                 checksumType = (ChecksumType)reader.ReadInt(1);
             }
 

@@ -2,6 +2,9 @@ using MySqlCdc.Constants;
 
 namespace MySqlCdc
 {
+    /// <summary>
+    /// Replication options used when client connects to the server.
+    /// </summary>
     public class BinlogOptions
     {
         /// <summary>
@@ -25,7 +28,10 @@ namespace MySqlCdc
         /// </summary>
         public string Gtid { get; set; }
 
-        public StartingStrategy StartingStrategy { get; private set; }
+        /// <summary>
+        /// Gets replication starting strategy.
+        /// </summary>
+        internal StartingStrategy StartingStrategy { get; private set; }
 
         private BinlogOptions() { }
 

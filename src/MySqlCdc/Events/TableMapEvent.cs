@@ -9,14 +9,44 @@ namespace MySqlCdc.Events
     /// </summary>
     public class TableMapEvent : BinlogEvent
     {
+        /// <summary>
+        /// Gets id of the changed table
+        /// </summary>
         public long TableId { get; }
+
+        /// <summary>
+        /// Gets database name of the changed table
+        /// </summary>
         public string DatabaseName { get; }
+
+        /// <summary>
+        /// Gets name of the changed table
+        /// </summary>
         public string TableName { get; }
+
+        /// <summary>
+        /// Gets column types of the changed table
+        /// </summary>
         public byte[] ColumnTypes { get; }
+
+        /// <summary>
+        /// Gets columns metadata
+        /// </summary>
         public int[] ColumnMetadata { get; }
+
+        /// <summary>
+        /// Gets columns nullability
+        /// </summary>
         public BitArray NullBitmap { get; }
+
+        /// <summary>
+        /// Gets table metadata for MySQL 5.6+
+        /// </summary>
         public TableMetadata TableMetadata { get; }
 
+        /// <summary>
+        /// Creates a new <see cref="TableMapEvent"/>.
+        /// </summary>
         public TableMapEvent(
             EventHeader header,
             long tableId,

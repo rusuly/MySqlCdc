@@ -12,7 +12,7 @@ namespace MySqlCdc.Providers
 {
     internal class MariaDbProvider : IDatabaseProvider
     {
-        public EventDeserializer Deserializer { get; } = new MariaEventDeserializer();
+        public EventDeserializer Deserializer { get; } = new MariaDbEventDeserializer();
 
         public async Task DumpBinlogAsync(DatabaseConnection channel, ConnectionOptions options)
         {

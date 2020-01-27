@@ -14,21 +14,63 @@ namespace MySqlCdc.Providers.MySql
     public class TableMetadata
     {
         /// <summary>
-        /// Signedness of numeric colums.
+        /// Gets signedness of numeric colums.
         /// </summary>
         public BitArray Signedness { get; }
 
+        /// <summary>
+        /// Gets charsets of character columns.
+        /// </summary>
         public DefaultCharset DefaultCharset { get; }
+
+        /// <summary>
+        /// Gets charsets of character columns.
+        /// </summary>
         public IReadOnlyList<int> ColumnCharsets { get; }
+
+        /// <summary>
+        /// Gets column names.
+        /// </summary>
         public IReadOnlyList<string> ColumnNames { get; }
+
+        /// <summary>
+        /// Gets string values of SET columns.
+        /// </summary>
         public IReadOnlyList<IReadOnlyList<string>> SetStringValues { get; }
+
+        /// <summary>
+        /// Gets string values of ENUM columns
+        /// </summary>
         public IReadOnlyList<IReadOnlyList<string>> EnumStringValues { get; }
+
+        /// <summary>
+        /// Gets real types of geometry columns.
+        /// </summary>
         public IReadOnlyList<int> GeometryTypes { get; }
+
+        /// <summary>
+        /// Gets primary keys without prefixes.
+        /// </summary>
         public IReadOnlyList<int> SimplePrimaryKeys { get; }
+
+        /// <summary>
+        /// Gets primary keys with prefixes.
+        /// </summary>
         public IReadOnlyDictionary<int, int> PrimaryKeysWithPrefix { get; }
+
+        /// <summary>
+        /// Gets charsets of ENUM and SET columns.
+        /// </summary>
         public DefaultCharset EnumAndSetDefaultCharset { get; }
+
+        /// <summary>
+        /// Gets charsets of ENUM and SET columns.
+        /// </summary>
         public IReadOnlyList<int> EnumAndSetColumnCharsets { get; }
 
+        /// <summary>
+        /// Creates a new <see cref="TableMetadata"/>.
+        /// </summary>
         public TableMetadata(ref PacketReader reader, byte[] columnTypes)
         {
             while (!reader.IsEmpty())

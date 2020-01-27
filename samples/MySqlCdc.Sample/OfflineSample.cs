@@ -15,7 +15,7 @@ namespace MySqlCdc.Sample
         {
             using (FileStream fs = File.OpenRead("mariadb-bin.000002"))
             {
-                var reader = new BinlogFileReader(new MariaEventDeserializer(), fs);
+                var reader = new BinlogReader(new MariaDbEventDeserializer(), fs);
                 while (true)
                 {
                     var @event = await reader.ReadEventAsync();

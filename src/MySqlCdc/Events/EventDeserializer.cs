@@ -8,23 +8,32 @@ using MySqlCdc.Protocol;
 
 namespace MySqlCdc.Events
 {
-    public class EventDeserializer
+    /// <summary>
+    /// Base class for event deserializers.
+    /// </summary>
+    public abstract class EventDeserializer
     {
         /// <summary>
-        /// The checksum algorithm type used in a binlog file.
+        /// Gets checksum algorithm type used in a binlog file.
         /// </summary>
-        public IChecksumStrategy ChecksumStrategy { get; set; } = new NoneChecksum();
+        internal IChecksumStrategy ChecksumStrategy { get; set; } = new NoneChecksum();
 
         /// <summary>
-        /// Rows events depend on TableMapEvent that comes before them.
+        /// Gets TableMapEvent cache required in row events.
         /// </summary>
         protected readonly Dictionary<long, TableMapEvent> TableMapCache
             = new Dictionary<long, TableMapEvent>();
 
+        /// <summary>
+        /// Gets event parsers registry.
+        /// </summary>
         protected readonly Dictionary<EventType, IEventParser> EventParsers
             = new Dictionary<EventType, IEventParser>();
 
-        public EventDeserializer()
+        /// <summary>
+        /// Creates a new <see cref="EventDeserializer"/>.
+        /// </summary>
+        protected EventDeserializer()
         {
             EventParsers[EventType.FORMAT_DESCRIPTION_EVENT] = new FormatDescriptionEventParser();
             EventParsers[EventType.TABLE_MAP_EVENT] = new TableMapEventParser();
@@ -46,6 +55,9 @@ namespace MySqlCdc.Events
             EventParsers[EventType.MYSQL_DELETE_ROWS_EVENT_V2] = new DeleteRowsEventParser(TableMapCache, 2);
         }
 
+        /// <summary>
+        /// Constructs a <see cref="IBinlogEvent"/> from packet buffer.
+        /// </summary>
         public virtual IBinlogEvent DeserializeEvent(ReadOnlySequence<byte> buffer)
         {
             var eventHeader = new EventHeader(buffer.Slice(0, EventConstants.HeaderSize));

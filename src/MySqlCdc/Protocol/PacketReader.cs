@@ -14,6 +14,9 @@ namespace MySqlCdc.Protocol
     {
         private SequenceReader<byte> _reader;
 
+        /// <summary>
+        /// Creates a new <see cref="PacketReader"/>.
+        /// </summary>
         public PacketReader(ReadOnlySequence<byte> sequence)
         {
             _reader = new SequenceReader<byte>(sequence);
@@ -47,6 +50,9 @@ namespace MySqlCdc.Protocol
             return result;
         }
 
+        /// <summary>
+        /// Reads int number written in big-endian format.
+        /// </summary>
         public int ReadBigEndianInt(int length)
         {
             int result = 0;
@@ -58,6 +64,9 @@ namespace MySqlCdc.Protocol
             return result;
         }
 
+        /// <summary>
+        /// Reads long number written in big-endian format.
+        /// </summary>
         public long ReadBigEndianLong(int length)
         {
             long result = 0;
@@ -70,7 +79,7 @@ namespace MySqlCdc.Protocol
         }
 
         /// <summary>
-        /// if (first byte < 0xFB) - Integer value is this 1 byte integer
+        /// if first byte is less than 0xFB - Integer value is this 1 byte integer
         /// 0xFB - NULL value
         /// 0xFC - Integer value is encoded in the next 2 bytes (3 bytes total)
         /// 0xFD - Integer value is encoded in the next 3 bytes (4 bytes total)
@@ -153,7 +162,7 @@ namespace MySqlCdc.Protocol
         }
 
         /// <summary>
-        /// To store N bits (N + 7) / 8 bytes are required
+        /// Reads bitmap in little-endian bytes order
         /// </summary>
         public BitArray ReadBitmap(int bitsNumber)
         {
@@ -173,6 +182,9 @@ namespace MySqlCdc.Protocol
             return result;
         }
 
+        /// <summary>
+        /// Reads bitmap in big-endian bytes order
+        /// </summary>
         public BitArray ReadBitmapBigEndian(int bitsNumber)
         {
             var result = new BitArray(bitsNumber);
@@ -191,11 +203,17 @@ namespace MySqlCdc.Protocol
             return result;
         }
 
+        /// <summary>
+        /// Checks whether the remaining buffer is empty
+        /// </summary>
         public bool IsEmpty()
         {
             return _reader.Remaining == 0;
         }
 
+        /// <summary>
+        /// Skips the specified number of bytes in the buffer
+        /// </summary>
         public void Skip(int offset)
         {
             _reader.Advance(offset);

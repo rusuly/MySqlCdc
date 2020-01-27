@@ -10,10 +10,24 @@ namespace MySqlCdc.Events
     /// </summary>
     public class FormatDescriptionEvent : BinlogEvent
     {
+        /// <summary>
+        /// Gets binary log format version. This should always be 4.
+        /// </summary>
         public int BinlogVersion { get; }
+
+        /// <summary>
+        /// Gets MariaDB/MySQL server version name.
+        /// </summary>
         public string ServerVersion { get; }
+
+        /// <summary>
+        /// Gets checksum algorithm type.
+        /// </summary>
         public ChecksumType ChecksumType { get; }
 
+        /// <summary>
+        /// Creates a new <see cref="FormatDescriptionEvent"/>.
+        /// </summary>
         public FormatDescriptionEvent(
             EventHeader header,
             int binlogVersion,

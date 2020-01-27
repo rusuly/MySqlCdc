@@ -1,6 +1,6 @@
 namespace MySqlCdc
 {
-    public enum StartingStrategy
+    internal enum StartingStrategy
     {
         FromStart,
         FromEnd,

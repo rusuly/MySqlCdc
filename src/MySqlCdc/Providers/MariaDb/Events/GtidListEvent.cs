@@ -8,8 +8,14 @@ namespace MySqlCdc.Events
     /// </summary>
     public class GtidListEvent : BinlogEvent
     {
+        /// <summary>
+        /// Gets a list of Gtid that represents current replication state
+        /// </summary>
         public IReadOnlyList<string> GtidList { get; }
 
+        /// <summary>
+        /// Creates a new <see cref="GtidListEvent"/>.
+        /// </summary>
         public GtidListEvent(EventHeader header, List<string> gtidList) : base(header)
         {
             GtidList = gtidList;

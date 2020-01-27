@@ -8,7 +8,7 @@ namespace MySqlCdc
     /// <summary>
     /// Used in netstandard2.0 to emulate netstandard2.1 SequenceReader.
     /// The class is rewritten BufferReader from https://github.com/StackExchange/StackExchange.Redis
-    /// The MIT license can be found here https://github.com/StackExchange/StackExchange.Redis/blob/master/LICENSE
+    /// The MIT license can be found <a href="https://github.com/StackExchange/StackExchange.Redis/blob/master/LICENSE">here</a>
     /// </summary>
     internal ref struct SequenceReader<T>
     {

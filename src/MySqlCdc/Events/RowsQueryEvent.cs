@@ -7,8 +7,14 @@ namespace MySqlCdc.Events
     /// </summary>
     public class RowsQueryEvent : BinlogEvent
     {
+        /// <summary>
+        /// Gets SQL statement
+        /// </summary>
         public string Query { get; }
 
+        /// <summary>
+        /// Creates a new <see cref="RowsQueryEvent"/>.
+        /// </summary>
         public RowsQueryEvent(EventHeader header, string query) : base(header)
         {
             Query = query;

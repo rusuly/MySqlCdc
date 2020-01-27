@@ -2,7 +2,7 @@ using System.Buffers;
 
 namespace MySqlCdc.Checksum
 {
-    public class Crc32Checksum : IChecksumStrategy
+    internal class Crc32Checksum : IChecksumStrategy
     {
         public int Length => 4;
 

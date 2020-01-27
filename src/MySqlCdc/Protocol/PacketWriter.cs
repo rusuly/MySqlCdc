@@ -7,7 +7,6 @@ namespace MySqlCdc.Protocol
 {
     /// <summary>
     /// Creates packet for a command from sequence of writes.
-    /// We avoid Span<T> complexity as the protocol isn't write-intensive. 
     /// </summary>
     internal class PacketWriter : IDisposable
     {

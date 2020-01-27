@@ -11,7 +11,7 @@ NuGet feed: [MySqlCdc](https://www.nuget.org/packages/MySqlCdc)
 Transaction log events are immutable and appended in strictly sequential order. This simplifies your concurrency model and allows you to avoid distributed locks that handle race conditions from parallel database requests.
 - Event sourcing.
 - Cache invalidation.
-- OLAP. Analytics. Data Warehouse.
+- OLAP. Analytics. Reporting. Data Warehouse.
 - Real-time chat/messenger using web sockets.
 - Synchronizing web/mobile client state with backend.
 - Replicating MySQL database to Memcached/Redis cache. 
@@ -151,13 +151,13 @@ A typical transaction has the following structure.
 
 ### Reading binlog files offline
 In some cases you will need to read binlog files offline from the file system.
-This can be done using `BinlogFileReader` class.
+This can be done using `BinlogReader` class.
 ```csharp
 static async Task Start()
 {
     using (FileStream fs = File.OpenRead("mariadb-bin.000002"))
     {
-        var reader = new BinlogFileReader(new MariaEventDeserializer(), fs);
+        var reader = new BinlogReader(new MariaDbEventDeserializer(), fs);
         while (true)
         {
             var @event = await reader.ReadEventAsync();

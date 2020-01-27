@@ -29,6 +29,10 @@ namespace MySqlCdc
         private IDatabaseProvider _databaseProvider;
         private DatabaseConnection _channel;
 
+        /// <summary>
+        /// Creates a new <see cref="BinlogClient"/>.
+        /// </summary>
+        /// <param name="configureOptions">The configure callback</param>
         public BinlogClient(Action<ConnectionOptions> configureOptions)
         {
             configureOptions(_options);
@@ -155,6 +159,11 @@ namespace MySqlCdc
             }
         }
 
+        /// <summary>
+        /// Replicates binlog events from the server
+        /// </summary>
+        /// <param name="handleEvent">Client callback function</param>
+        /// <returns>Task completed when last event is read in non-blocking mode</returns>
         public async Task ReplicateAsync(Func<IBinlogEvent, Task> handleEvent)
         {
             await ConnectAsync();

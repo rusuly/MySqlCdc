@@ -12,6 +12,9 @@ namespace MySqlCdc.Events
         /// </summary>
         public IReadOnlyList<object> Cells { get; }
 
+        /// <summary>
+        /// Creates a new <see cref="ColumnData"/>.
+        /// </summary>
         public ColumnData(IReadOnlyList<object> cells)
         {
             Cells = cells;
@@ -33,6 +36,9 @@ namespace MySqlCdc.Events
         /// </summary>
         public ColumnData AfterUpdate { get; }
 
+        /// <summary>
+        /// Creates a new <see cref="UpdateColumnData"/>.
+        /// </summary>
         public UpdateColumnData(ColumnData beforeUpdate, ColumnData afterUpdate)
         {
             BeforeUpdate = beforeUpdate;

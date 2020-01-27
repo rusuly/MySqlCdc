@@ -13,9 +13,9 @@ using MySqlCdc.Protocol;
 namespace MySqlCdc
 {
     /// <summary>
-    /// Reads binlog files offline from the file system.
+    /// Reads binlog events from a stream.
     /// </summary>
-    public class BinlogFileReader
+    public class BinlogReader
     {
         private static byte[] MagicNumber = new byte[] { 0xfe, 0x62, 0x69, 0x6e };
         private readonly Channel<IPacket> _channel = Channel.CreateBounded<IPacket>(
@@ -28,7 +28,12 @@ namespace MySqlCdc
         private readonly EventDeserializer _eventDeserializer;
         private readonly PipeReader _pipeReader;
 
-        public BinlogFileReader(EventDeserializer eventDeserializer, FileStream stream)
+        /// <summary>
+        /// Creates a new <see cref="BinlogReader"/>.
+        /// </summary>
+        /// <param name="eventDeserializer">EventDeserializer implementation for a specific provider</param>
+        /// <param name="stream">Stream representing a binlog file</param>
+        public BinlogReader(EventDeserializer eventDeserializer, Stream stream)
         {
             byte[] header = new byte[EventConstants.FirstEventPosition];
             stream.Read(header, 0, EventConstants.FirstEventPosition);
@@ -90,7 +95,7 @@ namespace MySqlCdc
         }
 
         /// <summary>
-        /// Reads parsed event from binlog file.
+        /// Reads an event from binlog stream.
         /// </summary>
         /// <returns>Binlog event instance. Null if there are no more events</returns>
         public async Task<IBinlogEvent> ReadEventAsync()
@@ -101,7 +106,7 @@ namespace MySqlCdc
                 return null;
 
             if (packet is ExceptionPacket exceptionPacket)
-                throw new Exception("BinlogFileReader exception.", exceptionPacket.Exception);
+                throw new Exception("BinlogReader exception.", exceptionPacket.Exception);
 
             return packet as IBinlogEvent;
         }

@@ -5,8 +5,14 @@ using MySqlCdc.Protocol;
 
 namespace MySqlCdc.Providers.MariaDb
 {
-    public class MariaGtidListEventParser : IEventParser
+    /// <summary>
+    /// Parses <see cref="GtidListEvent"/> events in MariaDB.
+    /// </summary>
+    public class GtidListEventParser : IEventParser
     {
+        /// <summary>
+        /// Parses <see cref="GtidListEvent"/> from the buffer.
+        /// </summary>
         public IBinlogEvent ParseEvent(EventHeader header, ref PacketReader reader)
         {
             var gtidListLength = reader.ReadLong(4);

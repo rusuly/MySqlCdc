@@ -16,10 +16,24 @@ namespace MySqlCdc.Parsers
     /// </summary>
     public abstract class RowEventParser
     {
+        /// <summary>
+        /// Gets rows event version to determine row format.
+        /// </summary>
         protected int RowsEventVersion { get; }
+
+        /// <summary>
+        /// Gets all registered column parsers.
+        /// </summary>
         protected Dictionary<int, IColumnParser> ColumnParsers { get; }
+
+        /// <summary>
+        /// Gets cached TableMapEvent with required metadata.
+        /// </summary>
         protected Dictionary<long, TableMapEvent> TableMapCache { get; }
 
+        /// <summary>
+        /// Creates a new <see cref="RowEventParser"/>.
+        /// </summary>
         protected RowEventParser(Dictionary<long, TableMapEvent> tableMapCache, int rowsEventVersion)
         {
             TableMapCache = tableMapCache;
@@ -42,7 +56,7 @@ namespace MySqlCdc.Parsers
             ColumnParsers[(int)ColumnType.VARCHAR] = new StringParser();
             ColumnParsers[(int)ColumnType.VAR_STRING] = new StringParser();
 
-            /* ENUM, SET types */            
+            /* ENUM, SET types */
             ColumnParsers[(int)ColumnType.ENUM] = new EnumParser();
             ColumnParsers[(int)ColumnType.SET] = new SetParser();
 
@@ -69,6 +83,9 @@ namespace MySqlCdc.Parsers
             ColumnParsers[(int)ColumnType.JSON] = new BlobParser();
         }
 
+        /// <summary>
+        /// Parses the header in a rows event.
+        /// </summary>
         protected (long tableId, int flags, int columnsNumber) ParseHeader(ref PacketReader reader)
         {
             var tableId = reader.ReadLong(6);
@@ -85,6 +102,9 @@ namespace MySqlCdc.Parsers
             return (tableId, flags, columnsNumber);
         }
 
+        /// <summary>
+        /// Parses a row in a rows event.
+        /// </summary>
         protected ColumnData ParseRow(ref PacketReader reader, long tableId, BitArray columnsPresent)
         {
             if (!TableMapCache.TryGetValue(tableId, out var tableMap))

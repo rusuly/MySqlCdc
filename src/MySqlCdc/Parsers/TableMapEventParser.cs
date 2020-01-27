@@ -5,8 +5,15 @@ using MySqlCdc.Providers.MySql;
 
 namespace MySqlCdc.Parsers
 {
+    /// <summary>
+    /// Parses <see cref="TableMapEvent"/> events.
+    /// Supports all versions of MariaDB and MySQL 5.0+.
+    /// </summary>
     public class TableMapEventParser : IEventParser
     {
+        /// <summary>
+        /// Parses <see cref="TableMapEvent"/> from the buffer.
+        /// </summary>
         public IBinlogEvent ParseEvent(EventHeader header, ref PacketReader reader)
         {
             var tableId = reader.ReadLong(6);

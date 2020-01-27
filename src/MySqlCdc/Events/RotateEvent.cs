@@ -7,9 +7,19 @@ namespace MySqlCdc.Events
     /// </summary>
     public class RotateEvent : BinlogEvent
     {
+        /// <summary>
+        /// Gets next binlog filename
+        /// </summary>
         public string BinlogFilename { get; }
+
+        /// <summary>
+        /// Gets next binlog position
+        /// </summary>
         public long BinlogPosition { get; }
 
+        /// <summary>
+        /// Creates a new <see cref="RotateEvent"/>.
+        /// </summary>
         public RotateEvent(EventHeader header, string binlogFilename, long binlogPosition)
             : base(header)
         {

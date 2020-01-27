@@ -5,8 +5,14 @@ using MySqlCdc.Protocol;
 
 namespace MySqlCdc.Providers.MySql
 {
-    public class MySqlGtidEventParser : IEventParser
+    /// <summary>
+    /// Parses <see cref="GtidEvent"/> events in MySQL 5.6+.
+    /// </summary>
+    public class GtidEventParser : IEventParser
     {
+        /// <summary>
+        /// Parses <see cref="GtidEvent"/> from the buffer.
+        /// </summary>
         public IBinlogEvent ParseEvent(EventHeader header, ref PacketReader reader)
         {
             var flags = reader.ReadInt(1);

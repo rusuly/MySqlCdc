@@ -7,13 +7,21 @@ namespace MySqlCdc.Events
     public class IntVarEvent : BinlogEvent
     {
         /// <summary>
+        /// Gets type.
         /// 0x00 - Invalid value.
         /// 0x01 - LAST_INSERT_ID.
         /// 0x02 - Insert id (auto_increment).
         /// </summary>
         public int Type { get; }
+
+        /// <summary>
+        /// Gets value.
+        /// </summary>
         public long Value { get; }
 
+        /// <summary>
+        /// Creates a new <see cref="IntVarEvent"/>.
+        /// </summary>
         public IntVarEvent(EventHeader header, int type, long value) : base(header)
         {
             Type = type;
