@@ -206,18 +206,17 @@ namespace MySqlCdc.Protocol
         /// <summary>
         /// Checks whether the remaining buffer is empty
         /// </summary>
-        public bool IsEmpty()
-        {
-            return _reader.Remaining == 0;
-        }
+        public bool IsEmpty() => _reader.Remaining == 0;
+
+        /// <summary>
+        /// Gets number of consumed bytes
+        /// </summary>
+        public int Consumed => (int)_reader.Consumed;
 
         /// <summary>
         /// Skips the specified number of bytes in the buffer
         /// </summary>
-        public void Skip(int offset)
-        {
-            _reader.Advance(offset);
-        }
+        public void Skip(int offset) => _reader.Advance(offset);
 
         /// <summary>
         /// Parses a string from the sequence buffer.

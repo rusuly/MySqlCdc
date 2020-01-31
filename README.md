@@ -179,8 +179,8 @@ static async Task Start()
   | MySQL Type         | .NET type            |
   | ------------------ |:--------------------:|
   | GEOMETRY           | ❌ Not supported     |
-  | JSON (MySQL)       | ❌ Not supported     |
-  | JSON (MariaDB)     | byte[]               |
+  | JSON (MySQL)       | byte[], see below    |
+  | JSON (MariaDB)     | byte[], see below    |
   | BIT                | BitArray             |
   | TINYINT            | int                  |
   | SMALLINT           | int                  |
@@ -203,8 +203,49 @@ static async Task Start()
 
 - Invalid DATE, DATETIME values(0000-00-00) are parsed as DateTime null.
 - TIME, DATETIME, TIMESTAMP (MySQL 5.6.4+) will lose microseconds when converted to .NET types as MySQL types have bigger fractional part than corresponding .NET types can store.
-- Signedness of numeric columns cannot be determined in MariaDB(and MySQL 5.5) so the library stores all numeric columns as signed `int` or `long`. The client has the information and should manually cast to `uint` and `ulong`.
-- JSON, GEOMETRY types are not supported now.
+- Signedness of numeric columns cannot be determined in MariaDB(and MySQL 5.5) so the library stores all numeric columns as signed `int` or `long`. The client has the information and should manually cast to `uint` and `ulong`:
+
+    ```csharp
+    static async Task Start()
+    {
+        // casting unsigned tinyint columns
+        uint cellValue = (uint)(int)row.Cells[0];
+        uint tinyintColumn = (cellValue << 24) >> 24;
+
+        // casting unsigned smallint columns
+        uint cellValue = (uint)(int)row.Cells[0];
+        uint smallintColumn = (cellValue << 16) >> 16;
+
+        // casting unsigned mediumint columns
+        uint cellValue = (uint)(int)row.Cells[0];
+        uint mediumintColumn = (cellValue << 8) >> 8;
+
+        // casting unsigned int columns
+        uint cellValue = (uint)(int)row.Cells[0];
+        uint intColumn = cellValue;
+
+        // casting unsigned bigint columns
+        ulong cellValue = (ulong)(long)row.Cells[0];
+        ulong bigintColumn = cellValue;
+    }
+    ```
+
+- JSON columns have different format in MariaDB and MySQL:
+
+    ```csharp
+    static async Task Start()
+    {
+        // MariaDB stores JSON as strings
+        byte[] data = (byte[])row.Cells[0];
+        string json = Encoding.UTF8.GetString(data);
+
+        // MySQL stores JSON in binary format that needs to be parsed
+        byte[] data = (byte[])row.Cells[0];
+        string json = MySqlCdc.Providers.MySql.JsonParser.Parse(data);
+    }
+    ```
+
+- GEOMETRY type is read as `byte[]` but there is no parser that constructs .NET objects.
 - DECIMAL type is parsed to string as MySql decimal has bigger range(65 digits) than .NET decimal.
 
 ## Similar projects
