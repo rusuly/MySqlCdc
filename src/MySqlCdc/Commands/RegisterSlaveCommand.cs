@@ -10,7 +10,7 @@ namespace MySqlCdc.Commands
     /// </summary>
     internal class RegisterSlaveCommand : ICommand
     {
-        public long ServerId { get; private set; }
+        public long ServerId { get; }
 
         public RegisterSlaveCommand(long serverId)
         {

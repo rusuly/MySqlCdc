@@ -9,8 +9,8 @@ namespace MySqlCdc.Packets
     /// </summary>
     internal class EndOfFilePacket : IPacket
     {
-        public int WarningCount { get; private set; }
-        public int ServerStatus { get; private set; }
+        public int WarningCount { get; }
+        public int ServerStatus { get; }
 
         public EndOfFilePacket(ReadOnlySequence<byte> sequence)
         {

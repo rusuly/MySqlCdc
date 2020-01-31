@@ -11,11 +11,11 @@ namespace MySqlCdc.Commands
     /// </summary>
     internal class DumpBinlogGtidCommand : ICommand
     {
-        public long ServerId { get; private set; }
-        public string BinlogFilename { get; private set; }
-        public long BinlogPosition { get; private set; }
-        public string Gtid { get; private set; }
-        public int Flags { get; private set; }
+        public long ServerId { get; }
+        public string BinlogFilename { get; }
+        public long BinlogPosition { get; }
+        public string Gtid { get; }
+        public int Flags { get; }
 
         public DumpBinlogGtidCommand(long serverId, string binlogFilename, long binlogPosition, string gtid, int flags = 0)
         {

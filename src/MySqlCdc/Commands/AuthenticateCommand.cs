@@ -13,14 +13,14 @@ namespace MySqlCdc.Commands
     /// </summary>
     internal class AuthenticateCommand : ICommand
     {
-        public int ClientCapabilities { get; private set; }
-        public int ClientCollation { get; private set; }
-        public int MaxPacketSize { get; private set; }
-        public string Username { get; private set; }
-        public string Password { get; private set; }
-        public string Scramble { get; private set; }
-        public string Database { get; private set; }
-        public string AuthPluginName { get; private set; }
+        public int ClientCapabilities { get; }
+        public int ClientCollation { get; }
+        public int MaxPacketSize { get; }
+        public string Username { get; }
+        public string Password { get; }
+        public string Scramble { get; }
+        public string Database { get; }
+        public string AuthPluginName { get; }
 
         public AuthenticateCommand(ConnectionOptions options, int clientCollation, string scramble, string authPluginName, int maxPacketSize = 0)
         {

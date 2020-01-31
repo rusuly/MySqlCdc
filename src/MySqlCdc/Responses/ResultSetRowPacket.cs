@@ -10,7 +10,7 @@ namespace MySqlCdc.Packets
     /// </summary>
     internal class ResultSetRowPacket : IPacket
     {
-        public string[] Cells { get; private set; }
+        public IReadOnlyList<string> Cells { get; }
 
         public ResultSetRowPacket(ReadOnlySequence<byte> sequence)
         {
@@ -21,7 +21,7 @@ namespace MySqlCdc.Packets
             {
                 values.Add(reader.ReadLengthEncodedString());
             }
-            Cells = values.ToArray();
+            Cells = values;
         }
     }
 }

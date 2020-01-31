@@ -9,9 +9,9 @@ namespace MySqlCdc.Commands
     /// </summary>
     internal class SslRequestCommand : ICommand
     {
-        public int ClientCapabilities { get; private set; }
-        public int ClientCollation { get; private set; }
-        public int MaxPacketSize { get; private set; }
+        public int ClientCapabilities { get; }
+        public int ClientCollation { get; }
+        public int MaxPacketSize { get; }
 
         public SslRequestCommand(int clientCollation, int maxPacketSize = 0)
         {

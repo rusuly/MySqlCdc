@@ -9,9 +9,9 @@ namespace MySqlCdc.Packets
     /// </summary>
     internal class ErrorPacket : IPacket
     {
-        public int ErrorCode { get; private set; }
-        public string SqlState { get; private set; }
-        public string ErrorMessage { get; private set; }
+        public int ErrorCode { get; }
+        public string SqlState { get; }
+        public string ErrorMessage { get; }
 
         public ErrorPacket(ReadOnlySequence<byte> sequence)
         {

@@ -4,9 +4,9 @@ namespace MySqlCdc.Commands
 {
     internal class AuthPluginSwitchCommand : ICommand
     {
-        public string Password { get; private set; }
-        public string Scramble { get; private set; }
-        public string AuthPluginName { get; private set; }
+        public string Password { get; }
+        public string Scramble { get; }
+        public string AuthPluginName { get; }
 
         public AuthPluginSwitchCommand(string password, string scramble, string authPluginName)
         {

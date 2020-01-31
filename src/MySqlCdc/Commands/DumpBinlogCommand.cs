@@ -9,10 +9,10 @@ namespace MySqlCdc.Commands
     /// </summary>
     internal class DumpBinlogCommand : ICommand
     {
-        public long ServerId { get; private set; }
-        public string BinlogFilename { get; private set; }
-        public long BinlogPosition { get; private set; }
-        public int Flags { get; private set; }
+        public long ServerId { get; }
+        public string BinlogFilename { get; }
+        public long BinlogPosition { get; }
+        public int Flags { get; }
 
         public DumpBinlogCommand(long serverId, string binlogFilename, long binlogPosition, int flags = 0)
         {

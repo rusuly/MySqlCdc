@@ -9,8 +9,8 @@ namespace MySqlCdc.Packets
     /// </summary>
     internal class AuthPluginSwitchPacket : IPacket
     {
-        public string AuthPluginName { get; private set; }
-        public string AuthPluginData { get; private set; }
+        public string AuthPluginName { get; }
+        public string AuthPluginData { get; }
 
         public AuthPluginSwitchPacket(ReadOnlySequence<byte> sequence)
         {

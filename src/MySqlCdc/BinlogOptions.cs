@@ -31,18 +31,20 @@ namespace MySqlCdc
         /// <summary>
         /// Gets replication starting strategy.
         /// </summary>
-        internal StartingStrategy StartingStrategy { get; private set; }
+        internal StartingStrategy StartingStrategy { get; }
 
-        private BinlogOptions() { }
+        private BinlogOptions(StartingStrategy startingStrategy)
+        {
+            StartingStrategy = startingStrategy;
+        }
 
         /// <summary>
         /// Starts replication from first available binlog on master server.
         /// </summary>
         public static BinlogOptions FromStart()
         {
-            return new BinlogOptions
+            return new BinlogOptions(StartingStrategy.FromStart)
             {
-                StartingStrategy = StartingStrategy.FromStart,
                 Position = EventConstants.FirstEventPosition
             };
         }
@@ -53,7 +55,7 @@ namespace MySqlCdc
         /// </summary>
         public static BinlogOptions FromEnd()
         {
-            return new BinlogOptions { StartingStrategy = StartingStrategy.FromEnd };
+            return new BinlogOptions(StartingStrategy.FromEnd);
         }
 
         /// <summary>
@@ -61,9 +63,8 @@ namespace MySqlCdc
         /// </summary>
         public static BinlogOptions FromPosition(string filename, long position)
         {
-            return new BinlogOptions
+            return new BinlogOptions(StartingStrategy.FromPosition)
             {
-                StartingStrategy = StartingStrategy.FromPosition,
                 Filename = filename,
                 Position = position
             };
@@ -75,9 +76,8 @@ namespace MySqlCdc
         /// </summary>
         public static BinlogOptions FromGtid(string gtid)
         {
-            return new BinlogOptions
+            return new BinlogOptions(StartingStrategy.FromGtid)
             {
-                StartingStrategy = StartingStrategy.FromGtid,
                 Gtid = gtid,
                 Filename = string.Empty,
                 Position = EventConstants.FirstEventPosition

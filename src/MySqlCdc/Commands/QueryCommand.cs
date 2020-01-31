@@ -9,7 +9,7 @@ namespace MySqlCdc.Commands
     /// </summary>
     internal class QueryCommand : ICommand
     {
-        public string Sql { get; private set; }
+        public string Sql { get; }
 
         public QueryCommand(string sql)
         {
