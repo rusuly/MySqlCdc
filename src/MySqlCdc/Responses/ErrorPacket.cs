@@ -13,9 +13,10 @@ namespace MySqlCdc.Packets
         public string SqlState { get; }
         public string ErrorMessage { get; }
 
-        public ErrorPacket(ReadOnlySequence<byte> sequence)
+        public ErrorPacket(ReadOnlySequence<byte> buffer)
         {
-            var reader = new PacketReader(sequence);
+            using var memoryOwner = new MemoryOwner(buffer);
+            var reader = new PacketReader(memoryOwner.Memory);
 
             ErrorCode = reader.ReadInt(2);
 

@@ -1,5 +1,5 @@
 # MySqlCdc
-MySql binlog Change Data Capture (CDC) connector for .NET
+MySql binlog change data capture (CDC) connector for .NET
 
 Acts as MySql replication client streaming binlog events in real-time.
 
@@ -90,56 +90,53 @@ binlog_row_metadata = FULL
 ### Binlog event stream replication
 Data is stored in Cells property of row events in the same order. See the sample project.
 ```csharp
-static async Task Main(string[] args)
+var client = new BinlogClient(options =>
 {
-    var client = new BinlogClient(options =>
+    options.Port = 3306;
+    options.UseSsl = false;
+    options.Username = "root";
+    options.Password = "Qwertyu1";
+    options.HeartbeatInterval = TimeSpan.FromSeconds(30);
+    options.Blocking = true;
+    
+    // Start replication from MariaDB GTID
+    //options.Binlog = BinlogOptions.FromGtid("0-1-270");
+
+    // Start replication from MySQL GTID
+    //options.Binlog = BinlogOptions.FromGtid("f442510a-2881-11ea-b1dd-27916133dbb2:1-7");
+    
+    // Start replication from the position
+    //options.Binlog = BinlogOptions.FromPosition("mysql-bin.000008", 195);
+
+    // Start replication from last master position.
+    // Useful when you are only interested in new changes.
+    //options.Binlog = BinlogOptions.FromEnd();
+
+    // Start replication from first event of first available master binlog.
+    // Note that binlog files by default have expiration time and deleted.
+    options.Binlog = BinlogOptions.FromStart();
+});
+
+await client.ReplicateAsync(async (binlogEvent) =>
+{
+    if (binlogEvent is TableMapEvent tableMap)
     {
-        options.Port = 3306;
-        options.UseSsl = false;
-        options.Username = "root";
-        options.Password = "Qwertyu1";
-        options.HeartbeatInterval = TimeSpan.FromSeconds(30);
-        options.Blocking = true;
-        
-        // Start replication from MariaDB GTID
-        //options.Binlog = BinlogOptions.FromGtid("0-1-270");
-
-        // Start replication from MySQL GTID
-        //options.Binlog = BinlogOptions.FromGtid("f442510a-2881-11ea-b1dd-27916133dbb2:1-7");
-        
-        // Start replication from the position
-        //options.Binlog = BinlogOptions.FromPosition("mysql-bin.000008", 195);
-
-        // Start replication from last master position.
-        // Useful when you are only interested in new changes.
-        //options.Binlog = BinlogOptions.FromEnd();
-
-        // Start replication from first event of first available master binlog.
-        // Note that binlog files by default have expiration time and deleted.
-        options.Binlog = BinlogOptions.FromStart();
-    });
-
-    await client.ReplicateAsync(async (binlogEvent) =>
+        await HandleTableMapEvent(tableMap);
+    }
+    else if (binlogEvent is WriteRowsEvent writeRows)
     {
-        if (binlogEvent is TableMapEvent tableMap)
-        {
-            await HandleTableMapEvent(tableMap);
-        }
-        else if (binlogEvent is WriteRowsEvent writeRows)
-        {
-            await HandleWriteRowsEvent(writeRows);
-        }
-        else if (binlogEvent is UpdateRowsEvent updateRows)
-        {
-            await HandleUpdateRowsEvent(updateRows);
-        }
-        else if (binlogEvent is DeleteRowsEvent deleteRows)
-        {
-            await HandleDeleteRowsEvent(deleteRows);
-        }
-        else await PrintEventAsync(binlogEvent);
-    });
-}
+        await HandleWriteRowsEvent(writeRows);
+    }
+    else if (binlogEvent is UpdateRowsEvent updateRows)
+    {
+        await HandleUpdateRowsEvent(updateRows);
+    }
+    else if (binlogEvent is DeleteRowsEvent deleteRows)
+    {
+        await HandleDeleteRowsEvent(deleteRows);
+    }
+    else await PrintEventAsync(binlogEvent);
+});
 ```
 A typical transaction has the following structure.
 1. `GtidEvent` if gtid mode is enabled.
@@ -153,22 +150,19 @@ A typical transaction has the following structure.
 In some cases you will need to read binlog files offline from the file system.
 This can be done using `BinlogReader` class.
 ```csharp
-static async Task Start()
+using (FileStream fs = File.OpenRead("mariadb-bin.000002"))
 {
-    using (FileStream fs = File.OpenRead("mariadb-bin.000002"))
+    var reader = new BinlogReader(new MariaDbEventDeserializer(), fs);
+    while (true)
     {
-        var reader = new BinlogReader(new MariaDbEventDeserializer(), fs);
-        while (true)
+        var @event = await reader.ReadEventAsync();
+        if (@event != null)
         {
-            var @event = await reader.ReadEventAsync();
-            if (@event != null)
-            {
-                await PrintEventAsync(@event);
-            }
-            else
-            {
-                break;
-            }
+            await PrintEventAsync(@event);
+        }
+        else
+        {
+            break;
         }
     }
 }
@@ -206,43 +200,37 @@ static async Task Start()
 - Signedness of numeric columns cannot be determined in MariaDB(and MySQL 5.5) so the library stores all numeric columns as signed `int` or `long`. The client has the information and should manually cast to `uint` and `ulong`:
 
     ```csharp
-    static async Task Start()
-    {
-        // casting unsigned tinyint columns
-        uint cellValue = (uint)(int)row.Cells[0];
-        uint tinyintColumn = (cellValue << 24) >> 24;
+    // casting unsigned tinyint columns
+    uint cellValue = (uint)(int)row.Cells[0];
+    uint tinyintColumn = (cellValue << 24) >> 24;
 
-        // casting unsigned smallint columns
-        uint cellValue = (uint)(int)row.Cells[0];
-        uint smallintColumn = (cellValue << 16) >> 16;
+    // casting unsigned smallint columns
+    uint cellValue = (uint)(int)row.Cells[0];
+    uint smallintColumn = (cellValue << 16) >> 16;
 
-        // casting unsigned mediumint columns
-        uint cellValue = (uint)(int)row.Cells[0];
-        uint mediumintColumn = (cellValue << 8) >> 8;
+    // casting unsigned mediumint columns
+    uint cellValue = (uint)(int)row.Cells[0];
+    uint mediumintColumn = (cellValue << 8) >> 8;
 
-        // casting unsigned int columns
-        uint cellValue = (uint)(int)row.Cells[0];
-        uint intColumn = cellValue;
+    // casting unsigned int columns
+    uint cellValue = (uint)(int)row.Cells[0];
+    uint intColumn = cellValue;
 
-        // casting unsigned bigint columns
-        ulong cellValue = (ulong)(long)row.Cells[0];
-        ulong bigintColumn = cellValue;
-    }
+    // casting unsigned bigint columns
+    ulong cellValue = (ulong)(long)row.Cells[0];
+    ulong bigintColumn = cellValue;    
     ```
 
 - JSON columns have different format in MariaDB and MySQL:
 
     ```csharp
-    static async Task Start()
-    {
-        // MariaDB stores JSON as strings
-        byte[] data = (byte[])row.Cells[0];
-        string json = Encoding.UTF8.GetString(data);
+    // MariaDB stores JSON as strings
+    byte[] data = (byte[])row.Cells[0];
+    string json = Encoding.UTF8.GetString(data);
 
-        // MySQL stores JSON in binary format that needs to be parsed
-        byte[] data = (byte[])row.Cells[0];
-        string json = MySqlCdc.Providers.MySql.JsonParser.Parse(data);
-    }
+    // MySQL stores JSON in binary format that needs to be parsed
+    byte[] data = (byte[])row.Cells[0];
+    string json = MySqlCdc.Providers.MySql.JsonParser.Parse(data);    
     ```
 
 - GEOMETRY type is read as `byte[]` but there is no parser that constructs .NET objects.

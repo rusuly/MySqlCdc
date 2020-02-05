@@ -9,9 +9,8 @@ namespace MySqlCdc.Packets
     /// </summary>
     internal class OkPacket : IPacket
     {
-        public OkPacket(ReadOnlySequence<byte> sequence)
+        public OkPacket(ReadOnlySequence<byte> buffer)
         {
-            var reader = new PacketReader(sequence);
         }
     }
 }

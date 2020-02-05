@@ -22,9 +22,10 @@ namespace MySqlCdc.Packets
         public int AuthPluginLength { get; }
         public string AuthPluginName { get; }
 
-        public HandshakePacket(ReadOnlySequence<byte> sequence)
+        public HandshakePacket(ReadOnlySequence<byte> buffer)
         {
-            var reader = new PacketReader(sequence);
+            using var memoryOwner = new MemoryOwner(buffer);
+            var reader = new PacketReader(memoryOwner.Memory);
 
             ProtocolVersion = reader.ReadInt(1);
             ServerVersion = reader.ReadNullTerminatedString();

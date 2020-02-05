@@ -1,5 +1,4 @@
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using MySqlCdc.Checksum;
 using MySqlCdc.Constants;
@@ -58,21 +57,17 @@ namespace MySqlCdc.Events
         /// <summary>
         /// Constructs a <see cref="IBinlogEvent"/> from packet buffer.
         /// </summary>
-        public virtual IBinlogEvent DeserializeEvent(ReadOnlySequence<byte> buffer)
+        public virtual IBinlogEvent DeserializeEvent(ref PacketReader reader)
         {
-            var eventHeader = new EventHeader(buffer.Slice(0, EventConstants.HeaderSize));
-            var eventLength = eventHeader.EventLength - EventConstants.HeaderSize - ChecksumStrategy.Length;
-
-            var eventBuffer = buffer.Slice(EventConstants.HeaderSize, eventLength);
-            var checksumBuffer = buffer.Slice(eventHeader.EventLength - ChecksumStrategy.Length, ChecksumStrategy.Length);
+            var eventHeader = new EventHeader(ref reader);
 
             // Consider verifying checksum
             // ChecksumType.Verify(eventBuffer, checksumBuffer);
+            reader.SliceFromEnd(0, ChecksumStrategy.Length);
 
             IBinlogEvent binlogEvent = null;
             if (EventParsers.TryGetValue(eventHeader.EventType, out var eventParser))
             {
-                var reader = new PacketReader(eventBuffer);
                 binlogEvent = eventParser.ParseEvent(eventHeader, ref reader);
             }
             else

@@ -22,18 +22,18 @@ namespace MySqlCdc.Network
 
         public IPacket ReadPacket(ReadOnlySequence<byte> buffer)
         {
-            var packetReader = new PacketReader(buffer);
-            var status = packetReader.ReadInt(1);
-            buffer = buffer.Slice(1);
+            using var memoryOwner = new MemoryOwner(buffer);
+            var reader = new PacketReader(memoryOwner.Memory);
+            var status = reader.ReadInt(1);
 
             try
             {
                 // Network stream has 3 possible status types.
                 return (ResponseType)status switch
                 {
-                    ResponseType.Error => new ErrorPacket(buffer),
-                    ResponseType.EndOfFile => new EndOfFilePacket(buffer),
-                    _ => _eventDeserializer.DeserializeEvent(buffer)
+                    ResponseType.Ok => _eventDeserializer.DeserializeEvent(ref reader),
+                    ResponseType.EndOfFile => new EndOfFilePacket(buffer.Slice(1)),
+                    _ => new ErrorPacket(buffer.Slice(1)),
                 };
             }
             catch (Exception e)

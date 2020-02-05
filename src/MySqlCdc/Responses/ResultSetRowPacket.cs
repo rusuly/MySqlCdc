@@ -12,9 +12,10 @@ namespace MySqlCdc.Packets
     {
         public IReadOnlyList<string> Cells { get; }
 
-        public ResultSetRowPacket(ReadOnlySequence<byte> sequence)
+        public ResultSetRowPacket(ReadOnlySequence<byte> buffer)
         {
-            var reader = new PacketReader(sequence);
+            using var memoryOwner = new MemoryOwner(buffer);
+            var reader = new PacketReader(memoryOwner.Memory);
 
             var values = new List<string>();
             while (!reader.IsEmpty())

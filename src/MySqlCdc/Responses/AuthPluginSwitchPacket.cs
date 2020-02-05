@@ -12,9 +12,10 @@ namespace MySqlCdc.Packets
         public string AuthPluginName { get; }
         public string AuthPluginData { get; }
 
-        public AuthPluginSwitchPacket(ReadOnlySequence<byte> sequence)
+        public AuthPluginSwitchPacket(ReadOnlySequence<byte> buffer)
         {
-            var reader = new PacketReader(sequence);
+            using var memoryOwner = new MemoryOwner(buffer);
+            var reader = new PacketReader(memoryOwner.Memory);
 
             AuthPluginName = reader.ReadNullTerminatedString();
             AuthPluginData = reader.ReadNullTerminatedString();

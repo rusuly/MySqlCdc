@@ -17,7 +17,7 @@ namespace MySqlCdc.Providers.MySql
     /// </summary>
     public sealed class JsonParser
     {
-        private readonly static DoubleParser DoubleParser = new DoubleParser();
+        private readonly static ColumnParser ColumnParser = new ColumnParser();
 
         /// <summary>
         /// Parses MySQL binary format json to a string.
@@ -38,7 +38,10 @@ namespace MySqlCdc.Providers.MySql
         public static void Parse(byte[] data, IJsonWriter writer)
         {
             var parser = new JsonParser(writer);
-            var reader = new PacketReader(new ReadOnlySequence<byte>(data));
+
+            using var memoryOwner = new MemoryOwner(new ReadOnlySequence<byte>(data));
+            var reader = new PacketReader(memoryOwner.Memory);
+
             var valueType = parser.ReadValueType(ref reader);
             parser.ParseNode(ref reader, valueType);
         }
@@ -90,7 +93,7 @@ namespace MySqlCdc.Providers.MySql
                     _writer.WriteValue((ulong)reader.ReadLong(8));
                     break;
                 case ValueType.DOUBLE:
-                    _writer.WriteValue((double)DoubleParser.ParseColumn(ref reader, 0));
+                    _writer.WriteValue((double)ColumnParser.ParseDouble(ref reader, 0));
                     break;
                 case ValueType.STRING:
                     ParseString(ref reader);

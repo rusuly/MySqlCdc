@@ -12,9 +12,10 @@ namespace MySqlCdc.Packets
         public int WarningCount { get; }
         public int ServerStatus { get; }
 
-        public EndOfFilePacket(ReadOnlySequence<byte> sequence)
+        public EndOfFilePacket(ReadOnlySequence<byte> buffer)
         {
-            var reader = new PacketReader(sequence);
+            using var memoryOwner = new MemoryOwner(buffer);
+            var reader = new PacketReader(memoryOwner.Memory);
 
             WarningCount = reader.ReadInt(2);
             ServerStatus = reader.ReadInt(2);

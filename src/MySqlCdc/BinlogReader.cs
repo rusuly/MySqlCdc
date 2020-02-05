@@ -60,7 +60,7 @@ namespace MySqlCdc
                         break;
 
                     // Make sure the event fits in the buffer
-                    var eventHeader = new EventHeader(buffer.Slice(0, EventConstants.HeaderSize));
+                    var eventHeader = GetEventHeader(buffer);
                     if (buffer.Length < eventHeader.EventLength)
                         break;
 
@@ -79,11 +79,18 @@ namespace MySqlCdc
             _channel.Writer.Complete();
         }
 
+        private EventHeader GetEventHeader(ReadOnlySequence<byte> buffer)
+        {
+            using var memoryOwner = new MemoryOwner(buffer.Slice(0, EventConstants.HeaderSize));
+            var reader = new PacketReader(memoryOwner.Memory);
+            return new EventHeader(ref reader);
+        }
+
         private async Task OnReceiveEvent(ReadOnlySequence<byte> buffer)
         {
             try
             {
-                var @event = _eventDeserializer.DeserializeEvent(buffer);
+                var @event = Deserialize(buffer);
                 await _channel.Writer.WriteAsync(@event);
             }
             catch (Exception e)
@@ -92,6 +99,13 @@ namespace MySqlCdc
                 // Since a derived database may end up in an inconsistent state.
                 await _channel.Writer.WriteAsync(new ExceptionPacket(e));
             }
+        }
+
+        private IBinlogEvent Deserialize(ReadOnlySequence<byte> buffer)
+        {
+            using var memoryOwner = new MemoryOwner(buffer);
+            var reader = new PacketReader(memoryOwner.Memory);
+            return _eventDeserializer.DeserializeEvent(ref reader);
         }
 
         /// <summary>

@@ -79,7 +79,9 @@ namespace MySqlCdc.Providers.MySql
                 int metadataLength = (int)reader.ReadLengthEncodedNumber();
 
                 var metadata = reader.ReadByteArraySlow(metadataLength);
-                var buffer = new PacketReader(new ReadOnlySequence<byte>(metadata));
+
+                using var memoryOwner = new MemoryOwner(new ReadOnlySequence<byte>(metadata));
+                var buffer = new PacketReader(memoryOwner.Memory);
 
                 switch (metadataType)
                 {

@@ -69,8 +69,9 @@ namespace MySqlCdc.Network
 
         private int GetBodySize(ReadOnlySequence<byte> buffer)
         {
-            var packetReader = new PacketReader(buffer.Slice(0, PacketConstants.HeaderSize));
-            var bodySize = packetReader.ReadInt(3);
+            using var memoryOwner = new MemoryOwner(buffer.Slice(0, PacketConstants.HeaderSize));
+            var reader = new PacketReader(memoryOwner.Memory);
+            var bodySize = reader.ReadInt(3);
             return bodySize;
         }
 

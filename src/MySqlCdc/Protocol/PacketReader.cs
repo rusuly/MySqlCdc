@@ -1,7 +1,5 @@
 using System;
-using System.Buffers;
 using System.Collections;
-using System.Linq;
 using System.Text;
 using MySqlCdc.Constants;
 
@@ -12,14 +10,16 @@ namespace MySqlCdc.Protocol
     /// </summary>
     public ref struct PacketReader
     {
-        private SequenceReader<byte> _reader;
+        private int _consumed; // Used separatly from property to improve performance
+        private ReadOnlySpan<byte> _span;
 
         /// <summary>
         /// Creates a new <see cref="PacketReader"/>.
         /// </summary>
-        public PacketReader(ReadOnlySequence<byte> sequence)
+        public PacketReader(ReadOnlyMemory<byte> memory)
         {
-            _reader = new SequenceReader<byte>(sequence);
+            _span = memory.Span;
+            _consumed = 0;
         }
 
         /// <summary>
@@ -30,9 +30,9 @@ namespace MySqlCdc.Protocol
             int result = 0;
             for (int i = 0; i < length; i++)
             {
-                _reader.TryRead(out byte value);
-                result |= value << (i << 3);
+                result |= _span[_consumed + i] << (i << 3);
             }
+            Skip(length);
             return result;
         }
 
@@ -44,9 +44,9 @@ namespace MySqlCdc.Protocol
             long result = 0;
             for (int i = 0; i < length; i++)
             {
-                _reader.TryRead(out byte value);
-                result |= (long)value << (i << 3);
+                result |= (long)_span[_consumed + i] << (i << 3);
             }
+            Skip(length);
             return result;
         }
 
@@ -58,9 +58,9 @@ namespace MySqlCdc.Protocol
             int result = 0;
             for (int i = 0; i < length; i++)
             {
-                _reader.TryRead(out byte value);
-                result = (result << 8) | (int)value;
+                result = (result << 8) | (int)_span[_consumed + i];
             }
+            Skip(length);
             return result;
         }
 
@@ -72,9 +72,9 @@ namespace MySqlCdc.Protocol
             long result = 0;
             for (int i = 0; i < length; i++)
             {
-                _reader.TryRead(out byte value);
-                result = (result << 8) | (long)value;
+                result = (result << 8) | (long)_span[_consumed + i];
             }
+            Skip(length);
             return result;
         }
 
@@ -117,9 +117,9 @@ namespace MySqlCdc.Protocol
         /// </summary>
         public string ReadString(int length)
         {
-            var sequence = _reader.Sequence.Slice(_reader.Consumed, length);
-            _reader.Advance(length);
-            return ParseString(sequence);
+            var span = _span.Slice(_consumed, length);
+            Skip(length);
+            return ParseString(span);
         }
 
         /// <summary>
@@ -127,9 +127,9 @@ namespace MySqlCdc.Protocol
         /// </summary>
         public string ReadStringToEndOfFile()
         {
-            var sequence = _reader.Sequence.Slice(_reader.Consumed);
-            _reader.Advance(_reader.Remaining);
-            return ParseString(sequence);
+            var span = _span.Slice(_consumed);
+            Skip(span.Length);
+            return ParseString(span);
         }
 
         /// <summary>
@@ -137,8 +137,15 @@ namespace MySqlCdc.Protocol
         /// </summary>
         public string ReadNullTerminatedString()
         {
-            _reader.TryReadTo(out ReadOnlySequence<byte> sequence, PacketConstants.NullTerminator);
-            return ParseString(sequence);
+            int index = 0;
+            while (true)
+            {
+                if (_span[_consumed + index++] == PacketConstants.NullTerminator)
+                    break;
+            }
+            var span = _span.Slice(_consumed, index - 1);
+            Skip(index);
+            return ParseString(span);
         }
 
         /// <summary>
@@ -156,9 +163,9 @@ namespace MySqlCdc.Protocol
         /// </summary>
         public byte[] ReadByteArraySlow(int length)
         {
-            var sequence = _reader.Sequence.Slice(_reader.Consumed, length);
-            _reader.Advance(length);
-            return sequence.ToArray();
+            var span = _span.Slice(_consumed, length);
+            Skip(span.Length);
+            return span.ToArray();
         }
 
         /// <summary>
@@ -170,7 +177,7 @@ namespace MySqlCdc.Protocol
             var bytesNumber = (bitsNumber + 7) / 8;
             for (int i = 0; i < bytesNumber; i++)
             {
-                _reader.TryRead(out byte value);
+                byte value = _span[_consumed + i];
                 for (int y = 0; y < 8; y++)
                 {
                     int index = (i << 3) + y;
@@ -179,6 +186,7 @@ namespace MySqlCdc.Protocol
                     result[index] = (value & (1 << y)) > 0;
                 }
             }
+            Skip(bytesNumber);
             return result;
         }
 
@@ -191,7 +199,7 @@ namespace MySqlCdc.Protocol
             var bytesNumber = (bitsNumber + 7) / 8;
             for (int i = 0; i < bytesNumber; i++)
             {
-                _reader.TryRead(out byte value);
+                byte value = _span[_consumed + i];
                 for (int y = 0; y < 8; y++)
                 {
                     int index = ((bytesNumber - i - 1) << 3) + y;
@@ -200,49 +208,34 @@ namespace MySqlCdc.Protocol
                     result[index] = (value & (1 << y)) > 0;
                 }
             }
+            Skip(bytesNumber);
             return result;
         }
 
         /// <summary>
         /// Checks whether the remaining buffer is empty
         /// </summary>
-        public bool IsEmpty() => _reader.Remaining == 0;
+        public bool IsEmpty() => _span.Length == _consumed;
 
         /// <summary>
         /// Gets number of consumed bytes
         /// </summary>
-        public int Consumed => (int)_reader.Consumed;
+        public int Consumed => _consumed;
 
         /// <summary>
         /// Skips the specified number of bytes in the buffer
         /// </summary>
-        public void Skip(int offset) => _reader.Advance(offset);
+        public void Skip(int offset) => _consumed += offset;
 
-        /// <summary>
-        /// Parses a string from the sequence buffer.
-        /// </summary>
-        private string ParseString(ReadOnlySequence<byte> sequence)
+        public void SliceFromEnd(int index, int length)
         {
-            // Parses string fast from the single buffer Span<T> segment
-            if (sequence.IsSingleSegment)
-                return GetString(sequence.First.Span);
-
-            // Parses string slow copying from multiple buffer Span<T> segments
-            byte[] array = null;
-            try
-            {
-                array = ArrayPool<byte>.Shared.Rent(checked((int)sequence.Length));
-                var span = new Span<byte>(array, 0, (int)sequence.Length);
-                sequence.CopyTo(span);
-                return GetString(span);
-            }
-            finally
-            {
-                ArrayPool<byte>.Shared.Return(array);
-            }
+            _span = _span.Slice(0, _span.Length - length);
         }
 
-        private string GetString(ReadOnlySpan<byte> span)
+        /// <summary>
+        /// Parses a string from the span.
+        /// </summary>
+        private string ParseString(ReadOnlySpan<byte> span)
         {
             if (span.Length == 0)
                 return null;

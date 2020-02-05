@@ -36,11 +36,7 @@ namespace MySqlCdc.Protocol
         /// </summary>
         public void WriteByteArray(byte[] array)
         {
-#if NETSTANDARD2_1
-            _stream.Write(array);
-#else
             _stream.Write(array, 0, array.Length);
-#endif
         }
 
         /// <summary>

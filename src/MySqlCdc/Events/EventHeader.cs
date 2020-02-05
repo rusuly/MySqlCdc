@@ -1,4 +1,3 @@
-using System.Buffers;
 using MySqlCdc.Constants;
 using MySqlCdc.Protocol;
 
@@ -44,10 +43,8 @@ namespace MySqlCdc.Events
         /// <summary>
         /// Creates a new <see cref="EventHeader"/>.
         /// </summary>
-        public EventHeader(ReadOnlySequence<byte> sequence)
+        public EventHeader(ref PacketReader reader)
         {
-            var reader = new PacketReader(sequence);
-
             Timestamp = reader.ReadLong(4);
             EventType = (EventType)reader.ReadInt(1);
             ServerId = reader.ReadLong(4);
