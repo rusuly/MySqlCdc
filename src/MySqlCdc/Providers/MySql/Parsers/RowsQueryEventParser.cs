@@ -14,7 +14,7 @@ namespace MySqlCdc.Providers.MySql
         /// </summary>
         public IBinlogEvent ParseEvent(EventHeader header, ref PacketReader reader)
         {
-            reader.Skip(1);
+            reader.Advance(1);
             var query = reader.ReadStringToEndOfFile();
 
             return new RowsQueryEvent(header, query);

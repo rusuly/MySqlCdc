@@ -18,7 +18,7 @@ namespace MySqlCdc.Parsers
             var duration = reader.ReadLong(4);
 
             // DatabaseName length is null terminated
-            reader.Skip(1);
+            reader.Advance(1);
 
             var errorCode = reader.ReadInt(2);
             var statusVariableLength = reader.ReadInt(2);

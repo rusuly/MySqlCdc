@@ -31,7 +31,7 @@ namespace MySqlCdc
                 0x8230 => 2,
                 _ => throw new FormatException()
             };
-            reader.Skip(skipBytes);
+            reader.Advance(skipBytes);
 
             var sequence = reader.ReadByteArraySlow(15);
             if (!sequence.SequenceEqual(OidSequence))
@@ -44,9 +44,9 @@ namespace MySqlCdc
                 0x8203 => 2,
                 _ => throw new FormatException()
             };
-            reader.Skip(skipBytes);
+            reader.Advance(skipBytes);
 
-            if (reader.ReadInt(1) != 0x00)
+            if (reader.ReadByte() != 0x00)
                 throw new FormatException(); // Null byte
 
             twobytes = reader.ReadInt(2);
@@ -56,13 +56,13 @@ namespace MySqlCdc
                 0x8230 => 2,
                 _ => throw new FormatException()
             };
-            reader.Skip(skipBytes);
+            reader.Advance(skipBytes);
 
             // Read modulus size
             twobytes = reader.ReadInt(2);
             int modulusSize = twobytes switch
             {
-                0x8102 => reader.ReadBigEndianInt(1),
+                0x8102 => reader.ReadByte(),
                 0x8202 => reader.ReadBigEndianInt(2),
                 _ => throw new FormatException()
             };
@@ -71,10 +71,10 @@ namespace MySqlCdc
             if (modulus[0] == 0x00)
                 modulus = modulus.Skip(1).ToArray();
 
-            if (reader.ReadInt(1) != 0x02)
+            if (reader.ReadByte() != 0x02)
                 throw new FormatException();
 
-            var exponentSize = reader.ReadInt(1);
+            var exponentSize = reader.ReadByte();
             byte[] exponent = reader.ReadByteArraySlow(exponentSize);
             return new RSAParameters { Modulus = modulus, Exponent = exponent };
         }

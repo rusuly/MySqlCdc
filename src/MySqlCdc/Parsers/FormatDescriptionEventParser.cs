@@ -21,17 +21,17 @@ namespace MySqlCdc.Parsers
             var serverVersion = reader.ReadString(50).Trim((char)0);
 
             // Redundant timestamp & header length which is always 19
-            reader.Skip(5);
+            reader.Advance(5);
 
             // Get size of the event payload to determine beginning of the checksum part
-            reader.Skip((int)EventType.FORMAT_DESCRIPTION_EVENT - 1);
-            var eventPayloadLength = reader.ReadInt(1);
+            reader.Advance((int)EventType.FORMAT_DESCRIPTION_EVENT - 1);
+            var eventPayloadLength = reader.ReadByte();
 
             var checksumType = ChecksumType.None;
             if (eventPayloadLength != header.EventLength - EventConstants.HeaderSize)
             {
-                reader.Skip(eventPayloadLength - (EventTypesOffset + (int)EventType.FORMAT_DESCRIPTION_EVENT));
-                checksumType = (ChecksumType)reader.ReadInt(1);
+                reader.Advance(eventPayloadLength - (EventTypesOffset + (int)EventType.FORMAT_DESCRIPTION_EVENT));
+                checksumType = (ChecksumType)reader.ReadByte();
             }
 
             return new FormatDescriptionEvent(header, binlogVersion, serverVersion, checksumType);

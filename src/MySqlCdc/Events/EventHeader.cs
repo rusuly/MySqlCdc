@@ -46,7 +46,7 @@ namespace MySqlCdc.Events
         public EventHeader(ref PacketReader reader)
         {
             Timestamp = reader.ReadLong(4);
-            EventType = (EventType)reader.ReadInt(1);
+            EventType = (EventType)reader.ReadByte();
             ServerId = reader.ReadLong(4);
             EventLength = reader.ReadLong(4);
             NextEventPosition = reader.ReadLong(4);

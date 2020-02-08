@@ -24,7 +24,7 @@ namespace MySqlCdc.Network
         {
             using var memoryOwner = new MemoryOwner(buffer);
             var reader = new PacketReader(memoryOwner.Memory);
-            var status = reader.ReadInt(1);
+            var status = reader.ReadByte();
 
             try
             {

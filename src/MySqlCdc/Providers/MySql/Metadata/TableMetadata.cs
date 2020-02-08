@@ -75,7 +75,7 @@ namespace MySqlCdc.Providers.MySql
         {
             while (!reader.IsEmpty())
             {
-                var metadataType = (MetadataType)reader.ReadInt(1);
+                var metadataType = (MetadataType)reader.ReadByte();
                 int metadataLength = (int)reader.ReadLengthEncodedNumber();
 
                 var metadata = reader.ReadByteArraySlow(metadataLength);
@@ -187,7 +187,7 @@ namespace MySqlCdc.Providers.MySql
             var bytesNumber = (bitsNumber + 7) / 8;
             for (int i = 0; i < bytesNumber; i++)
             {
-                byte value = (byte)reader.ReadInt(1);
+                byte value = (byte)reader.ReadByte();
                 for (int y = 0; y < 8; y++)
                 {
                     int index = (i << 3) + y;

@@ -19,11 +19,11 @@ namespace MySqlCdc.Parsers
             var tableId = reader.ReadLong(6);
 
             // Reserved bytes and database name length 
-            reader.Skip(3);
+            reader.Advance(3);
             var databaseName = reader.ReadNullTerminatedString();
 
             // Table name length
-            reader.Skip(1);
+            reader.Advance(1);
             var tableName = reader.ReadNullTerminatedString();
 
             var columnsNumber = (int)reader.ReadLengthEncodedNumber();
@@ -63,7 +63,7 @@ namespace MySqlCdc.Parsers
                     case ColumnType.TIMESTAMP2:
                     case ColumnType.DATETIME2:
                     case ColumnType.TIME2:
-                        metadata[i] = reader.ReadInt(1);
+                        metadata[i] = reader.ReadByte();
                         break;
 
                     case ColumnType.BIT:

@@ -10,7 +10,7 @@ namespace MySqlCdc.Protocol
     /// </summary>
     public ref struct PacketReader
     {
-        private int _consumed; // Used separatly from property to improve performance
+        private int _offset; // Used separatly from property to improve performance
         private ReadOnlySpan<byte> _span;
 
         /// <summary>
@@ -19,8 +19,13 @@ namespace MySqlCdc.Protocol
         public PacketReader(ReadOnlyMemory<byte> memory)
         {
             _span = memory.Span;
-            _consumed = 0;
+            _offset = 0;
         }
+
+        /// <summary>
+        /// Reads one byte as int number.
+        /// </summary>
+        public int ReadByte() => _span[_offset++];
 
         /// <summary>
         /// Reads int number written in little-endian format.
@@ -30,9 +35,9 @@ namespace MySqlCdc.Protocol
             int result = 0;
             for (int i = 0; i < length; i++)
             {
-                result |= _span[_consumed + i] << (i << 3);
+                result |= _span[_offset + i] << (i << 3);
             }
-            Skip(length);
+            Advance(length);
             return result;
         }
 
@@ -44,9 +49,9 @@ namespace MySqlCdc.Protocol
             long result = 0;
             for (int i = 0; i < length; i++)
             {
-                result |= (long)_span[_consumed + i] << (i << 3);
+                result |= (long)_span[_offset + i] << (i << 3);
             }
-            Skip(length);
+            Advance(length);
             return result;
         }
 
@@ -58,9 +63,9 @@ namespace MySqlCdc.Protocol
             int result = 0;
             for (int i = 0; i < length; i++)
             {
-                result = (result << 8) | (int)_span[_consumed + i];
+                result = (result << 8) | (int)_span[_offset + i];
             }
-            Skip(length);
+            Advance(length);
             return result;
         }
 
@@ -72,9 +77,9 @@ namespace MySqlCdc.Protocol
             long result = 0;
             for (int i = 0; i < length; i++)
             {
-                result = (result << 8) | (long)_span[_consumed + i];
+                result = (result << 8) | (long)_span[_offset + i];
             }
-            Skip(length);
+            Advance(length);
             return result;
         }
 
@@ -87,7 +92,7 @@ namespace MySqlCdc.Protocol
         /// </summary>
         public int ReadLengthEncodedNumber()
         {
-            int firstByte = ReadInt(1);
+            int firstByte = ReadByte();
 
             if (firstByte < 0xFB)
                 return firstByte;
@@ -117,8 +122,8 @@ namespace MySqlCdc.Protocol
         /// </summary>
         public string ReadString(int length)
         {
-            var span = _span.Slice(_consumed, length);
-            Skip(length);
+            var span = _span.Slice(_offset, length);
+            Advance(length);
             return ParseString(span);
         }
 
@@ -127,8 +132,8 @@ namespace MySqlCdc.Protocol
         /// </summary>
         public string ReadStringToEndOfFile()
         {
-            var span = _span.Slice(_consumed);
-            Skip(span.Length);
+            var span = _span.Slice(_offset);
+            Advance(span.Length);
             return ParseString(span);
         }
 
@@ -140,11 +145,11 @@ namespace MySqlCdc.Protocol
             int index = 0;
             while (true)
             {
-                if (_span[_consumed + index++] == PacketConstants.NullTerminator)
+                if (_span[_offset + index++] == PacketConstants.NullTerminator)
                     break;
             }
-            var span = _span.Slice(_consumed, index - 1);
-            Skip(index);
+            var span = _span.Slice(_offset, index - 1);
+            Advance(index);
             return ParseString(span);
         }
 
@@ -163,8 +168,8 @@ namespace MySqlCdc.Protocol
         /// </summary>
         public byte[] ReadByteArraySlow(int length)
         {
-            var span = _span.Slice(_consumed, length);
-            Skip(span.Length);
+            var span = _span.Slice(_offset, length);
+            Advance(span.Length);
             return span.ToArray();
         }
 
@@ -177,7 +182,7 @@ namespace MySqlCdc.Protocol
             var bytesNumber = (bitsNumber + 7) / 8;
             for (int i = 0; i < bytesNumber; i++)
             {
-                byte value = _span[_consumed + i];
+                byte value = _span[_offset + i];
                 for (int y = 0; y < 8; y++)
                 {
                     int index = (i << 3) + y;
@@ -186,7 +191,7 @@ namespace MySqlCdc.Protocol
                     result[index] = (value & (1 << y)) > 0;
                 }
             }
-            Skip(bytesNumber);
+            Advance(bytesNumber);
             return result;
         }
 
@@ -199,7 +204,7 @@ namespace MySqlCdc.Protocol
             var bytesNumber = (bitsNumber + 7) / 8;
             for (int i = 0; i < bytesNumber; i++)
             {
-                byte value = _span[_consumed + i];
+                byte value = _span[_offset + i];
                 for (int y = 0; y < 8; y++)
                 {
                     int index = ((bytesNumber - i - 1) << 3) + y;
@@ -208,24 +213,24 @@ namespace MySqlCdc.Protocol
                     result[index] = (value & (1 << y)) > 0;
                 }
             }
-            Skip(bytesNumber);
+            Advance(bytesNumber);
             return result;
         }
 
         /// <summary>
         /// Checks whether the remaining buffer is empty
         /// </summary>
-        public bool IsEmpty() => _span.Length == _consumed;
+        public bool IsEmpty() => _span.Length == _offset;
 
         /// <summary>
         /// Gets number of consumed bytes
         /// </summary>
-        public int Consumed => _consumed;
+        public int Consumed => _offset;
 
         /// <summary>
         /// Skips the specified number of bytes in the buffer
         /// </summary>
-        public void Skip(int offset) => _consumed += offset;
+        public void Advance(int offset) => _offset += offset;
 
         public void SliceFromEnd(int index, int length)
         {

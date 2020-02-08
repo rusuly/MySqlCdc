@@ -49,7 +49,7 @@ namespace MySqlCdc.Parsers
             if (RowsEventVersion == 2)
             {
                 var extraDataLength = reader.ReadInt(2);
-                reader.Skip(extraDataLength - 2);
+                reader.Advance(extraDataLength - 2);
             }
 
             var columnsNumber = (int)reader.ReadLengthEncodedNumber();

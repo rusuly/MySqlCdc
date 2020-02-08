@@ -53,7 +53,7 @@ namespace MySqlCdc.Providers.MySql
             _writer = writer;
         }
 
-        private ValueType ReadValueType(ref PacketReader reader) => (ValueType)reader.ReadInt(1);
+        private ValueType ReadValueType(ref PacketReader reader) => (ValueType)reader.ReadByte();
 
         private void ParseNode(ref PacketReader reader, ValueType valueType)
         {
@@ -112,7 +112,7 @@ namespace MySqlCdc.Providers.MySql
         {
             int holeSize = offset - (reader.Consumed - startIndex);
             if (holeSize > 0)
-                reader.Skip(holeSize);
+                reader.Advance(holeSize);
         }
 
         private void ParseArrayOrObject(ref PacketReader reader, ValueType valueType, bool small, bool isObject)
@@ -142,17 +142,17 @@ namespace MySqlCdc.Providers.MySql
                 if (type == ValueType.LITERAL)
                 {
                     entries[i] = ValueEntry.FromInlined(type, ReadLiteral(ref reader));
-                    reader.Skip(valueSize - 1);
+                    reader.Advance(valueSize - 1);
                 }
                 else if (type == ValueType.INT16)
                 {
                     entries[i] = ValueEntry.FromInlined(type, (reader.ReadInt(2) << 16) >> 16);
-                    reader.Skip(valueSize - 2);
+                    reader.Advance(valueSize - 2);
                 }
                 else if (type == ValueType.UINT16)
                 {
                     entries[i] = ValueEntry.FromInlined(type, reader.ReadInt(2));
-                    reader.Skip(valueSize - 2);
+                    reader.Advance(valueSize - 2);
                 }
                 else if (type == ValueType.INT32 && !small)
                 {
@@ -230,7 +230,7 @@ namespace MySqlCdc.Providers.MySql
 
         private bool? ReadLiteral(ref PacketReader reader)
         {
-            int value = reader.ReadInt(1);
+            int value = reader.ReadByte();
             return value switch
             {
                 0x00 => null,
@@ -255,7 +255,7 @@ namespace MySqlCdc.Providers.MySql
             int length = 0;
             for (int i = 0; i < 5; i++)
             {
-                byte value = (byte)reader.ReadInt(1);
+                byte value = (byte)reader.ReadByte();
                 length |= (value & 0x7F) << (7 * i);
                 if ((value & 0x80) == 0)
                     return length;

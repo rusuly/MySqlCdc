@@ -15,7 +15,7 @@ namespace MySqlCdc.Providers.MySql
         /// </summary>
         public IBinlogEvent ParseEvent(EventHeader header, ref PacketReader reader)
         {
-            var flags = reader.ReadInt(1);
+            var flags = reader.ReadByte();
             var sourceId = reader.ReadByteArraySlow(16);
             var transactionId = reader.ReadLong(8);
 

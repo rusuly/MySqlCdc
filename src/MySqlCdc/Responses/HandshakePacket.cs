@@ -27,15 +27,15 @@ namespace MySqlCdc.Packets
             using var memoryOwner = new MemoryOwner(buffer);
             var reader = new PacketReader(memoryOwner.Memory);
 
-            ProtocolVersion = reader.ReadInt(1);
+            ProtocolVersion = reader.ReadByte();
             ServerVersion = reader.ReadNullTerminatedString();
             ConnectionId = reader.ReadInt(4);
             Scramble = reader.ReadNullTerminatedString();
             byte[] capabilityFlags1 = reader.ReadByteArraySlow(2);
-            ServerCollation = reader.ReadInt(1);
+            ServerCollation = reader.ReadByte();
             StatusFlags = reader.ReadInt(2);
             byte[] capabilityFlags2 = reader.ReadByteArraySlow(2);
-            AuthPluginLength = reader.ReadInt(1);
+            AuthPluginLength = reader.ReadByte();
             Filler = reader.ReadString(6);
             byte[] capabilityFlags3 = reader.ReadByteArraySlow(4);
 
