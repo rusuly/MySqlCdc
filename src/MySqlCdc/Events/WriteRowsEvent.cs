@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 
 namespace MySqlCdc.Events
@@ -27,7 +26,7 @@ namespace MySqlCdc.Events
         /// <summary>
         /// Gets bitmap of columns present in row event. See binlog_row_image parameter.
         /// </summary>
-        public BitArray ColumnsPresent { get; }
+        public bool[] ColumnsPresent { get; }
 
         /// <summary>
         /// Gets inserted rows
@@ -42,7 +41,7 @@ namespace MySqlCdc.Events
             long tableId,
             int flags,
             int columnsNumber,
-            BitArray columnsPresent,
+            bool[] columnsPresent,
             IReadOnlyList<ColumnData> rows)
             : base(header)
         {

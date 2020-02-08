@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 
 namespace MySqlCdc.Events
@@ -28,12 +27,12 @@ namespace MySqlCdc.Events
         /// <summary>
         /// Gets bitmap of columns present in row event before update. See binlog_row_image parameter.
         /// </summary>
-        public BitArray ColumnsPresentBeforeUpdate { get; }
+        public bool[] ColumnsPresentBeforeUpdate { get; }
 
         /// <summary>
         /// Gets bitmap of columns present in row event after update. See binlog_row_image parameter.
         /// </summary>
-        public BitArray ColumnsPresentAfterUpdate { get; }
+        public bool[] ColumnsPresentAfterUpdate { get; }
 
         /// <summary>
         /// Gets updated rows
@@ -48,8 +47,8 @@ namespace MySqlCdc.Events
             long tableId,
             int flags,
             int columnsNumber,
-            BitArray columnsPresentBeforeUpdate,
-            BitArray columnsPresentAfterUpdate,
+            bool[] columnsPresentBeforeUpdate,
+            bool[] columnsPresentAfterUpdate,
             IReadOnlyList<UpdateColumnData> rows)
             : base(header)
         {

@@ -1,4 +1,3 @@
-using System.Collections;
 using MySqlCdc.Providers.MySql;
 
 namespace MySqlCdc.Events
@@ -37,7 +36,7 @@ namespace MySqlCdc.Events
         /// <summary>
         /// Gets columns nullability
         /// </summary>
-        public BitArray NullBitmap { get; }
+        public bool[] NullBitmap { get; }
 
         /// <summary>
         /// Gets table metadata for MySQL 5.6+
@@ -54,7 +53,7 @@ namespace MySqlCdc.Events
             string tableName,
             byte[] columnTypes,
             int[] columnMetadata,
-            BitArray nullBitmap,
+            bool[] nullBitmap,
             TableMetadata tableMetadata) : base(header)
         {
             TableId = tableId;

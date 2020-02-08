@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using MySqlCdc.Columns;
 using MySqlCdc.Constants;
 using MySqlCdc.Events;
@@ -24,16 +22,10 @@ namespace MySqlCdc.Parsers
         protected int RowsEventVersion { get; }
 
         /// <summary>
-        /// Gets cached TableMapEvent with required metadata.
-        /// </summary>
-        protected Dictionary<long, TableMapEvent> TableMapCache { get; }
-
-        /// <summary>
         /// Creates a new <see cref="RowEventParser"/>.
         /// </summary>
-        protected RowEventParser(Dictionary<long, TableMapEvent> tableMapCache, int rowsEventVersion)
+        protected RowEventParser(int rowsEventVersion)
         {
-            TableMapCache = tableMapCache;
             RowsEventVersion = rowsEventVersion;
         }
 
@@ -59,14 +51,10 @@ namespace MySqlCdc.Parsers
         /// <summary>
         /// Parses a row in a rows event.
         /// </summary>
-        protected ColumnData ParseRow(ref PacketReader reader, long tableId, BitArray columnsPresent)
+        protected ColumnData ParseRow(ref PacketReader reader, TableMapEvent tableMap, bool[] columnsPresent, int cellsIncluded)
         {
-            if (!TableMapCache.TryGetValue(tableId, out var tableMap))
-                throw new InvalidOperationException("No preceding TableMapEvent event was found for the row event. You possibly started replication in the middle of logical event group.");
-
             var row = new object[tableMap.ColumnTypes.Length];
-            var cellsNumber = GetBitsNumber(columnsPresent);
-            var nullBitmap = reader.ReadBitmap(cellsNumber);
+            var nullBitmap = reader.ReadBitmap(cellsIncluded);
 
             for (int i = 0, skippedColumns = 0; i < tableMap.ColumnTypes.Length; i++)
             {
@@ -142,7 +130,7 @@ namespace MySqlCdc.Parsers
             };
         }
 
-        private int GetBitsNumber(BitArray bitmap)
+        protected int GetBitsNumber(bool[] bitmap)
         {
             int value = 0;
             for (int i = 0; i < bitmap.Length; i++)

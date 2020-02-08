@@ -1,6 +1,5 @@
 using System;
 using System.Buffers;
-using System.Collections;
 using System.Collections.Generic;
 using MySqlCdc.Constants;
 using MySqlCdc.Protocol;
@@ -16,7 +15,7 @@ namespace MySqlCdc.Providers.MySql
         /// <summary>
         /// Gets signedness of numeric colums.
         /// </summary>
-        public BitArray Signedness { get; }
+        public bool[] Signedness { get; }
 
         /// <summary>
         /// Gets charsets of character columns.
@@ -181,9 +180,9 @@ namespace MySqlCdc.Providers.MySql
             return result;
         }
 
-        private BitArray ReadSignednessBitmap(ref PacketReader reader, int bitsNumber)
+        private bool[] ReadSignednessBitmap(ref PacketReader reader, int bitsNumber)
         {
-            var result = new BitArray(bitsNumber);
+            var result = new bool[bitsNumber];
             var bytesNumber = (bitsNumber + 7) / 8;
             for (int i = 0; i < bytesNumber; i++)
             {

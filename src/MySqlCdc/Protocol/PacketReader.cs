@@ -1,6 +1,5 @@
 using System;
 using System.Buffers.Binary;
-using System.Collections;
 using System.Text;
 using MySqlCdc.Constants;
 
@@ -237,9 +236,9 @@ namespace MySqlCdc.Protocol
         /// <summary>
         /// Reads bitmap in little-endian bytes order
         /// </summary>
-        public BitArray ReadBitmap(int bitsNumber)
+        public bool[] ReadBitmap(int bitsNumber)
         {
-            var result = new BitArray(bitsNumber);
+            var result = new bool[bitsNumber];
             var bytesNumber = (bitsNumber + 7) / 8;
             for (int i = 0; i < bytesNumber; i++)
             {
@@ -259,9 +258,9 @@ namespace MySqlCdc.Protocol
         /// <summary>
         /// Reads bitmap in big-endian bytes order
         /// </summary>
-        public BitArray ReadBitmapBigEndian(int bitsNumber)
+        public bool[] ReadBitmapBigEndian(int bitsNumber)
         {
-            var result = new BitArray(bitsNumber);
+            var result = new bool[bitsNumber];
             var bytesNumber = (bitsNumber + 7) / 8;
             for (int i = 0; i < bytesNumber; i++)
             {

@@ -1,5 +1,6 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
+using MySqlCdc.Constants;
 using MySqlCdc.Events;
 using MySqlCdc.Protocol;
 
@@ -11,12 +12,15 @@ namespace MySqlCdc.Parsers
     /// </summary>
     public class WriteRowsEventParser : RowEventParser, IEventParser
     {
+        private Dictionary<long, TableMapEvent> _tableMapCache { get; }
+
         /// <summary>
         /// Creates a new <see cref="WriteRowsEventParser"/>.
         /// </summary>
         public WriteRowsEventParser(Dictionary<long, TableMapEvent> tableMapCache, int rowsEventVersion)
-            : base(tableMapCache, rowsEventVersion)
+            : base(rowsEventVersion)
         {
+            _tableMapCache = tableMapCache;
         }
 
         /// <summary>
@@ -32,12 +36,16 @@ namespace MySqlCdc.Parsers
             return new WriteRowsEvent(header, shared.tableId, shared.flags, shared.columnsNumber, columnsPresent, rows);
         }
 
-        private IReadOnlyList<ColumnData> ParseWriteRows(ref PacketReader reader, long tableId, BitArray columnsPresent)
+        private IReadOnlyList<ColumnData> ParseWriteRows(ref PacketReader reader, long tableId, bool[] columnsPresent)
         {
+            var cellsIncluded = GetBitsNumber(columnsPresent);
+            if (!_tableMapCache.TryGetValue(tableId, out var tableMap))
+                throw new InvalidOperationException(EventConstants.TableMapNotFound);
+
             var rows = new List<ColumnData>();
             while (!reader.IsEmpty())
             {
-                rows.Add(ParseRow(ref reader, tableId, columnsPresent));
+                rows.Add(ParseRow(ref reader, tableMap, columnsPresent, cellsIncluded));
             }
             return rows;
         }

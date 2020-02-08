@@ -175,7 +175,7 @@ using (FileStream fs = File.OpenRead("mariadb-bin.000002"))
   | GEOMETRY           | ❌ Not supported     |
   | JSON (MySQL)       | byte[], see below    |
   | JSON (MariaDB)     | byte[], see below    |
-  | BIT                | BitArray             |
+  | BIT                | bool[]               |
   | TINYINT            | int                  |
   | SMALLINT           | int                  |
   | MEDIUMINT          | int                  |
@@ -221,7 +221,7 @@ using (FileStream fs = File.OpenRead("mariadb-bin.000002"))
     ulong bigintColumn = cellValue;    
     ```
 
-- JSON columns have different format in MariaDB and MySQL:
+- JSON columns have different storage format in MariaDB and MySQL:
 
     ```csharp
     // MariaDB stores JSON as strings
