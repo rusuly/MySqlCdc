@@ -14,7 +14,7 @@ namespace MySqlCdc.Parsers
         /// </summary>
         public IBinlogEvent ParseEvent(EventHeader header, ref PacketReader reader)
         {
-            var binlogPosition = reader.ReadLong(8);
+            var binlogPosition = reader.ReadInt64LittleEndian();
             var binlogFilename = reader.ReadStringToEndOfFile();
 
             return new RotateEvent(header, binlogFilename, binlogPosition);

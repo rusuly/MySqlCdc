@@ -70,13 +70,13 @@ namespace MySqlCdc.Parsers
                     case ColumnType.VARCHAR:
                     case ColumnType.VAR_STRING:
                     case ColumnType.NEWDECIMAL:
-                        metadata[i] = reader.ReadInt(2);
+                        metadata[i] = reader.ReadInt16LittleEndian();
                         break;
 
                     case ColumnType.ENUM:
                     case ColumnType.SET:
                     case ColumnType.STRING:
-                        metadata[i] = reader.ReadBigEndianInt(2);
+                        metadata[i] = reader.ReadInt16BigEndian();
                         break;
 
                     default:

@@ -43,12 +43,12 @@ namespace MySqlCdc.Parsers
         protected (long tableId, int flags, int columnsNumber) ParseHeader(ref PacketReader reader)
         {
             var tableId = reader.ReadLong(6);
-            var flags = reader.ReadInt(2);
+            var flags = reader.ReadInt16LittleEndian();
 
             // Ignore extra data from newer versions of events
             if (RowsEventVersion == 2)
             {
-                var extraDataLength = reader.ReadInt(2);
+                var extraDataLength = reader.ReadInt16LittleEndian();
                 reader.Advance(extraDataLength - 2);
             }
 

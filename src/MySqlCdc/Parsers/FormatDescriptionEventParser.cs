@@ -17,7 +17,7 @@ namespace MySqlCdc.Parsers
         /// </summary>       
         public IBinlogEvent ParseEvent(EventHeader header, ref PacketReader reader)
         {
-            var binlogVersion = reader.ReadInt(2);
+            var binlogVersion = reader.ReadInt16LittleEndian();
             var serverVersion = reader.ReadString(50).Trim((char)0);
 
             // Redundant timestamp & header length which is always 19

@@ -14,14 +14,14 @@ namespace MySqlCdc.Parsers
         /// </summary>
         public IBinlogEvent ParseEvent(EventHeader header, ref PacketReader reader)
         {
-            var threadId = reader.ReadLong(4);
-            var duration = reader.ReadLong(4);
+            long threadId = (uint)reader.ReadInt32LittleEndian();
+            long duration = (uint)reader.ReadInt32LittleEndian();
 
             // DatabaseName length is null terminated
             reader.Advance(1);
 
-            var errorCode = reader.ReadInt(2);
-            var statusVariableLength = reader.ReadInt(2);
+            var errorCode = reader.ReadInt16LittleEndian();
+            var statusVariableLength = reader.ReadInt16LittleEndian();
             var statusVariables = reader.ReadByteArraySlow(statusVariableLength);
             var databaseName = reader.ReadNullTerminatedString();
             var sqlStatement = reader.ReadStringToEndOfFile();

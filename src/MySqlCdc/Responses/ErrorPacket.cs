@@ -18,7 +18,7 @@ namespace MySqlCdc.Packets
             using var memoryOwner = new MemoryOwner(buffer);
             var reader = new PacketReader(memoryOwner.Memory);
 
-            ErrorCode = reader.ReadInt(2);
+            ErrorCode = reader.ReadInt16LittleEndian();
 
             var message = reader.ReadStringToEndOfFile();
             if (message.StartsWith("#"))

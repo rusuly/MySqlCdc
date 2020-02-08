@@ -14,7 +14,7 @@ namespace MySqlCdc.Parsers
         /// </summary>
         public IBinlogEvent ParseEvent(EventHeader header, ref PacketReader reader)
         {
-            var xid = reader.ReadLong(8);
+            var xid = reader.ReadInt64LittleEndian();
 
             return new XidEvent(header, xid);
         }

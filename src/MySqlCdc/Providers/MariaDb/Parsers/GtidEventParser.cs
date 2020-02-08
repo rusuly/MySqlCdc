@@ -14,8 +14,8 @@ namespace MySqlCdc.Providers.MariaDb
         /// </summary>
         public IBinlogEvent ParseEvent(EventHeader header, ref PacketReader reader)
         {
-            var sequence = reader.ReadLong(8);
-            var domainId = reader.ReadLong(4);
+            var sequence = reader.ReadInt64LittleEndian();
+            long domainId = (uint)reader.ReadInt32LittleEndian();
             var gtid = $"{domainId}-{header.ServerId}-{sequence}";
 
             var flags = reader.ReadByte();

@@ -24,7 +24,7 @@ namespace MySqlCdc
             using var memoryOwner = new MemoryOwner(new ReadOnlySequence<byte>(x509Key));
             var reader = new PacketReader(memoryOwner.Memory);
 
-            var twobytes = reader.ReadInt(2);
+            var twobytes = reader.ReadInt16LittleEndian();
             var skipBytes = twobytes switch
             {
                 0x8130 => 1,
@@ -37,7 +37,7 @@ namespace MySqlCdc
             if (!sequence.SequenceEqual(OidSequence))
                 throw new FormatException("Sequence is not OID");
 
-            twobytes = reader.ReadInt(2);
+            twobytes = reader.ReadInt16LittleEndian();
             skipBytes = twobytes switch
             {
                 0x8103 => 1,
@@ -49,7 +49,7 @@ namespace MySqlCdc
             if (reader.ReadByte() != 0x00)
                 throw new FormatException(); // Null byte
 
-            twobytes = reader.ReadInt(2);
+            twobytes = reader.ReadInt16LittleEndian();
             skipBytes = twobytes switch
             {
                 0x8130 => 1,
@@ -59,11 +59,11 @@ namespace MySqlCdc
             reader.Advance(skipBytes);
 
             // Read modulus size
-            twobytes = reader.ReadInt(2);
+            twobytes = reader.ReadInt16LittleEndian();
             int modulusSize = twobytes switch
             {
                 0x8102 => reader.ReadByte(),
-                0x8202 => reader.ReadBigEndianInt(2),
+                0x8202 => reader.ReadInt16BigEndian(),
                 _ => throw new FormatException()
             };
 

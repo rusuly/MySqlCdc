@@ -17,7 +17,7 @@ namespace MySqlCdc.Providers.MySql
         {
             var flags = reader.ReadByte();
             var sourceId = reader.ReadByteArraySlow(16);
-            var transactionId = reader.ReadLong(8);
+            var transactionId = reader.ReadInt64LittleEndian();
 
             var sb = new StringBuilder();
             for (int i = 0; i < sourceId.Length; i++)

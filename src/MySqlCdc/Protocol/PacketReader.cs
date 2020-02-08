@@ -1,4 +1,5 @@
 using System;
+using System.Buffers.Binary;
 using System.Collections;
 using System.Text;
 using MySqlCdc.Constants;
@@ -26,6 +27,66 @@ namespace MySqlCdc.Protocol
         /// Reads one byte as int number.
         /// </summary>
         public int ReadByte() => _span[_offset++];
+
+        /// <summary>
+        /// Reads 16-bit int written in little-endian format.
+        /// </summary>
+        public int ReadInt16LittleEndian()
+        {
+            int result = BinaryPrimitives.ReadUInt16LittleEndian(_span.Slice(_offset, 2));
+            Advance(2);
+            return result;
+        }
+
+        /// <summary>
+        /// Reads 16-bit int written in big-endian format.
+        /// </summary>
+        public int ReadInt16BigEndian()
+        {
+            int result = BinaryPrimitives.ReadUInt16BigEndian(_span.Slice(_offset, 2));
+            Advance(2);
+            return result;
+        }
+
+        /// <summary>
+        /// Reads 32-bit int written in little-endian format.
+        /// </summary>
+        public int ReadInt32LittleEndian()
+        {
+            int result = BinaryPrimitives.ReadInt32LittleEndian(_span.Slice(_offset, 4));
+            Advance(4);
+            return result;
+        }
+
+        /// <summary>
+        /// Reads 32-bit int written in big-endian format.
+        /// </summary>
+        public int ReadInt32BigEndian()
+        {
+            int result = BinaryPrimitives.ReadInt32BigEndian(_span.Slice(_offset, 4));
+            Advance(4);
+            return result;
+        }
+
+        /// <summary>
+        /// Reads 64-bit long written in little-endian format.
+        /// </summary>
+        public long ReadInt64LittleEndian()
+        {
+            long result = BinaryPrimitives.ReadInt64LittleEndian(_span.Slice(_offset, 8));
+            Advance(8);
+            return result;
+        }
+
+        /// <summary>
+        /// Reads 64-bit long written in big-endian format.
+        /// </summary>
+        public long ReadInt64BigEndian()
+        {
+            long result = BinaryPrimitives.ReadInt64BigEndian(_span.Slice(_offset, 8));
+            Advance(8);
+            return result;
+        }
 
         /// <summary>
         /// Reads int number written in little-endian format.
@@ -99,7 +160,7 @@ namespace MySqlCdc.Protocol
             else if (firstByte == 0xFB)
                 throw new FormatException("Length encoded integer cannot be NULL.");
             else if (firstByte == 0xFC)
-                return ReadInt(2);
+                return ReadInt16LittleEndian();
             else if (firstByte == 0xFD)
                 return ReadInt(3);
             else if (firstByte == 0xFE)
@@ -107,7 +168,7 @@ namespace MySqlCdc.Protocol
                 try
                 {
                     // Max theoretical length of .NET string is Int32.MaxValue
-                    return checked((int)ReadLong(8));
+                    return checked((int)ReadInt64LittleEndian());
                 }
                 catch (OverflowException)
                 {

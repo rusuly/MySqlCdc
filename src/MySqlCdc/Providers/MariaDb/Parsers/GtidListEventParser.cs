@@ -15,14 +15,14 @@ namespace MySqlCdc.Providers.MariaDb
         /// </summary>
         public IBinlogEvent ParseEvent(EventHeader header, ref PacketReader reader)
         {
-            var gtidListLength = reader.ReadLong(4);
+            long gtidListLength = (uint)reader.ReadInt32LittleEndian();
 
             var gtidList = new List<string>();
             for (int i = 0; i < gtidListLength; i++)
             {
-                var domainId = reader.ReadLong(4);
-                var serverId = reader.ReadLong(4);
-                var sequence = reader.ReadLong(8);
+                long domainId = (uint)reader.ReadInt32LittleEndian();
+                long serverId = (uint)reader.ReadInt32LittleEndian();
+                var sequence = reader.ReadInt64LittleEndian();
                 var gtid = $"{domainId}-{serverId}-{sequence}";
                 gtidList.Add(gtid);
             }
