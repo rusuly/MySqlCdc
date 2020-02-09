@@ -43,7 +43,7 @@ namespace MySqlCdc.Columns
             int size = CompressedBytes[compressedIntegral];
             if (size > 0)
             {
-                result.Append(buffer.ReadBigEndianInt(size));
+                result.Append(buffer.ReadIntBigEndian(size));
             }
             for (int i = 0; i < uncompressedIntegral; i++)
             {
@@ -58,7 +58,7 @@ namespace MySqlCdc.Columns
             }
             if (size > 0)
             {
-                result.Append(buffer.ReadBigEndianInt(size).ToString($"D{compressedFractional}"));
+                result.Append(buffer.ReadIntBigEndian(size).ToString($"D{compressedFractional}"));
             }
             return result.ToString();
         }
@@ -81,7 +81,7 @@ namespace MySqlCdc.Columns
 
         public object ParseMediumInt(ref PacketReader reader, int metadata)
         {
-            return (reader.ReadInt(3) << 8) >> 8;
+            return (reader.ReadIntLittleEndian(3) << 8) >> 8;
         }
 
         public object ParseInt(ref PacketReader reader, int metadata)
@@ -112,12 +112,12 @@ namespace MySqlCdc.Columns
 
         public object ParseEnum(ref PacketReader reader, int metadata)
         {
-            return reader.ReadInt(metadata);
+            return reader.ReadIntLittleEndian(metadata);
         }
 
         public object ParseSet(ref PacketReader reader, int metadata)
         {
-            return reader.ReadLong(metadata);
+            return reader.ReadLongLittleEndian(metadata);
         }
 
         public object ParseYear(ref PacketReader reader, int metadata)
@@ -127,7 +127,7 @@ namespace MySqlCdc.Columns
 
         public object ParseDate(ref PacketReader reader, int metadata)
         {
-            int value = reader.ReadInt(3);
+            int value = reader.ReadIntLittleEndian(3);
 
             // Bits 1-5 store the day. 
             // Bits 6-9 store the month. 
@@ -144,7 +144,7 @@ namespace MySqlCdc.Columns
 
         public object ParseTime(ref PacketReader reader, int metadata)
         {
-            int value = reader.ReadInt(3);
+            int value = reader.ReadIntLittleEndian(3);
             int seconds = value % 100;
             value = value / 100;
             int minutes = value % 100;
@@ -190,7 +190,7 @@ namespace MySqlCdc.Columns
         // 24 bits = 3 bytes
         public object ParseTime2(ref PacketReader reader, int metadata)
         {
-            long value = reader.ReadBigEndianLong(3);
+            long value = reader.ReadLongBigEndian(3);
             int millisecond = ParseFractionalPart(ref reader, metadata) / 1000;
 
             int hours = GetBitSliceValue(value, 2, 10, 24);
@@ -220,7 +220,7 @@ namespace MySqlCdc.Columns
         // 40 bits = 5 bytes
         public object ParseDateTime2(ref PacketReader reader, int metadata)
         {
-            long value = reader.ReadBigEndianLong(5);
+            long value = reader.ReadLongBigEndian(5);
             int millisecond = ParseFractionalPart(ref reader, metadata) / 1000;
 
             int yearMonth = GetBitSliceValue(value, 1, 17, 40);
@@ -239,7 +239,7 @@ namespace MySqlCdc.Columns
 
         public object ParseBlob(ref PacketReader reader, int metadata)
         {
-            var length = reader.ReadInt(metadata);
+            var length = reader.ReadIntLittleEndian(metadata);
             return reader.ReadByteArraySlow(length);
         }
 
@@ -249,7 +249,7 @@ namespace MySqlCdc.Columns
             if (length == 0)
                 return 0;
 
-            int fraction = reader.ReadBigEndianInt(length);
+            int fraction = reader.ReadIntBigEndian(length);
             return fraction * (int)Math.Pow(100, 3 - length);
         }
 

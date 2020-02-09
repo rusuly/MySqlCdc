@@ -71,7 +71,7 @@ namespace MySqlCdc.Network
         {
             using var memoryOwner = new MemoryOwner(buffer.Slice(0, PacketConstants.HeaderSize));
             var reader = new PacketReader(memoryOwner.Memory);
-            var bodySize = reader.ReadInt(3);
+            var bodySize = reader.ReadIntLittleEndian(3);
             return bodySize;
         }
 

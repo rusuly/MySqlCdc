@@ -34,7 +34,7 @@ namespace MySqlCdc.Parsers
         /// </summary>
         protected (long tableId, int flags, int columnsNumber) ParseHeader(ref PacketReader reader)
         {
-            var tableId = reader.ReadLong(6);
+            var tableId = reader.ReadLongLittleEndian(6);
             var flags = reader.ReadInt16LittleEndian();
 
             // Ignore extra data from newer versions of events

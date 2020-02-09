@@ -90,7 +90,7 @@ namespace MySqlCdc.Protocol
         /// <summary>
         /// Reads int number written in little-endian format.
         /// </summary>
-        public int ReadInt(int length)
+        public int ReadIntLittleEndian(int length)
         {
             int result = 0;
             for (int i = 0; i < length; i++)
@@ -104,7 +104,7 @@ namespace MySqlCdc.Protocol
         /// <summary>
         /// Reads long number written in little-endian format.
         /// </summary>
-        public long ReadLong(int length)
+        public long ReadLongLittleEndian(int length)
         {
             long result = 0;
             for (int i = 0; i < length; i++)
@@ -118,7 +118,7 @@ namespace MySqlCdc.Protocol
         /// <summary>
         /// Reads int number written in big-endian format.
         /// </summary>
-        public int ReadBigEndianInt(int length)
+        public int ReadIntBigEndian(int length)
         {
             int result = 0;
             for (int i = 0; i < length; i++)
@@ -132,7 +132,7 @@ namespace MySqlCdc.Protocol
         /// <summary>
         /// Reads long number written in big-endian format.
         /// </summary>
-        public long ReadBigEndianLong(int length)
+        public long ReadLongBigEndian(int length)
         {
             long result = 0;
             for (int i = 0; i < length; i++)
@@ -161,7 +161,7 @@ namespace MySqlCdc.Protocol
             else if (firstByte == 0xFC)
                 return ReadInt16LittleEndian();
             else if (firstByte == 0xFD)
-                return ReadInt(3);
+                return ReadIntLittleEndian(3);
             else if (firstByte == 0xFE)
             {
                 try

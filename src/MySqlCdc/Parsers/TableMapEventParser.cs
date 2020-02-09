@@ -16,7 +16,7 @@ namespace MySqlCdc.Parsers
         /// </summary>
         public IBinlogEvent ParseEvent(EventHeader header, ref PacketReader reader)
         {
-            var tableId = reader.ReadLong(6);
+            var tableId = reader.ReadLongLittleEndian(6);
 
             // Reserved bytes and database name length 
             reader.Advance(3);
