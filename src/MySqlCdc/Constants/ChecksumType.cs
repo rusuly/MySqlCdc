@@ -8,7 +8,7 @@ namespace MySqlCdc.Constants
         /// <summary>
         /// Checksum is disabled.
         /// </summary>
-        None = 0,
+        NONE = 0,
 
         /// <summary>
         /// CRC32 checksum.

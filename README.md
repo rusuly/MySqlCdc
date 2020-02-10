@@ -40,7 +40,7 @@ Please make sure the following requirements are met:
     binlog_row_image=full
     ```
 
-   MySQL 5.6/5.7 also require the following line:
+   MySQL 5.6/5.7 and MariaDB 10.1 also require the following line:
 
     ```conf
     server-id=1
@@ -172,7 +172,7 @@ using (FileStream fs = File.OpenRead("mariadb-bin.000002"))
 
   | MySQL Type         | .NET type            |
   | ------------------ |:--------------------:|
-  | GEOMETRY           | ❌ Not supported     |
+  | GEOMETRY           | byte[]               |
   | JSON (MySQL)       | byte[], see below    |
   | JSON (MariaDB)     | byte[], see below    |
   | BIT                | bool[]               |
@@ -246,7 +246,9 @@ MySqlCdc supports both MariaDB & MySQL server.
 
   | MariaDB  | Status                   |
   | -------- |:------------------------:|
-  | 10.3     | Did not verify           |
+  | 10.1     | ✅ Supported             |
+  | 10.2     | ✅ Supported             |
+  | 10.3     | ✅ Supported             |
   | 10.4     | ✅ Supported             |
 
   | MySQL    | Status                   |

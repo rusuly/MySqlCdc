@@ -79,7 +79,7 @@ namespace MySqlCdc.Events
             {
                 ChecksumStrategy = formatEvent.ChecksumType switch
                 {
-                    ChecksumType.None => new NoneChecksum(),
+                    ChecksumType.NONE => new NoneChecksum(),
                     ChecksumType.CRC32 => new Crc32Checksum(),
                     _ => throw new InvalidOperationException("The master checksum type is not supported.")
                 };

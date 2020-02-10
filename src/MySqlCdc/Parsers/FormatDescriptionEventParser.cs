@@ -27,7 +27,7 @@ namespace MySqlCdc.Parsers
             reader.Advance((int)EventType.FORMAT_DESCRIPTION_EVENT - 1);
             var eventPayloadLength = reader.ReadByte();
 
-            var checksumType = ChecksumType.None;
+            var checksumType = ChecksumType.NONE;
             if (eventPayloadLength != header.EventLength - EventConstants.HeaderSize)
             {
                 reader.Advance(eventPayloadLength - (EventTypesOffset + (int)EventType.FORMAT_DESCRIPTION_EVENT));

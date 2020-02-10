@@ -267,7 +267,7 @@ namespace MySqlCdc
             var checksumType = (ChecksumType)Enum.Parse(typeof(ChecksumType), resultSet[0].Cells[0]);
             _databaseProvider.Deserializer.ChecksumStrategy = checksumType switch
             {
-                ChecksumType.None => new NoneChecksum(),
+                ChecksumType.NONE => new NoneChecksum(),
                 ChecksumType.CRC32 => new Crc32Checksum(),
                 _ => throw new InvalidOperationException("The master checksum type is not supported.")
             };
