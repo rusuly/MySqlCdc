@@ -40,7 +40,7 @@ namespace MySqlCdc.Providers.MySql
             var parser = new JsonParser(writer);
 
             using var memoryOwner = new MemoryOwner(new ReadOnlySequence<byte>(data));
-            var reader = new PacketReader(memoryOwner.Memory);
+            var reader = new PacketReader(memoryOwner.Memory.Span);
 
             var valueType = parser.ReadValueType(ref reader);
             parser.ParseNode(ref reader, valueType);

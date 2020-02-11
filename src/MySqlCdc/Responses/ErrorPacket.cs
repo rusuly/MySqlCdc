@@ -16,7 +16,7 @@ namespace MySqlCdc.Packets
         public ErrorPacket(ReadOnlySequence<byte> buffer)
         {
             using var memoryOwner = new MemoryOwner(buffer);
-            var reader = new PacketReader(memoryOwner.Memory);
+            var reader = new PacketReader(memoryOwner.Memory.Span);
 
             ErrorCode = reader.ReadInt16LittleEndian();
 

@@ -63,7 +63,7 @@ namespace MySqlCdc.Events
 
             // Consider verifying checksum
             // ChecksumType.Verify(eventBuffer, checksumBuffer);
-            reader.SliceFromEnd(0, ChecksumStrategy.Length);
+            reader.SliceFromEnd(ChecksumStrategy.Length);
 
             IBinlogEvent binlogEvent = null;
             if (EventParsers.TryGetValue(eventHeader.EventType, out var eventParser))

@@ -25,7 +25,7 @@ namespace MySqlCdc.Packets
         public HandshakePacket(ReadOnlySequence<byte> buffer)
         {
             using var memoryOwner = new MemoryOwner(buffer);
-            var reader = new PacketReader(memoryOwner.Memory);
+            var reader = new PacketReader(memoryOwner.Memory.Span);
 
             ProtocolVersion = reader.ReadByte();
             ServerVersion = reader.ReadNullTerminatedString();

@@ -15,7 +15,7 @@ namespace MySqlCdc.Packets
         public EndOfFilePacket(ReadOnlySequence<byte> buffer)
         {
             using var memoryOwner = new MemoryOwner(buffer);
-            var reader = new PacketReader(memoryOwner.Memory);
+            var reader = new PacketReader(memoryOwner.Memory.Span);
 
             WarningCount = reader.ReadInt16LittleEndian();
             ServerStatus = reader.ReadInt16LittleEndian();

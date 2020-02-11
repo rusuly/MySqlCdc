@@ -15,7 +15,7 @@ namespace MySqlCdc.Packets
         public AuthPluginSwitchPacket(ReadOnlySequence<byte> buffer)
         {
             using var memoryOwner = new MemoryOwner(buffer);
-            var reader = new PacketReader(memoryOwner.Memory);
+            var reader = new PacketReader(memoryOwner.Memory.Span);
 
             AuthPluginName = reader.ReadNullTerminatedString();
             AuthPluginData = reader.ReadNullTerminatedString();

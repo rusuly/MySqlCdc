@@ -82,7 +82,7 @@ namespace MySqlCdc
         private EventHeader GetEventHeader(ReadOnlySequence<byte> buffer)
         {
             using var memoryOwner = new MemoryOwner(buffer.Slice(0, EventConstants.HeaderSize));
-            var reader = new PacketReader(memoryOwner.Memory);
+            var reader = new PacketReader(memoryOwner.Memory.Span);
             return new EventHeader(ref reader);
         }
 
@@ -104,7 +104,7 @@ namespace MySqlCdc
         private IBinlogEvent Deserialize(ReadOnlySequence<byte> buffer)
         {
             using var memoryOwner = new MemoryOwner(buffer);
-            var reader = new PacketReader(memoryOwner.Memory);
+            var reader = new PacketReader(memoryOwner.Memory.Span);
             return _eventDeserializer.DeserializeEvent(ref reader);
         }
 

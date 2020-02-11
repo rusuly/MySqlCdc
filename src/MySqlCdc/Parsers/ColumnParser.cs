@@ -38,7 +38,7 @@ namespace MySqlCdc.Columns
             }
 
             using var memoryOwner = new MemoryOwner(new ReadOnlySequence<byte>(value));
-            var buffer = new PacketReader(memoryOwner.Memory);
+            var buffer = new PacketReader(memoryOwner.Memory.Span);
 
             int size = CompressedBytes[compressedIntegral];
             if (size > 0)

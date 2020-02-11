@@ -15,7 +15,7 @@ namespace MySqlCdc.Packets
         public ResultSetRowPacket(ReadOnlySequence<byte> buffer)
         {
             using var memoryOwner = new MemoryOwner(buffer);
-            var reader = new PacketReader(memoryOwner.Memory);
+            var reader = new PacketReader(memoryOwner.Memory.Span);
 
             var values = new List<string>();
             while (!reader.IsEmpty())

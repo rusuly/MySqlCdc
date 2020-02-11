@@ -22,7 +22,7 @@ namespace MySqlCdc
         public static RSAParameters DecodePublicKey(byte[] x509Key)
         {
             using var memoryOwner = new MemoryOwner(new ReadOnlySequence<byte>(x509Key));
-            var reader = new PacketReader(memoryOwner.Memory);
+            var reader = new PacketReader(memoryOwner.Memory.Span);
 
             var twobytes = reader.ReadInt16LittleEndian();
             var skipBytes = twobytes switch

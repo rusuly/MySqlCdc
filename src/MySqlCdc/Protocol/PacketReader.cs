@@ -10,15 +10,15 @@ namespace MySqlCdc.Protocol
     /// </summary>
     public ref struct PacketReader
     {
-        private int _offset; // Used separatly from property to improve performance
         private ReadOnlySpan<byte> _span;
+        private int _offset;
 
         /// <summary>
         /// Creates a new <see cref="PacketReader"/>.
         /// </summary>
-        public PacketReader(ReadOnlyMemory<byte> memory)
+        public PacketReader(ReadOnlySpan<byte> span)
         {
-            _span = memory.Span;
+            _span = span;
             _offset = 0;
         }
 
@@ -32,8 +32,8 @@ namespace MySqlCdc.Protocol
         /// </summary>
         public int ReadInt16LittleEndian()
         {
-            int result = BinaryPrimitives.ReadUInt16LittleEndian(_span.Slice(_offset, 2));
-            Advance(2);
+            int result = BinaryPrimitives.ReadUInt16LittleEndian(_span.Slice(_offset));
+            _offset += 2;
             return result;
         }
 
@@ -42,8 +42,8 @@ namespace MySqlCdc.Protocol
         /// </summary>
         public int ReadInt16BigEndian()
         {
-            int result = BinaryPrimitives.ReadUInt16BigEndian(_span.Slice(_offset, 2));
-            Advance(2);
+            int result = BinaryPrimitives.ReadUInt16BigEndian(_span.Slice(_offset));
+            _offset += 2;
             return result;
         }
 
@@ -52,8 +52,8 @@ namespace MySqlCdc.Protocol
         /// </summary>
         public int ReadInt32LittleEndian()
         {
-            int result = BinaryPrimitives.ReadInt32LittleEndian(_span.Slice(_offset, 4));
-            Advance(4);
+            int result = BinaryPrimitives.ReadInt32LittleEndian(_span.Slice(_offset));
+            _offset += 4;
             return result;
         }
 
@@ -62,8 +62,8 @@ namespace MySqlCdc.Protocol
         /// </summary>
         public int ReadInt32BigEndian()
         {
-            int result = BinaryPrimitives.ReadInt32BigEndian(_span.Slice(_offset, 4));
-            Advance(4);
+            int result = BinaryPrimitives.ReadInt32BigEndian(_span.Slice(_offset));
+            _offset += 4;
             return result;
         }
 
@@ -72,8 +72,8 @@ namespace MySqlCdc.Protocol
         /// </summary>
         public long ReadInt64LittleEndian()
         {
-            long result = BinaryPrimitives.ReadInt64LittleEndian(_span.Slice(_offset, 8));
-            Advance(8);
+            long result = BinaryPrimitives.ReadInt64LittleEndian(_span.Slice(_offset));
+            _offset += 8;
             return result;
         }
 
@@ -82,8 +82,8 @@ namespace MySqlCdc.Protocol
         /// </summary>
         public long ReadInt64BigEndian()
         {
-            long result = BinaryPrimitives.ReadInt64BigEndian(_span.Slice(_offset, 8));
-            Advance(8);
+            long result = BinaryPrimitives.ReadInt64BigEndian(_span.Slice(_offset));
+            _offset += 8;
             return result;
         }
 
@@ -97,7 +97,7 @@ namespace MySqlCdc.Protocol
             {
                 result |= _span[_offset + i] << (i << 3);
             }
-            Advance(length);
+            _offset += length;
             return result;
         }
 
@@ -111,7 +111,7 @@ namespace MySqlCdc.Protocol
             {
                 result |= (long)_span[_offset + i] << (i << 3);
             }
-            Advance(length);
+            _offset += length;
             return result;
         }
 
@@ -125,7 +125,7 @@ namespace MySqlCdc.Protocol
             {
                 result = (result << 8) | (int)_span[_offset + i];
             }
-            Advance(length);
+            _offset += length;
             return result;
         }
 
@@ -139,7 +139,7 @@ namespace MySqlCdc.Protocol
             {
                 result = (result << 8) | (long)_span[_offset + i];
             }
-            Advance(length);
+            _offset += length;
             return result;
         }
 
@@ -183,7 +183,7 @@ namespace MySqlCdc.Protocol
         public string ReadString(int length)
         {
             var span = _span.Slice(_offset, length);
-            Advance(length);
+            _offset += length;
             return ParseString(span);
         }
 
@@ -193,7 +193,7 @@ namespace MySqlCdc.Protocol
         public string ReadStringToEndOfFile()
         {
             var span = _span.Slice(_offset);
-            Advance(span.Length);
+            _offset += span.Length;
             return ParseString(span);
         }
 
@@ -209,7 +209,7 @@ namespace MySqlCdc.Protocol
                     break;
             }
             var span = _span.Slice(_offset, index - 1);
-            Advance(index);
+            _offset += index;
             return ParseString(span);
         }
 
@@ -229,7 +229,7 @@ namespace MySqlCdc.Protocol
         public byte[] ReadByteArraySlow(int length)
         {
             var span = _span.Slice(_offset, length);
-            Advance(span.Length);
+            _offset += length;
             return span.ToArray();
         }
 
@@ -251,7 +251,7 @@ namespace MySqlCdc.Protocol
                     result[index] = (value & (1 << y)) > 0;
                 }
             }
-            Advance(bytesNumber);
+            _offset += bytesNumber;
             return result;
         }
 
@@ -273,7 +273,7 @@ namespace MySqlCdc.Protocol
                     result[index] = (value & (1 << y)) > 0;
                 }
             }
-            Advance(bytesNumber);
+            _offset += bytesNumber;
             return result;
         }
 
@@ -292,7 +292,10 @@ namespace MySqlCdc.Protocol
         /// </summary>
         public void Advance(int offset) => _offset += offset;
 
-        public void SliceFromEnd(int index, int length)
+        /// <summary>
+        /// Removes the specified slice from the end
+        /// </summary>
+        public void SliceFromEnd(int length)
         {
             _span = _span.Slice(0, _span.Length - length);
         }

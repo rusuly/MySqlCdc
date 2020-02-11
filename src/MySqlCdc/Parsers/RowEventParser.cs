@@ -130,6 +130,9 @@ namespace MySqlCdc.Parsers
             };
         }
 
+        /// <summary>
+        /// Gets number of bits set in a bitmap.
+        /// </summary>
         protected int GetBitsNumber(bool[] bitmap)
         {
             int value = 0;

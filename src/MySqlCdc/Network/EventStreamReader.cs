@@ -23,7 +23,7 @@ namespace MySqlCdc.Network
         public IPacket ReadPacket(ReadOnlySequence<byte> buffer)
         {
             using var memoryOwner = new MemoryOwner(buffer);
-            var reader = new PacketReader(memoryOwner.Memory);
+            var reader = new PacketReader(memoryOwner.Memory.Span);
             var status = reader.ReadByte();
 
             try
