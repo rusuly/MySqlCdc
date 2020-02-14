@@ -5,6 +5,7 @@ namespace MySqlCdc.Providers.MySql
     internal class JsonWriterImpl : IJsonWriter
     {
         private readonly Utf8JsonWriter _writer;
+        private string _propertyName;
 
         public JsonWriterImpl(Utf8JsonWriter writer)
         {
@@ -13,17 +14,27 @@ namespace MySqlCdc.Providers.MySql
 
         public void WriteKey(string name)
         {
-            _writer.WritePropertyName(name);
+            _propertyName = name;
         }
 
         public void WriteStartObject()
         {
-            _writer.WriteStartObject();
+            if (_propertyName != null)
+            {
+                _writer.WriteStartObject(_propertyName);
+                _propertyName = null;
+            }
+            else _writer.WriteStartObject();
         }
 
         public void WriteStartArray()
         {
-            _writer.WriteStartArray();
+            if (_propertyName != null)
+            {
+                _writer.WriteStartArray(_propertyName);
+                _propertyName = null;
+            }
+            else _writer.WriteStartArray();
         }
 
         public void WriteEndObject()
@@ -38,42 +49,82 @@ namespace MySqlCdc.Providers.MySql
 
         public void WriteValue(int value)
         {
-            _writer.WriteNumberValue(value);
+            if (_propertyName != null)
+            {
+                _writer.WriteNumber(_propertyName, value);
+                _propertyName = null;
+            }
+            else _writer.WriteNumberValue(value);
         }
 
         public void WriteValue(uint value)
         {
-            _writer.WriteNumberValue(value);
+            if (_propertyName != null)
+            {
+                _writer.WriteNumber(_propertyName, value);
+                _propertyName = null;
+            }
+            else _writer.WriteNumberValue(value);
         }
 
         public void WriteValue(long value)
         {
-            _writer.WriteNumberValue(value);
+            if (_propertyName != null)
+            {
+                _writer.WriteNumber(_propertyName, value);
+                _propertyName = null;
+            }
+            else _writer.WriteNumberValue(value);
         }
 
         public void WriteValue(ulong value)
         {
-            _writer.WriteNumberValue(value);
+            if (_propertyName != null)
+            {
+                _writer.WriteNumber(_propertyName, value);
+                _propertyName = null;
+            }
+            else _writer.WriteNumberValue(value);
         }
 
         public void WriteValue(double value)
         {
-            _writer.WriteNumberValue(value);
+            if (_propertyName != null)
+            {
+                _writer.WriteNumber(_propertyName, value);
+                _propertyName = null;
+            }
+            else _writer.WriteNumberValue(value);
         }
 
         public void WriteValue(string value)
         {
-            _writer.WriteStringValue(value);
+            if (_propertyName != null)
+            {
+                _writer.WriteString(_propertyName, value);
+                _propertyName = null;
+            }
+            else _writer.WriteStringValue(value);
         }
 
         public void WriteValue(bool value)
         {
-            _writer.WriteBooleanValue(value);
+            if (_propertyName != null)
+            {
+                _writer.WriteBoolean(_propertyName, value);
+                _propertyName = null;
+            }
+            else _writer.WriteBooleanValue(value);
         }
 
         public void WriteNull()
         {
-            _writer.WriteNullValue();
+            if (_propertyName != null)
+            {
+                _writer.WriteNull(_propertyName);
+                _propertyName = null;
+            }
+            else _writer.WriteNullValue();
         }
     }
 }

@@ -24,11 +24,12 @@ namespace MySqlCdc.Providers.MySql
         /// </summary>
         public static string Parse(byte[] data)
         {
-            using var ms = new MemoryStream();
-            using var writer = new Utf8JsonWriter(ms);
-
-            JsonParser.Parse(data, new JsonWriterImpl(writer));
-            return Encoding.UTF8.GetString(ms.ToArray());
+            using var stream = new MemoryStream();
+            using (var writer = new Utf8JsonWriter(stream))
+            {
+                JsonParser.Parse(data, new JsonWriterImpl(writer));
+            }
+            return Encoding.UTF8.GetString(stream.ToArray());
         }
 
         /// <summary>
