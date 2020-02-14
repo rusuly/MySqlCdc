@@ -2,9 +2,9 @@ using System;
 using System.Buffers;
 using System.IO;
 using System.Text;
+using System.Text.Json;
 using MySqlCdc.Columns;
 using MySqlCdc.Protocol;
-using Newtonsoft.Json;
 
 namespace MySqlCdc.Providers.MySql
 {
@@ -24,12 +24,11 @@ namespace MySqlCdc.Providers.MySql
         /// </summary>
         public static string Parse(byte[] data)
         {
-            var sb = new StringBuilder();
-            var sw = new StringWriter(sb);
+            using var ms = new MemoryStream();
+            using var writer = new Utf8JsonWriter(ms);
 
-            using var writer = new JsonTextWriter(sw);
             JsonParser.Parse(data, new JsonWriterImpl(writer));
-            return sb.ToString();
+            return Encoding.UTF8.GetString(ms.ToArray());
         }
 
         /// <summary>
