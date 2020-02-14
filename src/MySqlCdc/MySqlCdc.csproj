@@ -5,13 +5,17 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>8.0</LangVersion>
     <PackageId>MySqlCdc</PackageId>
-    <Version>1.0.0-preview.12</Version>
+    <Version>1.0.0-preview.14</Version>
     <Authors>Ruslan Ulianets</Authors>
     <PackageTags>MySQL;MariaDB;Binlog;CDC;Change Data Capture;Replication;Streaming</PackageTags>
     <Description>MySQL/MariaDB binlog change data capture (CDC) connector for .NET and .NET Core</Description>
     <PackageProjectUrl>https://github.com/rusuly/MySqlCdc</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/rusuly/MySqlCdc/blob/master/LICENSE</PackageLicenseUrl>
-    <PackageReleaseNotes>This version includes only performance improvements</PackageReleaseNotes>
+    <PackageReleaseNotes>
+1. Fixed replication when checksum is disabled(default in MariaDB 10.1/MySQL 5.5).
+2. @ElderJames replaced Newtonsoft.Json with System.Text.Json.
+3. Performance improvements.
+    </PackageReleaseNotes>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
