@@ -1,3 +1,4 @@
+using System;
 using System.Buffers;
 using MySqlCdc.Protocol;
 using Xunit;
@@ -35,20 +36,20 @@ namespace MySqlCdc.Tests.Protocol
             writer.WriteString(fixedString);
             writer.WriteString(fixedString2);
 
-            var reader = new PacketReader(new ReadOnlySequence<byte>(writer.CreatePacket()));
+            var reader = new PacketReader(new ReadOnlySpan<byte>(writer.CreatePacket()));
 
             //Read packet size and sequence number
-            reader.ReadInt(3);
-            reader.ReadInt(1);
+            reader.ReadIntLittleEndian(3);
+            reader.ReadIntLittleEndian(1);
 
-            Assert.Equal(int8, reader.ReadInt(1));
-            Assert.Equal(-int8, (reader.ReadInt(1) << 24) >> 24);
-            Assert.Equal(int16, reader.ReadInt(2));
-            Assert.Equal(-int16, (reader.ReadInt(2) << 16) >> 16);
-            Assert.Equal(int24, reader.ReadInt(3));
-            Assert.Equal(-int24, (reader.ReadInt(3) << 8) >> 8);
-            Assert.Equal(int32, reader.ReadInt(4));
-            Assert.Equal(-int32, reader.ReadInt(4));
+            Assert.Equal(int8, reader.ReadIntLittleEndian(1));
+            Assert.Equal(-int8, (reader.ReadIntLittleEndian(1) << 24) >> 24);
+            Assert.Equal(int16, reader.ReadIntLittleEndian(2));
+            Assert.Equal(-int16, (reader.ReadIntLittleEndian(2) << 16) >> 16);
+            Assert.Equal(int24, reader.ReadIntLittleEndian(3));
+            Assert.Equal(-int24, (reader.ReadIntLittleEndian(3) << 8) >> 8);
+            Assert.Equal(int32, reader.ReadIntLittleEndian(4));
+            Assert.Equal(-int32, reader.ReadIntLittleEndian(4));
 
             Assert.Equal(string1, reader.ReadNullTerminatedString());
             Assert.Equal(string2, reader.ReadLengthEncodedString());

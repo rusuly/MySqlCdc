@@ -1,12 +1,12 @@
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace MySqlCdc.Providers.MySql
 {
     internal class JsonWriterImpl : IJsonWriter
     {
-        private readonly JsonWriter _writer;
+        private readonly Utf8JsonWriter _writer;
 
-        public JsonWriterImpl(JsonWriter writer)
+        public JsonWriterImpl(Utf8JsonWriter writer)
         {
             _writer = writer;
         }
@@ -38,42 +38,42 @@ namespace MySqlCdc.Providers.MySql
 
         public void WriteValue(int value)
         {
-            _writer.WriteValue(value);
+            _writer.WriteNumberValue(value);
         }
 
         public void WriteValue(uint value)
         {
-            _writer.WriteValue(value);
+            _writer.WriteNumberValue(value);
         }
 
         public void WriteValue(long value)
         {
-            _writer.WriteValue(value);
+            _writer.WriteNumberValue(value);
         }
 
         public void WriteValue(ulong value)
         {
-            _writer.WriteValue(value);
+            _writer.WriteNumberValue(value);
         }
 
         public void WriteValue(double value)
         {
-            _writer.WriteValue(value);
+            _writer.WriteNumberValue(value);
         }
 
         public void WriteValue(string value)
         {
-            _writer.WriteValue(value);
+            _writer.WriteStringValue(value);
         }
 
         public void WriteValue(bool value)
         {
-            _writer.WriteValue(value);
+            _writer.WriteBooleanValue(value);
         }
 
         public void WriteNull()
         {
-            _writer.WriteNull();
+            _writer.WriteNullValue();
         }
     }
 }
