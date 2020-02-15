@@ -27,7 +27,7 @@ namespace MySqlCdc.Providers.MySql
             using var stream = new MemoryStream();
             using (var writer = new Utf8JsonWriter(stream))
             {
-                JsonParser.Parse(data, new JsonWriterImpl(writer));
+                JsonParser.Parse(data, new JsonWriter(writer));
             }
             return Encoding.UTF8.GetString(stream.ToArray());
         }

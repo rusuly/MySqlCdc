@@ -31,12 +31,12 @@ namespace MySqlCdc.Commands
             var writer = new PacketWriter(sequenceNumber);
 
             writer.WriteByte((byte)CommandType.BINLOG_DUMP_GTID);
-            writer.WriteInt(Flags, 2);
-            writer.WriteLong(ServerId, 4);
+            writer.WriteIntLittleEndian(Flags, 2);
+            writer.WriteLongLittleEndian(ServerId, 4);
 
-            writer.WriteInt(BinlogFilename.Length, 4);
+            writer.WriteIntLittleEndian(BinlogFilename.Length, 4);
             writer.WriteString(BinlogFilename);
-            writer.WriteLong(BinlogPosition, 8);
+            writer.WriteLongLittleEndian(BinlogPosition, 8);
 
             var gtidSet = Gtid.Split(':');
             var interval = gtidSet[1].Split('-');
@@ -46,12 +46,12 @@ namespace MySqlCdc.Commands
             var end = int.Parse(interval[1]);
 
             //See: https://dev.mysql.com/doc/internals/en/com-binlog-dump-gtid.html
-            writer.WriteInt(8 + 16 + 8 + 16, 4);
-            writer.WriteLong(1, 8);
+            writer.WriteIntLittleEndian(8 + 16 + 8 + 16, 4);
+            writer.WriteLongLittleEndian(1, 8);
             writer.WriteByteArray(sourceId);
-            writer.WriteLong(1, 8);
-            writer.WriteLong(start, 8);
-            writer.WriteLong(end + 1, 8);
+            writer.WriteLongLittleEndian(1, 8);
+            writer.WriteLongLittleEndian(start, 8);
+            writer.WriteLongLittleEndian(end + 1, 8);
 
             return writer.CreatePacket();
         }

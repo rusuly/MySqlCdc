@@ -26,9 +26,9 @@ namespace MySqlCdc.Commands
         {
             var writer = new PacketWriter(sequenceNumber);
             writer.WriteByte((byte)CommandType.BINLOG_DUMP);
-            writer.WriteLong(BinlogPosition, 4);
-            writer.WriteInt(Flags, 2);
-            writer.WriteLong(ServerId, 4);
+            writer.WriteLongLittleEndian(BinlogPosition, 4);
+            writer.WriteIntLittleEndian(Flags, 2);
+            writer.WriteLongLittleEndian(ServerId, 4);
             writer.WriteString(BinlogFilename);
             return writer.CreatePacket();
         }

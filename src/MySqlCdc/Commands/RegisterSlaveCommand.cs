@@ -22,15 +22,15 @@ namespace MySqlCdc.Commands
             var writer = new PacketWriter(sequenceNumber);
 
             writer.WriteByte((byte)CommandType.REGISTER_SLAVE);
-            writer.WriteLong(ServerId, 4);
+            writer.WriteLongLittleEndian(ServerId, 4);
 
             //Empty host, user, password, port, rank, masterid
-            writer.WriteInt(0, 1);
-            writer.WriteInt(0, 1);
-            writer.WriteInt(0, 1);
-            writer.WriteInt(0, 2);
-            writer.WriteInt(0, 4);
-            writer.WriteInt(0, 4);
+            writer.WriteIntLittleEndian(0, 1);
+            writer.WriteIntLittleEndian(0, 1);
+            writer.WriteIntLittleEndian(0, 1);
+            writer.WriteIntLittleEndian(0, 2);
+            writer.WriteIntLittleEndian(0, 4);
+            writer.WriteIntLittleEndian(0, 4);
 
             return writer.CreatePacket();
         }

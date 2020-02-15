@@ -42,7 +42,7 @@ namespace MySqlCdc.Protocol
         /// <summary>
         /// Writes int in little-endian format.
         /// </summary>
-        public void WriteInt(int number, int length)
+        public void WriteIntLittleEndian(int number, int length)
         {
             for (int i = 0; i < length; i++)
             {
@@ -54,7 +54,7 @@ namespace MySqlCdc.Protocol
         /// <summary>
         /// Writes long in little-endian format.
         /// </summary>
-        public void WriteLong(long number, int length)
+        public void WriteLongLittleEndian(long number, int length)
         {
             for (int i = 0; i < length; i++)
             {
@@ -89,7 +89,7 @@ namespace MySqlCdc.Protocol
             _stream.Position = 0;
 
             // Write header size
-            WriteInt((int)_stream.Length - PacketConstants.HeaderSize, 3);
+            WriteIntLittleEndian((int)_stream.Length - PacketConstants.HeaderSize, 3);
 
             // Write sequence number
             _stream.WriteByte(_sequenceNumber);

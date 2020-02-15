@@ -44,9 +44,9 @@ namespace MySqlCdc.Commands
         public byte[] CreatePacket(byte sequenceNumber)
         {
             var writer = new PacketWriter(sequenceNumber);
-            writer.WriteInt(ClientCapabilities, 4);
-            writer.WriteInt(MaxPacketSize, 4);
-            writer.WriteInt(ClientCollation, 1);
+            writer.WriteIntLittleEndian(ClientCapabilities, 4);
+            writer.WriteIntLittleEndian(MaxPacketSize, 4);
+            writer.WriteIntLittleEndian(ClientCollation, 1);
 
             // Fill reserved bytes 
             for (int i = 0; i < 23; i++)

@@ -2,12 +2,12 @@ using System.Text.Json;
 
 namespace MySqlCdc.Providers.MySql
 {
-    internal class JsonWriterImpl : IJsonWriter
+    internal class JsonWriter : IJsonWriter
     {
         private readonly Utf8JsonWriter _writer;
         private string _propertyName;
 
-        public JsonWriterImpl(Utf8JsonWriter writer)
+        public JsonWriter(Utf8JsonWriter writer)
         {
             _writer = writer;
         }
