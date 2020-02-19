@@ -50,12 +50,12 @@ namespace MySqlCdc
 
         private async Task ReceivePacketsAsync(PipeReader reader, CancellationToken cancellationToken = default)
         {
-            while (true)
+            while (!cancellationToken.IsCancellationRequested)
             {
                 ReadResult result = await reader.ReadAsync(cancellationToken);
                 ReadOnlySequence<byte> buffer = result.Buffer;
 
-                while (true)
+                while (!cancellationToken.IsCancellationRequested)
                 {
                     // We can't calculate packet size without the event header
                     if (buffer.Length < EventConstants.HeaderSize)

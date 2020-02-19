@@ -26,21 +26,21 @@ namespace MySqlCdc.Network
         private readonly PipeReader _pipeReader;
         private List<PacketSegment> _multipacket;
 
-        public EventStreamChannel(IEventStreamReader eventStreamReader, Stream stream)
+        public EventStreamChannel(IEventStreamReader eventStreamReader, Stream stream, CancellationToken cancellationToken = default)
         {
             _eventStreamReader = eventStreamReader;
             _pipeReader = PipeReader.Create(stream);
-            _ = Task.Run(async () => await ReceivePacketsAsync(_pipeReader));
+            _ = Task.Run(async () => await ReceivePacketsAsync(_pipeReader, cancellationToken), cancellationToken);
         }
 
         private async Task ReceivePacketsAsync(PipeReader reader, CancellationToken cancellationToken = default)
         {
-            while (true)
+            while (!cancellationToken.IsCancellationRequested)
             {
                 ReadResult result = await reader.ReadAsync(cancellationToken);
                 ReadOnlySequence<byte> buffer = result.Buffer;
 
-                while (true)
+                while (!cancellationToken.IsCancellationRequested)
                 {
                     // We can't calculate packet size without the packet header
                     if (buffer.Length < PacketConstants.HeaderSize)

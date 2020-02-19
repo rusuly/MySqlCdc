@@ -180,10 +180,10 @@ namespace MySqlCdc
         private async Task ReadEventStreamAsync(Func<IBinlogEvent, Task> handleEvent, CancellationToken cancellationToken = default)
         {
             var eventStreamReader = new EventStreamReader(_databaseProvider.Deserializer);
-            var channel = new EventStreamChannel(eventStreamReader, _channel.Stream);
+            var channel = new EventStreamChannel(eventStreamReader, _channel.Stream, cancellationToken);
             var timeout = _options.HeartbeatInterval.Add(TimeSpan.FromMilliseconds(TimeoutConstants.Delta));
 
-            while (true)
+            while (!cancellationToken.IsCancellationRequested)
             {
                 var packet = await channel.ReadPacketAsync(cancellationToken).WithTimeout(timeout, TimeoutConstants.Message);
 
@@ -277,7 +277,7 @@ namespace MySqlCdc
             var packet = await _channel.ReadPacketSlowAsync(cancellationToken);
             ThrowIfErrorPacket(packet, "Reading result set error.");
 
-            while (true)
+            while (!cancellationToken.IsCancellationRequested)
             {
                 // Skip through metadata
                 packet = await _channel.ReadPacketSlowAsync(cancellationToken);
@@ -286,7 +286,7 @@ namespace MySqlCdc
             }
 
             var resultSet = new List<ResultSetRowPacket>();
-            while (true)
+            while (!cancellationToken.IsCancellationRequested)
             {
                 packet = await _channel.ReadPacketSlowAsync(cancellationToken);
                 ThrowIfErrorPacket(packet, "Query result set error.");
