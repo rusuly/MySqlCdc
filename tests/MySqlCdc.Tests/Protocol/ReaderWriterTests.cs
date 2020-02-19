@@ -21,17 +21,17 @@ namespace MySqlCdc.Tests.Protocol
 
             var writer = new PacketWriter(0);
 
-            writer.WriteInt(int8, 1);
-            writer.WriteInt(-int8, 1);
-            writer.WriteInt(int16, 2);
-            writer.WriteInt(-int16, 2);
-            writer.WriteInt(int24, 3);
-            writer.WriteInt(-int24, 3);
-            writer.WriteInt(int32, 4);
-            writer.WriteInt(-int32, 4);
+            writer.WriteIntLittleEndian(int8, 1);
+            writer.WriteIntLittleEndian(-int8, 1);
+            writer.WriteIntLittleEndian(int16, 2);
+            writer.WriteIntLittleEndian(-int16, 2);
+            writer.WriteIntLittleEndian(int24, 3);
+            writer.WriteIntLittleEndian(-int24, 3);
+            writer.WriteIntLittleEndian(int32, 4);
+            writer.WriteIntLittleEndian(-int32, 4);
 
             writer.WriteNullTerminatedString(string1);
-            writer.WriteInt(string2.Length, 1);
+            writer.WriteIntLittleEndian(string2.Length, 1);
             writer.WriteString(string2);
             writer.WriteString(fixedString);
             writer.WriteString(fixedString2);

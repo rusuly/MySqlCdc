@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
+using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using MySqlCdc.Constants;
@@ -32,11 +33,11 @@ namespace MySqlCdc.Network
             _ = Task.Run(async () => await ReceivePacketsAsync(_pipeReader));
         }
 
-        private async Task ReceivePacketsAsync(PipeReader reader)
+        private async Task ReceivePacketsAsync(PipeReader reader, CancellationToken cancellationToken = default)
         {
             while (true)
             {
-                ReadResult result = await reader.ReadAsync();
+                ReadResult result = await reader.ReadAsync(cancellationToken);
                 ReadOnlySequence<byte> buffer = result.Buffer;
 
                 while (true)
@@ -54,7 +55,7 @@ namespace MySqlCdc.Network
                         break;
 
                     // Process packet and repeat in case there are more packets in the buffer
-                    await OnReceivePacket(buffer.Slice(PacketConstants.HeaderSize, bodySize));
+                    await OnReceivePacket(buffer.Slice(PacketConstants.HeaderSize, bodySize), cancellationToken);
                     buffer = buffer.Slice(buffer.GetPosition(packetSize));
                 }
 
@@ -76,7 +77,7 @@ namespace MySqlCdc.Network
             return bodySize;
         }
 
-        private async ValueTask OnReceivePacket(ReadOnlySequence<byte> buffer)
+        private async ValueTask OnReceivePacket(ReadOnlySequence<byte> buffer, CancellationToken cancellationToken = default)
         {
             if (_multipacket != null || buffer.Length == PacketConstants.MaxBodyLength)
             {
@@ -103,12 +104,12 @@ namespace MySqlCdc.Network
             }
 
             var packet = _eventStreamReader.ReadPacket(buffer);
-            await _channel.Writer.WriteAsync(packet);
+            await _channel.Writer.WriteAsync(packet, cancellationToken);
         }
 
-        public async Task<IPacket> ReadPacketAsync()
+        public async Task<IPacket> ReadPacketAsync(CancellationToken cancellationToken = default)
         {
-            var packet = await _channel.Reader.ReadAsync();
+            var packet = await _channel.Reader.ReadAsync(cancellationToken);
 
             if (packet is ExceptionPacket exceptionPacket)
                 throw new Exception("Event stream channel exception.", exceptionPacket.Exception);
