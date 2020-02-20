@@ -3,6 +3,7 @@ using System.Buffers;
 using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
+using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using MySqlCdc.Constants;
@@ -18,6 +19,7 @@ namespace MySqlCdc
     public class BinlogReader
     {
         private static byte[] MagicNumber = new byte[] { 0xfe, 0x62, 0x69, 0x6e };
+
         private readonly Channel<IPacket> _channel = Channel.CreateBounded<IPacket>(
             new BoundedChannelOptions(100)
             {
@@ -33,7 +35,7 @@ namespace MySqlCdc
         /// </summary>
         /// <param name="eventDeserializer">EventDeserializer implementation for a specific provider</param>
         /// <param name="stream">Stream representing a binlog file</param>
-        public BinlogReader(EventDeserializer eventDeserializer, Stream stream)
+        public BinlogReader(EventDeserializer eventDeserializer, Stream stream, CancellationToken cancellationToken = default)
         {
             byte[] header = new byte[EventConstants.FirstEventPosition];
             stream.Read(header, 0, EventConstants.FirstEventPosition);
@@ -43,17 +45,17 @@ namespace MySqlCdc
 
             _eventDeserializer = eventDeserializer;
             _pipeReader = PipeReader.Create(stream);
-            _ = Task.Run(async () => await ReceivePacketsAsync(_pipeReader));
+            _ = Task.Run(async () => await ReceivePacketsAsync(_pipeReader, cancellationToken));
         }
 
-        private async Task ReceivePacketsAsync(PipeReader reader)
+        private async Task ReceivePacketsAsync(PipeReader reader, CancellationToken cancellationToken = default)
         {
-            while (true)
+            while (!cancellationToken.IsCancellationRequested)
             {
-                ReadResult result = await reader.ReadAsync();
+                ReadResult result = await reader.ReadAsync(cancellationToken);
                 ReadOnlySequence<byte> buffer = result.Buffer;
 
-                while (true)
+                while (!cancellationToken.IsCancellationRequested)
                 {
                     // We can't calculate packet size without the event header
                     if (buffer.Length < EventConstants.HeaderSize)
@@ -65,7 +67,7 @@ namespace MySqlCdc
                         break;
 
                     // Process event and repeat in case there are more event in the buffer
-                    await OnReceiveEvent(buffer.Slice(0, eventHeader.EventLength));
+                    await OnReceiveEvent(buffer.Slice(0, eventHeader.EventLength), cancellationToken);
                     buffer = buffer.Slice(buffer.GetPosition(eventHeader.EventLength));
                 }
 
@@ -86,18 +88,18 @@ namespace MySqlCdc
             return new EventHeader(ref reader);
         }
 
-        private async Task OnReceiveEvent(ReadOnlySequence<byte> buffer)
+        private async Task OnReceiveEvent(ReadOnlySequence<byte> buffer, CancellationToken cancellationToken = default)
         {
             try
             {
                 var @event = Deserialize(buffer);
-                await _channel.Writer.WriteAsync(@event);
+                await _channel.Writer.WriteAsync(@event, cancellationToken);
             }
             catch (Exception e)
             {
-                // We stop replication if deserialize throws an exception 
+                // We stop replication if deserialize throws an exception
                 // Since a derived database may end up in an inconsistent state.
-                await _channel.Writer.WriteAsync(new ExceptionPacket(e));
+                await _channel.Writer.WriteAsync(new ExceptionPacket(e), cancellationToken);
             }
         }
 
@@ -112,9 +114,9 @@ namespace MySqlCdc
         /// Reads an event from binlog stream.
         /// </summary>
         /// <returns>Binlog event instance. Null if there are no more events</returns>
-        public async Task<IBinlogEvent> ReadEventAsync()
+        public async Task<IBinlogEvent> ReadEventAsync(CancellationToken cancellationToken = default)
         {
-            await _channel.Reader.WaitToReadAsync();
+            await _channel.Reader.WaitToReadAsync(cancellationToken);
 
             if (!_channel.Reader.TryRead(out IPacket packet))
                 return null;
