@@ -88,7 +88,7 @@ binlog_row_metadata = FULL
 ```
 
 ### Binlog event stream replication
-Data is stored in Cells property of row events in the same order. See the sample project.
+Data is stored in Cells property of row events in the same order. See the C# sample project.
 ```csharp
 var client = new BinlogClient(options =>
 {
@@ -98,19 +98,20 @@ var client = new BinlogClient(options =>
     options.Password = "Qwertyu1";
     options.HeartbeatInterval = TimeSpan.FromSeconds(30);
     options.Blocking = true;
-    
+
     // Start replication from MariaDB GTID
-    //options.Binlog = BinlogOptions.FromGtid("0-1-270");
+    options.Binlog = BinlogOptions.FromGtid(GtidList.Parse("0-1-270"));
 
     // Start replication from MySQL GTID
-    //options.Binlog = BinlogOptions.FromGtid("f442510a-2881-11ea-b1dd-27916133dbb2:1-7");
-    
+    var gtidSet = "d4c17f0c-4f11-11ea-93e3-325d3e1cd1c8:1-107, f442510a-2881-11ea-b1dd-27916133dbb2:1-7";
+    options.Binlog = BinlogOptions.FromGtid(GtidSet.Parse(gtidSet));
+
     // Start replication from the position
-    //options.Binlog = BinlogOptions.FromPosition("mysql-bin.000008", 195);
+    options.Binlog = BinlogOptions.FromPosition("mysql-bin.000008", 195);
 
     // Start replication from last master position.
     // Useful when you are only interested in new changes.
-    //options.Binlog = BinlogOptions.FromEnd();
+    options.Binlog = BinlogOptions.FromEnd();
 
     // Start replication from first event of first available master binlog.
     // Note that binlog files by default have expiration time and deleted.
@@ -119,6 +120,8 @@ var client = new BinlogClient(options =>
 
 await client.ReplicateAsync(async (binlogEvent) =>
 {
+    var state = client.State;
+
     if (binlogEvent is TableMapEvent tableMap)
     {
         await HandleTableMapEvent(tableMap);
@@ -145,6 +148,10 @@ A typical transaction has the following structure.
    - One or many `UpdateRowsEvent` events.
    - One or many `DeleteRowsEvent` events.
 3. `XidEvent` indicating commit of the transaction.
+
+In GTID mode note that
+- `FromGtid(@@gtid_purged)` is the same as `FromStart()`
+- `FromGtid(@@gtid_executed)` is the same as `FromEnd()`
 
 ### Reading binlog files offline
 In some cases you will need to read binlog files offline from the file system.
@@ -197,7 +204,7 @@ using (FileStream fs = File.OpenRead("mariadb-bin.000002"))
 
 - Invalid DATE, DATETIME values(0000-00-00) are parsed as DateTime null.
 - TIME, DATETIME, TIMESTAMP (MySQL 5.6.4+) will lose microseconds when converted to .NET types as MySQL types have bigger fractional part than corresponding .NET types can store.
-- Signedness of numeric columns cannot be determined in MariaDB(and MySQL 5.5) so the library stores all numeric columns as signed `int` or `long`. The client has the information and should manually cast to `uint` and `ulong`:
+- Signedness of numeric columns cannot be determined in MariaDB(and MySQL 5.5) so the library stores all numeric columns as signed `int` or `long`. The client has the information and should manually cast unsigned columns to `uint` and `ulong`:
 
     ```csharp
     // casting unsigned tinyint columns
@@ -258,7 +265,7 @@ MySqlCdc supports both MariaDB & MySQL server.
   | 8.0      | ✅ Supported             |
 
 ## Info
-The project is based on [mysql-binlog-connector-java](https://github.com/shyiko/mysql-binlog-connector-java) library, MariaDB and MySQL  documentation.
+The project is based on [mysql-binlog-connector-java](https://github.com/shyiko/mysql-binlog-connector-java) library, [MariaDB](https://mariadb.com/kb/en/replication-protocol/) and MySQL documentation.
 
 Data streaming is optimized & based on [System.IO.Pipelines](https://www.nuget.org/packages/System.IO.Pipelines/) as described in [series of posts](https://blog.marcgravell.com/2018/07/pipe-dreams-part-1.html) by Marc Gravell.
 

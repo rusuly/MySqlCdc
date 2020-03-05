@@ -17,14 +17,14 @@ namespace MySqlCdc.Providers.MariaDb
         {
             long gtidListLength = (uint)reader.ReadInt32LittleEndian();
 
-            var gtidList = new List<string>();
+            var gtidList = new GtidList();
             for (int i = 0; i < gtidListLength; i++)
             {
                 long domainId = (uint)reader.ReadInt32LittleEndian();
                 long serverId = (uint)reader.ReadInt32LittleEndian();
-                var sequence = reader.ReadInt64LittleEndian();
-                var gtid = $"{domainId}-{serverId}-{sequence}";
-                gtidList.Add(gtid);
+                long sequence = reader.ReadInt64LittleEndian();
+
+                gtidList.Gtids.Add(new Gtid(domainId, serverId, sequence));
             }
 
             return new GtidListEvent(header, gtidList);

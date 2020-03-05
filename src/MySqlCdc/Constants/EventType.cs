@@ -102,6 +102,11 @@ namespace MySqlCdc.Constants
         /// </summary>
         MYSQL_GTID_EVENT = 33,
 
+        /// <summary>
+        /// Identifies <see cref="PreviousGtidsEvent"/> in MySQL from 5.6 to 8.0. 
+        /// </summary>
+        MYSQL_PREVIOUS_GTIDS_EVENT = 35,
+
 
         /// <summary>
         /// Identifies <see cref="RowsQueryEvent"/> in MariaDB. 

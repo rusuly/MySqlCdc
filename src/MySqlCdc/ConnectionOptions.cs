@@ -35,14 +35,15 @@ namespace MySqlCdc
 
         /// <summary>
         /// Default database name specified in Handshake connection.
+        /// Has nothing to do with filtering events by database name.
         /// </summary>
         public string Database { get; set; }
 
         /// <summary>
-        /// Specifies the slave server id and used only in blocking mode. Defaults to 1.
+        /// Specifies the slave server id and used only in blocking mode. Defaults to 65535.
         /// <a href="https://dev.mysql.com/doc/refman/8.0/en/mysqlbinlog-server-id.html">See more</a>
         /// </summary>
-        public long ServerId { get; set; } = 1;
+        public long ServerId { get; set; } = 65535;
 
         /// <summary>
         /// Specifies whether to stream events or read until last event and then return. 

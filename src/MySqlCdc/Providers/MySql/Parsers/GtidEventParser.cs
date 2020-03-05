@@ -1,4 +1,3 @@
-using System.Text;
 using MySqlCdc.Events;
 using MySqlCdc.Parsers;
 using MySqlCdc.Protocol;
@@ -16,22 +15,10 @@ namespace MySqlCdc.Providers.MySql
         public IBinlogEvent ParseEvent(EventHeader header, ref PacketReader reader)
         {
             var flags = reader.ReadByte();
-            var sourceId = reader.ReadByteArraySlow(16);
+            var sourceId = new Uuid(reader.ReadByteArraySlow(16));
             var transactionId = reader.ReadInt64LittleEndian();
+            var gtid = new Gtid(sourceId, transactionId);
 
-            var sb = new StringBuilder();
-            for (int i = 0; i < sourceId.Length; i++)
-            {
-                if (i == 4 || i == 6 || i == 8 || i == 10)
-                {
-                    sb.Append("-");
-                }
-
-                sb.AppendFormat("{0:x2}", sourceId[i]);
-            }
-            sb.Append($":{transactionId}");
-
-            var gtid = sb.ToString();
             return new GtidEvent(header, gtid, flags);
         }
     }

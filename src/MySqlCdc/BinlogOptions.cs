@@ -1,4 +1,6 @@
+using System;
 using MySqlCdc.Constants;
+using MySqlCdc.Events;
 
 namespace MySqlCdc
 {
@@ -26,7 +28,7 @@ namespace MySqlCdc
         /// See <a href="https://dev.mysql.com/doc/refman/8.0/en/replication-gtids-concepts.html">MySQL GTID</a>
         /// See <a href="https://mariadb.com/kb/en/library/gtid/">MariaDB GTID</a>
         /// </summary>
-        public string Gtid { get; set; }
+        public IGtidState GtidState { get; set; }
 
         /// <summary>
         /// Gets replication starting strategy.
@@ -74,11 +76,14 @@ namespace MySqlCdc
         /// Starts replication from specified Global Transaction ID.
         /// GTID format is different depending on whether you use MySQL or MariaDB.
         /// </summary>
-        public static BinlogOptions FromGtid(string gtid)
+        public static BinlogOptions FromGtid(IGtidState gtidState)
         {
+            if (gtidState == null)
+                throw new ArgumentNullException(nameof(gtidState));
+
             return new BinlogOptions(StartingStrategy.FromGtid)
             {
-                Gtid = gtid,
+                GtidState = gtidState,
                 Filename = string.Empty,
                 Position = EventConstants.FirstEventPosition
             };

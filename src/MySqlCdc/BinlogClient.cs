@@ -31,6 +31,9 @@ namespace MySqlCdc
         private IDatabaseProvider _databaseProvider;
         private DatabaseConnection _channel;
 
+        private IGtid _gtid;
+        private bool _transaction;
+
         /// <summary>
         /// Creates a new <see cref="BinlogClient"/>.
         /// </summary>
@@ -39,6 +42,11 @@ namespace MySqlCdc
         {
             configureOptions(_options);
         }
+
+        /// <summary>
+        /// Gets current replication state.
+        /// </summary>
+        public BinlogOptions State => _options.Binlog;
 
         private async Task ConnectAsync(CancellationToken cancellationToken = default)
         {
@@ -165,10 +173,15 @@ namespace MySqlCdc
         /// Replicates binlog events from the server
         /// </summary>
         /// <param name="handleEvent">Client callback function</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Task completed when last event is read in non-blocking mode</returns>
         public async Task ReplicateAsync(Func<IBinlogEvent, Task> handleEvent, CancellationToken cancellationToken = default)
         {
             await ConnectAsync(cancellationToken);
+
+            // Clear on reconnect
+            _gtid = null;
+            _transaction = false;
 
             await AdjustStartingPosition(cancellationToken);
             await SetMasterHeartbeat(cancellationToken);
@@ -192,6 +205,9 @@ namespace MySqlCdc
                     // We stop replication if client code throws an exception
                     // As a derived database may end up in an inconsistent state.
                     await handleEvent(binlogEvent);
+
+                    // Commit replication state if there is no exception.
+                    UpdateGtidPosition(binlogEvent);
                     UpdateBinlogPosition(binlogEvent);
                 }
                 else if (packet is ErrorPacket error)
@@ -200,6 +216,47 @@ namespace MySqlCdc
                     return;
                 else throw new InvalidOperationException($"Event stream unexpected error.");
             }
+        }
+
+        private void UpdateGtidPosition(IBinlogEvent binlogEvent)
+        {
+            if (_options.Binlog.StartingStrategy != StartingStrategy.FromGtid)
+                return;
+
+            if (binlogEvent is GtidEvent gtidEvent)
+            {
+                _gtid = gtidEvent.Gtid;
+            }
+            else if (binlogEvent is XidEvent xidEvent)
+            {
+                CommitGtid();
+            }
+            else if (binlogEvent is QueryEvent queryEvent)
+            {
+                if (string.IsNullOrWhiteSpace(queryEvent.SqlStatement))
+                    return;
+
+                if (queryEvent.SqlStatement == "BEGIN")
+                {
+                    _transaction = true;
+                }
+                else if (queryEvent.SqlStatement == "COMMIT" || queryEvent.SqlStatement == "ROLLBACK")
+                {
+                    CommitGtid();
+                }
+                else if (!_transaction)
+                {
+                    // Auto-commit query like DDL
+                    CommitGtid();
+                }
+            }
+        }
+
+        private void CommitGtid()
+        {
+            _transaction = false;
+            if (_gtid != null)
+                _options.Binlog.GtidState.AddGtid(_gtid);
         }
 
         private void UpdateBinlogPosition(IBinlogEvent binlogEvent)
@@ -243,8 +300,9 @@ namespace MySqlCdc
 
         private async Task SetMasterHeartbeat(CancellationToken cancellationToken = default)
         {
-            var seconds = (long)_options.HeartbeatInterval.TotalSeconds;
-            var command = new QueryCommand($"set @master_heartbeat_period={seconds * 1000 * 1000 * 1000}");
+            long milliseconds = (long)_options.HeartbeatInterval.TotalMilliseconds;
+            long nanoseconds = milliseconds * 1000 * 1000;
+            var command = new QueryCommand($"set @master_heartbeat_period={nanoseconds}");
             await _channel.WriteCommandAsync(command, 0, cancellationToken);
             var packet = await _channel.ReadPacketSlowAsync(cancellationToken);
             ThrowIfErrorPacket(packet, "Setting master_binlog_checksum error.");

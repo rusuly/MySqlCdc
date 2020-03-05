@@ -35,6 +35,7 @@ namespace MySqlCdc
         /// </summary>
         /// <param name="eventDeserializer">EventDeserializer implementation for a specific provider</param>
         /// <param name="stream">Stream representing a binlog file</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         public BinlogReader(EventDeserializer eventDeserializer, Stream stream, CancellationToken cancellationToken = default)
         {
             byte[] header = new byte[EventConstants.FirstEventPosition];

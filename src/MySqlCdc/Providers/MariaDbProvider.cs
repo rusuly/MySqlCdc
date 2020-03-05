@@ -33,7 +33,8 @@ namespace MySqlCdc.Providers
 
         private async Task RegisterGtidSlave(DatabaseConnection channel, ConnectionOptions options, CancellationToken cancellationToken = default)
         {
-            await channel.WriteCommandAsync(new QueryCommand($"SET @slave_connect_state='{options.Binlog.Gtid}'"), 0, cancellationToken);
+            var gtidList = (GtidList)options.Binlog.GtidState;
+            await channel.WriteCommandAsync(new QueryCommand($"SET @slave_connect_state='{gtidList.GetSlaveConnectState()}'"), 0, cancellationToken);
             var packet = await channel.ReadPacketSlowAsync(cancellationToken);
             ThrowIfErrorPacket(packet, $"Setting @slave_connect_state error.");
 

@@ -19,7 +19,8 @@ namespace MySqlCdc.Providers
 
             if (options.Binlog.StartingStrategy == StartingStrategy.FromGtid)
             {
-                command = new DumpBinlogGtidCommand(serverId, options.Binlog.Filename, options.Binlog.Position, options.Binlog.Gtid);
+                var gtidSet = (GtidSet)options.Binlog.GtidState;
+                command = new DumpBinlogGtidCommand(serverId, options.Binlog.Filename, options.Binlog.Position, gtidSet);
             }
             else
             {

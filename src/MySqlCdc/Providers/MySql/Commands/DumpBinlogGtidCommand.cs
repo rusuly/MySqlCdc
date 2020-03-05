@@ -1,28 +1,27 @@
-using System;
-using System.Linq;
 using MySqlCdc.Constants;
 using MySqlCdc.Protocol;
+using MySqlCdc.Providers.MySql;
 
 namespace MySqlCdc.Commands
 {
     /// <summary>
-    /// Requests binlog event stream by Gtid.
-    /// <a href="https://mariadb.com/kb/en/library/com_binlog_dump/">See more</a>
+    /// Requests binlog event stream by GtidSet.
+    /// <a href="https://dev.mysql.com/doc/internals/en/com-binlog-dump-gtid.html">See more</a>
     /// </summary>
     internal class DumpBinlogGtidCommand : ICommand
     {
         public long ServerId { get; }
         public string BinlogFilename { get; }
         public long BinlogPosition { get; }
-        public string Gtid { get; }
+        public GtidSet GtidSet { get; }
         public int Flags { get; }
 
-        public DumpBinlogGtidCommand(long serverId, string binlogFilename, long binlogPosition, string gtid, int flags = 0)
+        public DumpBinlogGtidCommand(long serverId, string binlogFilename, long binlogPosition, GtidSet gtidSet, int flags = 0)
         {
             ServerId = serverId;
             BinlogFilename = binlogFilename;
             BinlogPosition = binlogPosition;
-            Gtid = gtid;
+            GtidSet = gtidSet;
             Flags = flags;
         }
 
@@ -38,30 +37,28 @@ namespace MySqlCdc.Commands
             writer.WriteString(BinlogFilename);
             writer.WriteLongLittleEndian(BinlogPosition, 8);
 
-            var gtidSet = Gtid.Split(':');
-            var interval = gtidSet[1].Split('-');
+            int dataLength = 8; /* Number of UuidSets */
+            foreach (var uuidSet in GtidSet.UuidSets.Values)
+            {
+                dataLength += 16;   /* SourceId */
+                dataLength += 8;    /* Number of intervals */
+                dataLength += uuidSet.Intervals.Count * (8 + 8) /* Start-End */;
+            }
 
-            var sourceId = StringToByteArray(gtidSet[0].Replace("-", ""));
-            var start = int.Parse(interval[0]);
-            var end = int.Parse(interval[1]);
+            writer.WriteIntLittleEndian(dataLength, 4);
+            writer.WriteLongLittleEndian(GtidSet.UuidSets.Count, 8);
 
-            //See: https://dev.mysql.com/doc/internals/en/com-binlog-dump-gtid.html
-            writer.WriteIntLittleEndian(8 + 16 + 8 + 16, 4);
-            writer.WriteLongLittleEndian(1, 8);
-            writer.WriteByteArray(sourceId);
-            writer.WriteLongLittleEndian(1, 8);
-            writer.WriteLongLittleEndian(start, 8);
-            writer.WriteLongLittleEndian(end + 1, 8);
-
+            foreach (var uuidSet in GtidSet.UuidSets.Values)
+            {
+                writer.WriteByteArray(uuidSet.SourceId.ToByteArray());
+                writer.WriteLongLittleEndian(uuidSet.Intervals.Count, 8);
+                foreach (var interval in uuidSet.Intervals)
+                {
+                    writer.WriteLongLittleEndian(interval.Start, 8);
+                    writer.WriteLongLittleEndian(interval.End + 1, 8);
+                }
+            }
             return writer.CreatePacket();
-        }
-
-        private byte[] StringToByteArray(string hex)
-        {
-            return Enumerable.Range(0, hex.Length)
-                             .Where(x => x % 2 == 0)
-                             .Select(x => Convert.ToByte(hex.Substring(x, 2), 16))
-                             .ToArray();
         }
     }
 }

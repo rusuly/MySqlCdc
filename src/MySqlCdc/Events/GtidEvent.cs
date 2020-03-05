@@ -1,6 +1,22 @@
 namespace MySqlCdc.Events
 {
     /// <summary>
+    /// Represents a Global Transaction Identifier.
+    /// </summary>
+    public interface IGtid { }
+
+    /// <summary>
+    /// Represents replication Gtid position.
+    /// </summary>
+    public interface IGtidState
+    {
+        /// <summary>
+        /// Adds a gtid value to the state.
+        /// </summary>
+        bool AddGtid(IGtid gtid);
+    }
+
+    /// <summary>
     /// Marks start of a new event group(transaction).
     /// <a href="https://mariadb.com/kb/en/gtid_event/">See more</a>
     /// </summary>
@@ -9,7 +25,7 @@ namespace MySqlCdc.Events
         /// <summary>
         /// Gets Global Transaction ID of the event group.
         /// </summary>
-        public string Gtid { get; }
+        public IGtid Gtid { get; }
 
         /// <summary>
         /// Gets flags.
@@ -19,7 +35,7 @@ namespace MySqlCdc.Events
         /// <summary>
         /// Creates a new <see cref="GtidEvent"/>.
         /// </summary>
-        public GtidEvent(EventHeader header, string gtid, int flags) : base(header)
+        public GtidEvent(EventHeader header, IGtid gtid, int flags) : base(header)
         {
             Gtid = gtid;
             Flags = flags;

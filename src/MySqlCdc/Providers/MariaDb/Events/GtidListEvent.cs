@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using MySqlCdc.Providers.MariaDb;
 
 namespace MySqlCdc.Events
 {
@@ -11,12 +11,12 @@ namespace MySqlCdc.Events
         /// <summary>
         /// Gets a list of Gtid that represents current replication state
         /// </summary>
-        public IReadOnlyList<string> GtidList { get; }
+        public GtidList GtidList { get; }
 
         /// <summary>
         /// Creates a new <see cref="GtidListEvent"/>.
         /// </summary>
-        public GtidListEvent(EventHeader header, List<string> gtidList) : base(header)
+        public GtidListEvent(EventHeader header, GtidList gtidList) : base(header)
         {
             GtidList = gtidList;
         }
