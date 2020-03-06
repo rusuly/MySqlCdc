@@ -8,7 +8,9 @@ namespace MySqlCdc.Tests.Network
 {
     public class EventStreamChannelTests
     {
-        [Fact]
+        private const string SkipReason = "This test is CPU and Memory bound";
+
+        [Fact(Skip = SkipReason)]
         public async Task Test_LargeSplitPacket_Combined()
         {
             using var stream = new MemoryStream();
@@ -22,7 +24,7 @@ namespace MySqlCdc.Tests.Network
             Assert.Equal(packetBody, ((TestPacket)packet).Body);
         }
 
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public async Task Test_PacketExactly16MbWithEmptyPacket_Combined()
         {
             using var stream = new MemoryStream();

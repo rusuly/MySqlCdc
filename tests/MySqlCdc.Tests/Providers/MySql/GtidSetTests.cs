@@ -18,7 +18,10 @@ namespace MySqlCdc.Tests.Providers
         [Fact]
         public void Test_ParseEmptyString_ReturnsEmptyGtidSet()
         {
-            Assert.Equal("", GtidSet.Parse("").ToString());
+            var gtidSet = GtidSet.Parse("");
+
+            Assert.Equal(0, gtidSet.UuidSets.Values.Count);
+            Assert.Equal("", gtidSet.ToString());
         }
 
         [Fact]

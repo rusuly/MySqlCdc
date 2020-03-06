@@ -26,7 +26,6 @@ Be careful when working with binary log event streaming.
 Please note the lib currently has the following limitations:
 - Automatic failover is not supported.
 - Packet compression is not supported.
-- Multi-source replication & multi-master topology setup are not supported.
 - Supports only standard auth plugins `mysql_native_password` and `caching_sha2_password`.
 - **Currently, the library doesn't fully support SSL encryption.**
 
