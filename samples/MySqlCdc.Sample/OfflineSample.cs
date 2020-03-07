@@ -13,9 +13,9 @@ namespace MySqlCdc.Sample
     {
         internal static async Task Start()
         {
-            using (FileStream fs = File.OpenRead("mariadb-bin.000002"))
+            using (Stream stream = File.OpenRead("mariadb-bin.000002"))
             {
-                var reader = new BinlogReader(new MariaDbEventDeserializer(), fs);
+                var reader = new BinlogReader(new MariaDbEventDeserializer(), stream);
                 while (true)
                 {
                     var @event = await reader.ReadEventAsync();

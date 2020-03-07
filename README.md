@@ -24,7 +24,6 @@ Be careful when working with binary log event streaming.
 
 ## Limitations
 Please note the lib currently has the following limitations:
-- Automatic failover is not supported.
 - Packet compression is not supported.
 - Supports only standard auth plugins `mysql_native_password` and `caching_sha2_password`.
 - **Currently, the library doesn't fully support SSL encryption.**
@@ -98,22 +97,20 @@ var client = new BinlogClient(options =>
     options.HeartbeatInterval = TimeSpan.FromSeconds(30);
     options.Blocking = true;
 
-    // Start replication from MariaDB GTID
+    // Start replication from MariaDB GTID. Recommended.
     options.Binlog = BinlogOptions.FromGtid(GtidList.Parse("0-1-270"));
 
-    // Start replication from MySQL GTID
+    // Start replication from MySQL GTID. Recommended.
     var gtidSet = "d4c17f0c-4f11-11ea-93e3-325d3e1cd1c8:1-107, f442510a-2881-11ea-b1dd-27916133dbb2:1-7";
     options.Binlog = BinlogOptions.FromGtid(GtidSet.Parse(gtidSet));
 
-    // Start replication from the position
+    // Start replication from the master binlog filename and position
     options.Binlog = BinlogOptions.FromPosition("mysql-bin.000008", 195);
 
-    // Start replication from last master position.
-    // Useful when you are only interested in new changes.
+    // Start replication from the master last binlog filename and position.
     options.Binlog = BinlogOptions.FromEnd();
 
-    // Start replication from first event of first available master binlog.
-    // Note that binlog files by default have expiration time and deleted.
+    // Start replication from the master first available(not purged) binlog filename and position.
     options.Binlog = BinlogOptions.FromStart();
 });
 
@@ -148,17 +145,18 @@ A typical transaction has the following structure.
    - One or many `DeleteRowsEvent` events.
 3. `XidEvent` indicating commit of the transaction.
 
-In GTID mode note that
-- `FromGtid(@@gtid_purged)` is the same as `FromStart()`
-- `FromGtid(@@gtid_executed)` is the same as `FromEnd()`
+**It's best practice to use [GTID replication](https://www.percona.com/blog/2013/02/08/how-to-createrestore-a-slave-using-gtid-replication-in-mysql-5-6/) with the `FromGtid` method.** Using the approach you can correctly perform replication failover.
+Note that in GTID mode `FromGtid` has the following behavior:
+- `FromGtid(@@gtid_purged)` acts like `FromStart()`
+- `FromGtid(@@gtid_executed)` acts like `FromEnd()`
 
 ### Reading binlog files offline
 In some cases you will need to read binlog files offline from the file system.
 This can be done using `BinlogReader` class.
 ```csharp
-using (FileStream fs = File.OpenRead("mariadb-bin.000002"))
+using (Stream stream = File.OpenRead("mariadb-bin.000002"))
 {
-    var reader = new BinlogReader(new MariaDbEventDeserializer(), fs);
+    var reader = new BinlogReader(new MariaDbEventDeserializer(), stream);
     while (true)
     {
         var @event = await reader.ReadEventAsync();
