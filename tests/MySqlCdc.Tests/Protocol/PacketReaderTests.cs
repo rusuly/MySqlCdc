@@ -6,7 +6,7 @@ namespace MySqlCdc.Tests.Protocol
     public class PacketReaderTests
     {
         [Fact]
-        public void ReadByte_FromSpan_ReturnsInt8()
+        public void ReadByte_FromSpan_ReturnsByte()
         {
             var array = new byte[] { 250, 110 };
             var reader = new PacketReader(array);

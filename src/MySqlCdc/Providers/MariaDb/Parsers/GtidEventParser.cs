@@ -18,7 +18,7 @@ namespace MySqlCdc.Providers.MariaDb
             long domainId = (uint)reader.ReadInt32LittleEndian();
             var gtid = new Gtid(domainId, header.ServerId, sequence);
 
-            int flags = reader.ReadByte();
+            byte flags = reader.ReadByte();
             return new GtidEvent(header, gtid, flags);
         }
     }

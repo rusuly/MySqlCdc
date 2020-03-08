@@ -12,7 +12,7 @@ namespace MySqlCdc.Events
         /// 0x01 - LAST_INSERT_ID.
         /// 0x02 - Insert id (auto_increment).
         /// </summary>
-        public int Type { get; }
+        public byte Type { get; }
 
         /// <summary>
         /// Gets value.
@@ -22,7 +22,7 @@ namespace MySqlCdc.Events
         /// <summary>
         /// Creates a new <see cref="IntVarEvent"/>.
         /// </summary>
-        public IntVarEvent(EventHeader header, int type, long value) : base(header)
+        public IntVarEvent(EventHeader header, byte type, long value) : base(header)
         {
             Type = type;
             Value = value;

@@ -74,7 +74,7 @@ namespace MySqlCdc
             if (reader.ReadByte() != 0x02)
                 throw new FormatException();
 
-            var exponentSize = reader.ReadByte();
+            byte exponentSize = reader.ReadByte();
             byte[] exponent = reader.ReadByteArraySlow(exponentSize);
             return new RSAParameters { Modulus = modulus, Exponent = exponent };
         }

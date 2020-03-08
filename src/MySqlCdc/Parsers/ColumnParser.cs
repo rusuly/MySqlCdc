@@ -69,10 +69,7 @@ namespace MySqlCdc.Columns
             return reader.ReadBitmapBigEndian(length);
         }
 
-        public object ParseTinyInt(ref PacketReader reader, int metadata)
-        {
-            return (reader.ReadByte() << 24) >> 24;
-        }
+        public object ParseTinyInt(ref PacketReader reader, int metadata) => reader.ReadByte();
 
         public object ParseSmallInt(ref PacketReader reader, int metadata)
         {
@@ -106,7 +103,7 @@ namespace MySqlCdc.Columns
 
         public object ParseString(ref PacketReader reader, int metadata)
         {
-            var length = metadata > 255 ? reader.ReadInt16LittleEndian() : reader.ReadByte();
+            int length = metadata > 255 ? reader.ReadInt16LittleEndian() : reader.ReadByte();
             return reader.ReadString(length);
         }
 
@@ -122,7 +119,7 @@ namespace MySqlCdc.Columns
 
         public object ParseYear(ref PacketReader reader, int metadata)
         {
-            return 1900 + reader.ReadByte();
+            return 1900 + (int)reader.ReadByte();
         }
 
         public object ParseDate(ref PacketReader reader, int metadata)

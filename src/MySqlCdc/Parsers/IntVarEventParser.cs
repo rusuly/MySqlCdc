@@ -14,8 +14,8 @@ namespace MySqlCdc.Parsers
         /// </summary>
         public IBinlogEvent ParseEvent(EventHeader header, ref PacketReader reader)
         {
-            var type = reader.ReadByte();
-            var value = reader.ReadInt64LittleEndian();
+            byte type = reader.ReadByte();
+            long value = reader.ReadInt64LittleEndian();
 
             return new IntVarEvent(header, type, value);
         }

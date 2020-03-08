@@ -11,15 +11,15 @@ namespace MySqlCdc.Packets
     /// </summary>
     internal class HandshakePacket : IPacket
     {
-        public int ProtocolVersion { get; }
+        public byte ProtocolVersion { get; }
         public string ServerVersion { get; }
         public int ConnectionId { get; }
         public string Scramble { get; }
         public long ServerCapabilities { get; }
-        public int ServerCollation { get; }
+        public byte ServerCollation { get; }
         public int StatusFlags { get; }
         public string Filler { get; }
-        public int AuthPluginLength { get; }
+        public byte AuthPluginLength { get; }
         public string AuthPluginName { get; }
 
         public HandshakePacket(ReadOnlySequence<byte> buffer)

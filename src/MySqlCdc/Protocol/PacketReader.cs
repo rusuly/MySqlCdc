@@ -25,7 +25,7 @@ namespace MySqlCdc.Protocol
         /// <summary>
         /// Reads one byte as int number.
         /// </summary>
-        public int ReadByte() => _span[_offset++];
+        public byte ReadByte() => _span[_offset++];
 
         /// <summary>
         /// Reads 16-bit int written in little-endian format.
@@ -152,7 +152,7 @@ namespace MySqlCdc.Protocol
         /// </summary>
         public int ReadLengthEncodedNumber()
         {
-            int firstByte = ReadByte();
+            byte firstByte = ReadByte();
 
             if (firstByte < 0xFB)
                 return firstByte;

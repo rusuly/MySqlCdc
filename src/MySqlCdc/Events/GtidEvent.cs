@@ -30,12 +30,12 @@ namespace MySqlCdc.Events
         /// <summary>
         /// Gets flags.
         /// </summary>
-        public int Flags { get; }
+        public byte Flags { get; }
 
         /// <summary>
         /// Creates a new <see cref="GtidEvent"/>.
         /// </summary>
-        public GtidEvent(EventHeader header, IGtid gtid, int flags) : base(header)
+        public GtidEvent(EventHeader header, IGtid gtid, byte flags) : base(header)
         {
             Gtid = gtid;
             Flags = flags;

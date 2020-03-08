@@ -24,12 +24,12 @@ namespace MySqlCdc.Network
         {
             using var memoryOwner = new MemoryOwner(buffer);
             var reader = new PacketReader(memoryOwner.Memory.Span);
-            var status = reader.ReadByte();
+            var status = (ResponseType)reader.ReadByte();
 
             try
             {
                 // Network stream has 3 possible status types.
-                return (ResponseType)status switch
+                return status switch
                 {
                     ResponseType.Ok => _eventDeserializer.DeserializeEvent(ref reader),
                     ResponseType.EndOfFile => new EndOfFilePacket(buffer.Slice(1)),

@@ -230,7 +230,7 @@ namespace MySqlCdc.Providers.MySql
 
         private bool? ReadLiteral(ref PacketReader reader)
         {
-            int value = reader.ReadByte();
+            byte value = reader.ReadByte();
             return value switch
             {
                 0x00 => null,
@@ -255,7 +255,7 @@ namespace MySqlCdc.Providers.MySql
             int length = 0;
             for (int i = 0; i < 5; i++)
             {
-                byte value = (byte)reader.ReadByte();
+                byte value = reader.ReadByte();
                 length |= (value & 0x7F) << (7 * i);
                 if ((value & 0x80) == 0)
                     return length;
