@@ -17,8 +17,8 @@ namespace MySqlCdc.Packets
             using var memoryOwner = new MemoryOwner(buffer);
             var reader = new PacketReader(memoryOwner.Memory.Span);
 
-            WarningCount = reader.ReadInt16LittleEndian();
-            ServerStatus = reader.ReadInt16LittleEndian();
+            WarningCount = reader.ReadUInt16LittleEndian();
+            ServerStatus = reader.ReadUInt16LittleEndian();
         }
     }
 }

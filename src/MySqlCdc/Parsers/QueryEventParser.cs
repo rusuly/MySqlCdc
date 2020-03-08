@@ -20,8 +20,8 @@ namespace MySqlCdc.Parsers
             // DatabaseName length is null terminated
             reader.Advance(1);
 
-            var errorCode = reader.ReadInt16LittleEndian();
-            var statusVariableLength = reader.ReadInt16LittleEndian();
+            int errorCode = reader.ReadUInt16LittleEndian();
+            int statusVariableLength = reader.ReadUInt16LittleEndian();
             var statusVariables = reader.ReadByteArraySlow(statusVariableLength);
             var databaseName = reader.ReadNullTerminatedString();
             var sqlStatement = reader.ReadStringToEndOfFile();

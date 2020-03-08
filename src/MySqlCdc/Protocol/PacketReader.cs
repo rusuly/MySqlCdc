@@ -30,9 +30,9 @@ namespace MySqlCdc.Protocol
         /// <summary>
         /// Reads 16-bit int written in little-endian format.
         /// </summary>
-        public int ReadInt16LittleEndian()
+        public UInt16 ReadUInt16LittleEndian()
         {
-            int result = BinaryPrimitives.ReadUInt16LittleEndian(_span.Slice(_offset));
+            UInt16 result = BinaryPrimitives.ReadUInt16LittleEndian(_span.Slice(_offset));
             _offset += 2;
             return result;
         }
@@ -40,9 +40,9 @@ namespace MySqlCdc.Protocol
         /// <summary>
         /// Reads 16-bit int written in big-endian format.
         /// </summary>
-        public int ReadInt16BigEndian()
+        public UInt16 ReadUInt16BigEndian()
         {
-            int result = BinaryPrimitives.ReadUInt16BigEndian(_span.Slice(_offset));
+            UInt16 result = BinaryPrimitives.ReadUInt16BigEndian(_span.Slice(_offset));
             _offset += 2;
             return result;
         }
@@ -73,16 +73,6 @@ namespace MySqlCdc.Protocol
         public long ReadInt64LittleEndian()
         {
             long result = BinaryPrimitives.ReadInt64LittleEndian(_span.Slice(_offset));
-            _offset += 8;
-            return result;
-        }
-
-        /// <summary>
-        /// Reads 64-bit long written in big-endian format.
-        /// </summary>
-        public long ReadInt64BigEndian()
-        {
-            long result = BinaryPrimitives.ReadInt64BigEndian(_span.Slice(_offset));
             _offset += 8;
             return result;
         }
@@ -159,7 +149,7 @@ namespace MySqlCdc.Protocol
             else if (firstByte == 0xFB)
                 throw new FormatException("Length encoded integer cannot be NULL.");
             else if (firstByte == 0xFC)
-                return ReadInt16LittleEndian();
+                return ReadUInt16LittleEndian();
             else if (firstByte == 0xFD)
                 return ReadIntLittleEndian(3);
             else if (firstByte == 0xFE)

@@ -50,7 +50,7 @@ namespace MySqlCdc.Events
             ServerId = (uint)reader.ReadInt32LittleEndian();
             EventLength = (uint)reader.ReadInt32LittleEndian();
             NextEventPosition = (uint)reader.ReadInt32LittleEndian();
-            EventFlags = reader.ReadInt16LittleEndian();
+            EventFlags = reader.ReadUInt16LittleEndian();
         }
     }
 }

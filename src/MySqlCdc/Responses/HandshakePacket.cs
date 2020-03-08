@@ -33,7 +33,7 @@ namespace MySqlCdc.Packets
             Scramble = reader.ReadNullTerminatedString();
             byte[] capabilityFlags1 = reader.ReadByteArraySlow(2);
             ServerCollation = reader.ReadByte();
-            StatusFlags = reader.ReadInt16LittleEndian();
+            StatusFlags = reader.ReadUInt16LittleEndian();
             byte[] capabilityFlags2 = reader.ReadByteArraySlow(2);
             AuthPluginLength = reader.ReadByte();
             Filler = reader.ReadString(6);

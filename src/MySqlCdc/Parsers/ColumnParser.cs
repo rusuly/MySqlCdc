@@ -71,10 +71,7 @@ namespace MySqlCdc.Columns
 
         public object ParseTinyInt(ref PacketReader reader, int metadata) => reader.ReadByte();
 
-        public object ParseSmallInt(ref PacketReader reader, int metadata)
-        {
-            return (reader.ReadInt16LittleEndian() << 16) >> 16;
-        }
+        public object ParseSmallInt(ref PacketReader reader, int metadata) => (Int16)reader.ReadUInt16LittleEndian();
 
         public object ParseMediumInt(ref PacketReader reader, int metadata)
         {
@@ -103,7 +100,7 @@ namespace MySqlCdc.Columns
 
         public object ParseString(ref PacketReader reader, int metadata)
         {
-            int length = metadata > 255 ? reader.ReadInt16LittleEndian() : reader.ReadByte();
+            int length = metadata > 255 ? reader.ReadUInt16LittleEndian() : reader.ReadByte();
             return reader.ReadString(length);
         }
 

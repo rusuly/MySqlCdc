@@ -75,10 +75,10 @@ namespace MySqlCdc.Providers.MySql
                     ParseLiteral(ref reader);
                     break;
                 case ValueType.INT16:
-                    _writer.WriteValue((reader.ReadInt16LittleEndian() << 16) >> 16);
+                    _writer.WriteValue((Int16)reader.ReadUInt16LittleEndian());
                     break;
                 case ValueType.UINT16:
-                    _writer.WriteValue(reader.ReadInt16LittleEndian());
+                    _writer.WriteValue(reader.ReadUInt16LittleEndian());
                     break;
                 case ValueType.INT32:
                     _writer.WriteValue(reader.ReadInt32LittleEndian());
@@ -130,7 +130,7 @@ namespace MySqlCdc.Providers.MySql
                 for (int i = 0; i < elementsNumber; i++)
                 {
                     keyOffset[i] = ReadJsonSize(ref reader, small);
-                    keyLength[i] = reader.ReadInt16LittleEndian();
+                    keyLength[i] = reader.ReadUInt16LittleEndian();
                 }
             }
 
@@ -146,12 +146,12 @@ namespace MySqlCdc.Providers.MySql
                 }
                 else if (type == ValueType.INT16)
                 {
-                    entries[i] = ValueEntry.FromInlined(type, (reader.ReadInt16LittleEndian() << 16) >> 16);
+                    entries[i] = ValueEntry.FromInlined(type, (Int16)reader.ReadUInt16LittleEndian());
                     reader.Advance(valueSize - 2);
                 }
                 else if (type == ValueType.UINT16)
                 {
-                    entries[i] = ValueEntry.FromInlined(type, reader.ReadInt16LittleEndian());
+                    entries[i] = ValueEntry.FromInlined(type, reader.ReadUInt16LittleEndian());
                     reader.Advance(valueSize - 2);
                 }
                 else if (type == ValueType.INT32 && !small)
@@ -242,7 +242,7 @@ namespace MySqlCdc.Providers.MySql
 
         private int ReadJsonSize(ref PacketReader reader, bool small)
         {
-            long result = small ? (long)reader.ReadInt16LittleEndian() : (uint)reader.ReadInt32LittleEndian();
+            long result = small ? (long)reader.ReadUInt16LittleEndian() : (uint)reader.ReadInt32LittleEndian();
 
             if (result > int.MaxValue)
                 throw new FormatException("JSON offset or length field is too big");
