@@ -50,9 +50,9 @@ namespace MySqlCdc.Protocol
         /// <summary>
         /// Reads 32-bit int written in little-endian format.
         /// </summary>
-        public int ReadInt32LittleEndian()
+        public UInt32 ReadUInt32LittleEndian()
         {
-            int result = BinaryPrimitives.ReadInt32LittleEndian(_span.Slice(_offset));
+            UInt32 result = BinaryPrimitives.ReadUInt32LittleEndian(_span.Slice(_offset));
             _offset += 4;
             return result;
         }
@@ -60,9 +60,9 @@ namespace MySqlCdc.Protocol
         /// <summary>
         /// Reads 32-bit int written in big-endian format.
         /// </summary>
-        public int ReadInt32BigEndian()
+        public UInt32 ReadUInt32BigEndian()
         {
-            int result = BinaryPrimitives.ReadInt32BigEndian(_span.Slice(_offset));
+            UInt32 result = BinaryPrimitives.ReadUInt32BigEndian(_span.Slice(_offset));
             _offset += 4;
             return result;
         }

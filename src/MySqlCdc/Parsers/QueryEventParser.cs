@@ -14,8 +14,8 @@ namespace MySqlCdc.Parsers
         /// </summary>
         public IBinlogEvent ParseEvent(EventHeader header, ref PacketReader reader)
         {
-            long threadId = (uint)reader.ReadInt32LittleEndian();
-            long duration = (uint)reader.ReadInt32LittleEndian();
+            long threadId = reader.ReadUInt32LittleEndian();
+            long duration = reader.ReadUInt32LittleEndian();
 
             // DatabaseName length is null terminated
             reader.Advance(1);

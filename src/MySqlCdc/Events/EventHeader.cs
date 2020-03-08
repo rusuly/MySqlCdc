@@ -45,11 +45,11 @@ namespace MySqlCdc.Events
         /// </summary>
         public EventHeader(ref PacketReader reader)
         {
-            Timestamp = (uint)reader.ReadInt32LittleEndian();
+            Timestamp = reader.ReadUInt32LittleEndian();
             EventType = (EventType)reader.ReadByte();
-            ServerId = (uint)reader.ReadInt32LittleEndian();
-            EventLength = (uint)reader.ReadInt32LittleEndian();
-            NextEventPosition = (uint)reader.ReadInt32LittleEndian();
+            ServerId = reader.ReadUInt32LittleEndian();
+            EventLength = reader.ReadUInt32LittleEndian();
+            NextEventPosition = reader.ReadUInt32LittleEndian();
             EventFlags = reader.ReadUInt16LittleEndian();
         }
     }

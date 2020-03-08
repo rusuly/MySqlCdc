@@ -13,7 +13,7 @@ namespace MySqlCdc.Packets
     {
         public byte ProtocolVersion { get; }
         public string ServerVersion { get; }
-        public int ConnectionId { get; }
+        public long ConnectionId { get; }
         public string Scramble { get; }
         public long ServerCapabilities { get; }
         public byte ServerCollation { get; }
@@ -29,7 +29,7 @@ namespace MySqlCdc.Packets
 
             ProtocolVersion = reader.ReadByte();
             ServerVersion = reader.ReadNullTerminatedString();
-            ConnectionId = reader.ReadInt32LittleEndian();
+            ConnectionId = reader.ReadUInt32LittleEndian();
             Scramble = reader.ReadNullTerminatedString();
             byte[] capabilityFlags1 = reader.ReadByteArraySlow(2);
             ServerCollation = reader.ReadByte();

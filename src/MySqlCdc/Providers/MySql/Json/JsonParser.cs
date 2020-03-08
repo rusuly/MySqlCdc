@@ -81,10 +81,10 @@ namespace MySqlCdc.Providers.MySql
                     _writer.WriteValue(reader.ReadUInt16LittleEndian());
                     break;
                 case ValueType.INT32:
-                    _writer.WriteValue(reader.ReadInt32LittleEndian());
+                    _writer.WriteValue((int)reader.ReadUInt32LittleEndian());
                     break;
                 case ValueType.UINT32:
-                    _writer.WriteValue((uint)reader.ReadInt32LittleEndian());
+                    _writer.WriteValue(reader.ReadUInt32LittleEndian());
                     break;
                 case ValueType.INT64:
                     _writer.WriteValue(reader.ReadInt64LittleEndian());
@@ -156,11 +156,11 @@ namespace MySqlCdc.Providers.MySql
                 }
                 else if (type == ValueType.INT32 && !small)
                 {
-                    entries[i] = ValueEntry.FromInlined(type, reader.ReadInt32LittleEndian());
+                    entries[i] = ValueEntry.FromInlined(type, (int)reader.ReadUInt32LittleEndian());
                 }
                 else if (type == ValueType.UINT32 && !small)
                 {
-                    entries[i] = ValueEntry.FromInlined(type, (uint)reader.ReadInt32LittleEndian());
+                    entries[i] = ValueEntry.FromInlined(type, reader.ReadUInt32LittleEndian());
                 }
                 else
                 {
@@ -242,7 +242,7 @@ namespace MySqlCdc.Providers.MySql
 
         private int ReadJsonSize(ref PacketReader reader, bool small)
         {
-            long result = small ? (long)reader.ReadUInt16LittleEndian() : (uint)reader.ReadInt32LittleEndian();
+            long result = small ? reader.ReadUInt16LittleEndian() : reader.ReadUInt32LittleEndian();
 
             if (result > int.MaxValue)
                 throw new FormatException("JSON offset or length field is too big");

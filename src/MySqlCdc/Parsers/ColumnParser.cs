@@ -47,14 +47,14 @@ namespace MySqlCdc.Columns
             }
             for (int i = 0; i < uncompressedIntegral; i++)
             {
-                result.Append(buffer.ReadInt32BigEndian().ToString("D9"));
+                result.Append(buffer.ReadUInt32BigEndian().ToString("D9"));
             }
             result.Append(".");
 
             size = CompressedBytes[compressedFractional];
             for (int i = 0; i < uncompressedFractional; i++)
             {
-                result.Append(buffer.ReadInt32BigEndian().ToString("D9"));
+                result.Append(buffer.ReadUInt32BigEndian().ToString("D9"));
             }
             if (size > 0)
             {
@@ -78,10 +78,7 @@ namespace MySqlCdc.Columns
             return (reader.ReadIntLittleEndian(3) << 8) >> 8;
         }
 
-        public object ParseInt(ref PacketReader reader, int metadata)
-        {
-            return reader.ReadInt32LittleEndian();
-        }
+        public object ParseInt(ref PacketReader reader, int metadata) => (Int32)reader.ReadUInt32LittleEndian();
 
         public object ParseBigInt(ref PacketReader reader, int metadata)
         {
@@ -90,7 +87,7 @@ namespace MySqlCdc.Columns
 
         public object ParseFloat(ref PacketReader reader, int metadata)
         {
-            return BitConverter.ToSingle(BitConverter.GetBytes(reader.ReadInt32LittleEndian()), 0);
+            return BitConverter.ToSingle(BitConverter.GetBytes(reader.ReadUInt32LittleEndian()), 0);
         }
 
         public object ParseDouble(ref PacketReader reader, int metadata)
@@ -149,7 +146,7 @@ namespace MySqlCdc.Columns
 
         public object ParseTimeStamp(ref PacketReader reader, int metadata)
         {
-            long seconds = (uint)reader.ReadInt32LittleEndian();
+            long seconds = reader.ReadUInt32LittleEndian();
             return DateTimeOffset.FromUnixTimeSeconds(seconds);
         }
 
@@ -196,7 +193,7 @@ namespace MySqlCdc.Columns
 
         public object ParseTimeStamp2(ref PacketReader reader, int metadata)
         {
-            long seconds = (uint)reader.ReadInt32BigEndian();
+            long seconds = reader.ReadUInt32BigEndian();
             int millisecond = ParseFractionalPart(ref reader, metadata) / 1000;
             long timestamp = seconds * 1000 + millisecond;
 

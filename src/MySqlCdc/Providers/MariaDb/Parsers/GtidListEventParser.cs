@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using MySqlCdc.Events;
 using MySqlCdc.Parsers;
 using MySqlCdc.Protocol;
@@ -15,13 +14,13 @@ namespace MySqlCdc.Providers.MariaDb
         /// </summary>
         public IBinlogEvent ParseEvent(EventHeader header, ref PacketReader reader)
         {
-            long gtidListLength = (uint)reader.ReadInt32LittleEndian();
+            uint gtidListLength = reader.ReadUInt32LittleEndian();
 
             var gtidList = new GtidList();
             for (int i = 0; i < gtidListLength; i++)
             {
-                long domainId = (uint)reader.ReadInt32LittleEndian();
-                long serverId = (uint)reader.ReadInt32LittleEndian();
+                long domainId = reader.ReadUInt32LittleEndian();
+                long serverId = reader.ReadUInt32LittleEndian();
                 long sequence = reader.ReadInt64LittleEndian();
 
                 gtidList.Gtids.Add(new Gtid(domainId, serverId, sequence));
