@@ -5,16 +5,16 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>8.0</LangVersion>
     <PackageId>MySqlCdc</PackageId>
-    <Version>1.0.0-preview.16</Version>
+    <Version>1.0.0-preview.17</Version>
     <Authors>Ruslan Ulianets</Authors>
     <PackageTags>MySQL;MariaDB;Binlog;CDC;Change Data Capture;Replication;Streaming</PackageTags>
     <Description>MySQL/MariaDB binlog change data capture (CDC) connector for .NET and .NET Core</Description>
     <PackageProjectUrl>https://github.com/rusuly/MySqlCdc</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/rusuly/MySqlCdc/blob/master/LICENSE</PackageLicenseUrl>
     <PackageReleaseNotes>
-1. Implemented GtidSet in MySQL Server 5.6+.
-2. Implemented GtidList in MariaDB.
-3. @ElderJames added CancellationToken support.
+Breaking changes:
+1. TinyInt types are parsed as bytes.
+2. SmallInt types are parsed as shorts.
     </PackageReleaseNotes>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>

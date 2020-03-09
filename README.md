@@ -175,14 +175,14 @@ using (Stream stream = File.OpenRead("mariadb-bin.000002"))
 ## Type mapping notes
 
   | MySQL Type         | .NET type            |
-  | ------------------ |:--------------------:|
+  | ------------------ | -------------------- |
   | GEOMETRY           | byte[]               |
   | JSON (MySQL)       | byte[], see below    |
   | JSON (MariaDB)     | byte[], see below    |
   | BIT                | bool[]               |
-  | TINYINT            | int                  |
-  | SMALLINT           | int                  |
-  | MEDIUMINT          | int                  |
+  | TINYINT            | byte                 |
+  | SMALLINT           | short                |
+  | MEDIUMINT          | int(3), see below    |
   | INT                | int                  |
   | BIGING             | long                 |
   | FLOAT              | float                |
@@ -201,28 +201,12 @@ using (Stream stream = File.OpenRead("mariadb-bin.000002"))
 
 - Invalid DATE, DATETIME values(0000-00-00) are parsed as DateTime null.
 - TIME, DATETIME, TIMESTAMP (MySQL 5.6.4+) will lose microseconds when converted to .NET types as MySQL types have bigger fractional part than corresponding .NET types can store.
-- Signedness of numeric columns cannot be determined in MariaDB(and MySQL 5.5) so the library stores all numeric columns as signed `int` or `long`. The client has the information and should manually cast unsigned columns to `uint` and `ulong`:
+- Signedness of numeric columns cannot be determined in MariaDB/MySQL 5.5. The library stores all numeric columns as CLS-compliant types from the table above. The client has the information and should manually cast to `sbyte`, `ushort`, `uint` or `ulong` if necessary. The only exception is 3-byte `unsigned mediumint` which must be casted this way:
 
     ```csharp
-    // casting unsigned tinyint columns
-    uint cellValue = (uint)(int)row.Cells[0];
-    uint tinyintColumn = (cellValue << 24) >> 24;
-
-    // casting unsigned smallint columns
-    uint cellValue = (uint)(int)row.Cells[0];
-    uint smallintColumn = (cellValue << 16) >> 16;
-
     // casting unsigned mediumint columns
     uint cellValue = (uint)(int)row.Cells[0];
-    uint mediumintColumn = (cellValue << 8) >> 8;
-
-    // casting unsigned int columns
-    uint cellValue = (uint)(int)row.Cells[0];
-    uint intColumn = cellValue;
-
-    // casting unsigned bigint columns
-    ulong cellValue = (ulong)(long)row.Cells[0];
-    ulong bigintColumn = cellValue;    
+    uint mediumint = (cellValue << 8) >> 8;  
     ```
 
 - JSON columns have different storage format in MariaDB and MySQL:
