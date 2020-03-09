@@ -28,7 +28,7 @@ namespace MySqlCdc.Providers.MySql
                 {
                     long start = reader.ReadInt64LittleEndian();
                     long end = reader.ReadInt64LittleEndian();
-                    uuidSet.Intervals.Add(new Interval(start, end));
+                    uuidSet.Intervals.Add(new Interval(start, end - 1));
                 }
                 gtidSet.UuidSets[sourceId] = uuidSet;
             }
