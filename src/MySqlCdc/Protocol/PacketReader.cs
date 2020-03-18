@@ -153,16 +153,13 @@ namespace MySqlCdc.Protocol
             else if (firstByte == 0xFD)
                 return ReadIntLittleEndian(3);
             else if (firstByte == 0xFE)
-            {
-                try
-                {
-                    // Max theoretical length of .NET string is Int32.MaxValue
-                    return checked((int)ReadInt64LittleEndian());
-                }
-                catch (OverflowException)
-                {
-                    throw new FormatException("Length encoded integer cannot exceed Int32.MaxValue.");
-                }
+            {                
+                long value = ReadInt64LittleEndian();
+                if (value < 0 || value > Int32.MaxValue)
+                    throw new OverflowException($"Length encoded integer cannot exceed {nameof(Int32.MaxValue)}.");
+
+                // Max theoretical length of .NET strings, arrays is Int32.MaxValue
+                return (int)value;
             }
             throw new FormatException($"Unexpected length-encoded integer: {firstByte}");
         }

@@ -1,3 +1,6 @@
+using System;
+using System.Linq;
+using MySqlCdc.Constants;
 using MySqlCdc.Protocol;
 using Xunit;
 
@@ -144,6 +147,173 @@ namespace MySqlCdc.Tests.Protocol
 
             Assert.Equal(0x82DC4BFA4E2D63, reader.ReadLongBigEndian(7));
             Assert.Equal(18, reader.Consumed);
+        }
+
+        [Fact]
+        public void Test_ReadLengthEncoded_0xFA_ReturnsTheByte()
+        {
+            var payload = new byte[] { 0xFA };
+            var reader = ReadLengthEncodedNumber(payload);
+
+            Assert.Equal(0xFA, reader.number);
+            Assert.Equal(1, reader.consumed);
+        }
+
+        [Fact]
+        public void Test_ReadLengthEncoded_0xFB_ThrowsFormatException()
+        {
+            var payload = new byte[] { 0xFB };
+            Assert.Throws<FormatException>(() => ReadLengthEncodedNumber(payload));
+        }
+
+        [Fact]
+        public void Test_ReadLengthEncoded_0xFC_ReturnsInt16()
+        {
+            var payload = new byte[] { 0xFC, 0xFA, 0x6E };
+            var reader = ReadLengthEncodedNumber(payload);
+
+            Assert.Equal(0x6EFA, reader.number);
+            Assert.Equal(3, reader.consumed);
+        }
+
+        [Fact]
+        public void Test_ReadLengthEncoded_0xFD_ReturnsInt24()
+        {
+            var payload = new byte[] { 0xFD, 0x0A, 0xFA, 0x6E };
+            var reader = ReadLengthEncodedNumber(payload);
+
+            Assert.Equal(0x6EFA0A, reader.number);
+            Assert.Equal(4, reader.consumed);
+        }
+
+        [Fact]
+        public void Test_ReadLengthEncoded_0xFE_ReturnsInt64()
+        {
+            var payload = new byte[] { 0xFE, 0x0A, 0xFA, 0x6E, 0x40, 0, 0, 0, 0 };
+            var reader = ReadLengthEncodedNumber(payload);
+
+            Assert.Equal(0x406EFA0A, reader.number);
+            Assert.Equal(9, reader.consumed);
+        }
+
+        [Fact]
+        public void Test_ReadLengthEncoded_0xFE_ThrowsOverflowException()
+        {
+            var payload = new byte[] { 0xFE, 0x0A, 0xFA, 0x6E, 0x90, 0, 0, 0, 0 };
+            Assert.Throws<OverflowException>(() => ReadLengthEncodedNumber(payload));
+        }
+
+        [Fact]
+        public void Test_ReadLengthEncoded_0xFF_ThrowsFormatException()
+        {
+            var payload = new byte[] { 0xFF };
+            Assert.Throws<FormatException>(() => ReadLengthEncodedNumber(payload));
+        }
+
+        [Fact]
+        public void Test_ReadString_ReturnsFixedString()
+        {
+            var payload = new byte[] { 76, 111, 114, 101, 109, 32, 105, 112, 115, 117, 109 };
+            var reader = new PacketReader(payload);
+
+            Assert.Equal("Lorem", reader.ReadString(5));
+            Assert.Equal(5, reader.Consumed);
+        }
+
+        [Fact]
+        public void Test_ReadStringToEndOfFile_ReturnsString()
+        {
+            var payload = new byte[] { 76, 111, 114, 101, 109, 32, 105, 112, 115, 117, 109 };
+            var reader = new PacketReader(payload);
+
+            Assert.Equal("Lorem ipsum", reader.ReadStringToEndOfFile());
+            Assert.Equal(11, reader.Consumed);
+        }
+
+        [Fact]
+        public void Test_ReadNullTerminatedString_ReturnsString()
+        {
+            var payload = new byte[] { 76, 111, 114, 101, 109, PacketConstants.NullTerminator, 105, 112, 115, 117, 109 };
+            var reader = new PacketReader(payload);
+
+            Assert.Equal("Lorem", reader.ReadNullTerminatedString());
+            Assert.Equal("Lorem".Length + 1, reader.Consumed);
+        }
+
+        [Fact]
+        public void Test_ReadLengthEncodedString_ReturnsString()
+        {
+            const byte length = 5;
+            var payload = new byte[] { length, 76, 111, 114, 101, 109, 32, 105, 112, 115, 117, 109 };
+            var reader = new PacketReader(payload);
+
+            Assert.Equal("Lorem", reader.ReadLengthEncodedString());
+            Assert.Equal(length + 1, reader.Consumed);
+        }
+
+        [Fact]
+        public void Test_ReadByteArraySlow_ReturnsArray()
+        {
+            var payload = new byte[] { 76, 111, 114, 101, 109, 32, 105, 112, 115, 117, 109 };
+            var reader = new PacketReader(payload);
+
+            Assert.Equal(new byte[] { 76, 111, 114, 101, 109 }, reader.ReadByteArraySlow(5));
+            Assert.Equal(5, reader.Consumed);
+        }
+
+        [Fact]
+        public void Test_ReadBitmap_ReturnsBitmap()
+        {
+            var payload = new byte[] { 0xB4, 0x78 };
+            var reader = new PacketReader(payload);
+
+            var expected = new byte[]
+            {
+                0, 0, 1, 0, 1, 1, 0, 1,
+                0, 0, 0, 1, 1, 1
+            }.Select(x => x > 0).ToArray();
+
+            Assert.Equal(expected, reader.ReadBitmap(14));
+            Assert.Equal(2, reader.Consumed);
+        }
+
+        [Fact]
+        public void Test_ReadBitmapBigEndian_ReturnsBitmap()
+        {
+            var payload = new byte[] { 0xB4, 0x78 };
+            var reader = new PacketReader(payload);
+
+            var expected = new byte[]
+            {
+                0, 0, 0, 1, 1, 1, 1, 0,
+                0, 0, 1, 0, 1, 1
+            }.Select(x => x > 0).ToArray();
+
+            Assert.Equal(expected, reader.ReadBitmapBigEndian(14));
+            Assert.Equal(2, reader.Consumed);
+        }
+
+        [Fact]
+        public void Test_Advance_ReturnsIsEmpty()
+        {
+            var payload = new byte[] { 76, 111, 114, 101, 109, 32, 105, 112, 115, 117, 109 };
+            var reader = new PacketReader(payload);
+
+            reader.Advance(5);
+            Assert.False(reader.IsEmpty());
+            Assert.Equal(5, reader.Consumed);
+
+            reader.Advance(6);
+            Assert.True(reader.IsEmpty());
+            Assert.Equal(11, reader.Consumed);
+        }
+
+        private (int number, int consumed) ReadLengthEncodedNumber(byte[] payload)
+        {
+            var reader = new PacketReader(payload);
+            int number = reader.ReadLengthEncodedNumber();
+            int consumed = reader.Consumed;
+            return (number, consumed);
         }
     }
 }
