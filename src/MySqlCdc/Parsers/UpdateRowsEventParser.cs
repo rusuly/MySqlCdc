@@ -30,8 +30,8 @@ namespace MySqlCdc.Parsers
         {
             var shared = ParseHeader(ref reader);
 
-            var columnsBeforeUpdate = reader.ReadBitmap(shared.columnsNumber);
-            var columnsAfterUpdate = reader.ReadBitmap(shared.columnsNumber);
+            var columnsBeforeUpdate = reader.ReadBitmapLittleEndian(shared.columnsNumber);
+            var columnsAfterUpdate = reader.ReadBitmapLittleEndian(shared.columnsNumber);
 
             var rows = ParseUpdateRows(ref reader, shared.tableId, columnsBeforeUpdate, columnsAfterUpdate);
             return new UpdateRowsEvent(header, shared.tableId, shared.flags, shared.columnsNumber, columnsBeforeUpdate, columnsAfterUpdate, rows);

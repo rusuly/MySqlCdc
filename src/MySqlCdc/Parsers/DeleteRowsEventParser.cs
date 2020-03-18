@@ -30,7 +30,7 @@ namespace MySqlCdc.Parsers
         {
             var shared = ParseHeader(ref reader);
 
-            var columnsPresent = reader.ReadBitmap(shared.columnsNumber);
+            var columnsPresent = reader.ReadBitmapLittleEndian(shared.columnsNumber);
             var rows = ParseDeleteRows(ref reader, shared.tableId, columnsPresent);
 
             return new DeleteRowsEvent(header, shared.tableId, shared.flags, shared.columnsNumber, columnsPresent, rows);

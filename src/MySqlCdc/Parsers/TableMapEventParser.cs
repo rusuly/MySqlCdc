@@ -32,7 +32,7 @@ namespace MySqlCdc.Parsers
             var metadataLength = (int)reader.ReadLengthEncodedNumber();
             var metadata = ParseMetadata(ref reader, columnTypes);
 
-            var nullBitmap = reader.ReadBitmap(columnsNumber);
+            var nullBitmap = reader.ReadBitmapLittleEndian(columnsNumber);
 
             TableMetadata tableMetadata = null;
             if (!reader.IsEmpty())

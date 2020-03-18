@@ -262,7 +262,7 @@ namespace MySqlCdc.Tests.Protocol
         }
 
         [Fact]
-        public void Test_ReadBitmap_ReturnsBitmap()
+        public void Test_ReadBitmapLittleEndian_ReturnsBitmap()
         {
             var payload = new byte[] { 0xB4, 0x78 };
             var reader = new PacketReader(payload);
@@ -273,7 +273,7 @@ namespace MySqlCdc.Tests.Protocol
                 0, 0, 0, 1, 1, 1
             }.Select(x => x > 0).ToArray();
 
-            Assert.Equal(expected, reader.ReadBitmap(14));
+            Assert.Equal(expected, reader.ReadBitmapLittleEndian(14));
             Assert.Equal(2, reader.Consumed);
         }
 

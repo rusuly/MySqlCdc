@@ -223,7 +223,7 @@ namespace MySqlCdc.Protocol
         /// <summary>
         /// Reads bitmap in little-endian bytes order
         /// </summary>
-        public bool[] ReadBitmap(int bitsNumber)
+        public bool[] ReadBitmapLittleEndian(int bitsNumber)
         {
             var result = new bool[bitsNumber];
             var bytesNumber = (bitsNumber + 7) / 8;

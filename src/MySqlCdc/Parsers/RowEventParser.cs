@@ -54,7 +54,7 @@ namespace MySqlCdc.Parsers
         protected ColumnData ParseRow(ref PacketReader reader, TableMapEvent tableMap, bool[] columnsPresent, int cellsIncluded)
         {
             var row = new object[tableMap.ColumnTypes.Length];
-            var nullBitmap = reader.ReadBitmap(cellsIncluded);
+            var nullBitmap = reader.ReadBitmapLittleEndian(cellsIncluded);
 
             for (int i = 0, skippedColumns = 0; i < tableMap.ColumnTypes.Length; i++)
             {
