@@ -107,6 +107,10 @@ namespace MySqlCdc.Constants
         /// </summary>
         MYSQL_PREVIOUS_GTIDS_EVENT = 35,
 
+        /// <summary>
+        /// Identifies <see cref="XaPrepareEvent"/> in MySQL from 5.6 to 8.0. 
+        /// </summary>
+        MYSQL_XA_PREPARE = 38,
 
         /// <summary>
         /// Identifies <see cref="RowsQueryEvent"/> in MariaDB. 

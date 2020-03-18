@@ -5,9 +5,9 @@ using Xunit;
 
 namespace MySqlCdc.Tests.Providers
 {
-    public class EventParserTests
+    public class PreviousGtidsEventParserTests
     {
-        private static byte[] PreviousGtidsEventPayload = new byte[]
+        private static byte[] Payload = new byte[]
         {
             2, 0, 0, 0, 0, 0, 0, 0, 181, 205, 22, 36, 95, 48, 17, 228, 180, 233, 16, 81, 114, 27,
             210, 65, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 241, 15, 108, 0, 0, 0, 0, 0,
@@ -19,7 +19,7 @@ namespace MySqlCdc.Tests.Providers
         [Fact]
         public void Test_ParsePreviousGtidsEvent_ReturnsGtidSet()
         {
-            var reader = new PacketReader(PreviousGtidsEventPayload);
+            var reader = new PacketReader(Payload);
             var parser = new PreviousGtidsEventParser();
             var @event = (PreviousGtidsEvent)parser.ParseEvent(null, ref reader);
 
