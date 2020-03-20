@@ -1,7 +1,7 @@
 # MySqlCdc
-MySql binlog change data capture (CDC) connector for .NET
+MySQL/MariaDB binlog change data capture (CDC) connector for .NET
 
-Acts as MySql replication client streaming binlog events in real-time.
+Acts as a replication client streaming binary log events in real-time.
 
 Designed for reactive push-model applications, event sourcing or derived data systems.
 
@@ -24,7 +24,6 @@ Be careful when working with binary log event streaming.
 
 ## Limitations
 Please note the lib currently has the following limitations:
-- Packet compression is not supported.
 - Supports only standard auth plugins `mysql_native_password` and `caching_sha2_password`.
 - **Currently, the library doesn't fully support SSL encryption.**
 
@@ -34,20 +33,20 @@ Please make sure the following requirements are met:
 2. Binary logging is enabled(it's done by default in MySQL 8). To enable binary logging configure the following settings on the master server and restart the service:
 
     ```conf
-    binlog_format=row
-    binlog_row_image=full
+    binlog_format = row
+    binlog_row_image = full
     ```
 
    MySQL 5.6/5.7 and MariaDB 10.1 also require the following line:
 
     ```conf
-    server-id=1
+    server-id = 1
     ```
 
 3. Optionally you can enable logging table metadata in MySQL(like column names, see `TableMetadata` class). Note the metadata is not supported in MariaDB.
 
     ```conf
-    binlog_row_metadata = FULL
+    binlog_row_metadata = full
     ```
 
 4. Optionally you can enable logging SQL queries that precede row based events and listen to `RowsQueryEvent`.
@@ -55,13 +54,13 @@ Please make sure the following requirements are met:
    MySQL
 
     ```conf
-    binlog_rows_query_log_events = ON
+    binlog_rows_query_log_events = on
     ```
 
    MariaDB
 
     ```conf
-    binlog_annotate_row_events = ON
+    binlog_annotate_row_events = on
     ```
 
 5. Also note that there are `expire_logs_days`, `binlog_expire_logs_seconds` settings that control how long binlog files live. **By default MySQL/MariaDB have expiration time set and delete expired binlog files.** You can disable automatic purging of binlog files this way:
@@ -82,7 +81,7 @@ order by ORDINAL_POSITION;
 Alternatively, in MySQL 5.6 and newer(but not in MariaDB) you can obtain column names by logging full metadata (see `TableMetadataEvent.Metadata`).
 This way the metadata is logged with each `TableMapEvent` which impacts bandwidth. 
 ```conf
-binlog_row_metadata = FULL
+binlog_row_metadata = full
 ```
 
 ### Binlog event stream replication
@@ -194,9 +193,9 @@ using (Stream stream = File.OpenRead("mariadb-bin.000002"))
   | SET                | long                 |
   | YEAR               | int                  |
   | DATE               | Nullable&lt;DateTime&gt; |
+  | DATETIME           | Nullable&lt;DateTime&gt; |
   | TIME               | TimeSpan             |
   | TIMESTAMP          | DateTimeOffset       |
-  | DATETIME           | Nullable&lt;DateTime&gt; |
   | BLOB types         | byte[]               |
 
 - Invalid DATE, DATETIME values(0000-00-00) are parsed as DateTime null.
@@ -225,6 +224,7 @@ using (Stream stream = File.OpenRead("mariadb-bin.000002"))
 - DECIMAL type is parsed to string as MySql decimal has bigger range(65 digits) than .NET decimal.
 
 ## Similar projects
+The project is based on [mysql-binlog-connector-java](https://github.com/shyiko/mysql-binlog-connector-java) library, [MariaDB](https://mariadb.com/kb/en/replication-protocol/) and MySQL documentation.
 - Java: https://github.com/shyiko/mysql-binlog-connector-java
 - PHP: https://github.com/krowinski/php-mysql-replication
 - Python: https://github.com/noplay/python-mysql-replication
@@ -244,11 +244,6 @@ MySqlCdc supports both MariaDB & MySQL server.
   | 5.6      | ✅ Supported             |
   | 5.7      | ✅ Supported             |
   | 8.0      | ✅ Supported             |
-
-## Info
-The project is based on [mysql-binlog-connector-java](https://github.com/shyiko/mysql-binlog-connector-java) library, [MariaDB](https://mariadb.com/kb/en/replication-protocol/) and MySQL documentation.
-
-Data streaming is optimized & based on [System.IO.Pipelines](https://www.nuget.org/packages/System.IO.Pipelines/) as described in [series of posts](https://blog.marcgravell.com/2018/07/pipe-dreams-part-1.html) by Marc Gravell.
 
 ## Q&A
 Are uncommitted changes written to binlog?
