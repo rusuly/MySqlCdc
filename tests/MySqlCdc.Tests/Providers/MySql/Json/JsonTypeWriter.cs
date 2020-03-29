@@ -2,12 +2,12 @@ using System.Text.Json;
 
 namespace MySqlCdc.Providers.MySql
 {
-    internal class JsonWriter : IJsonWriter
+    internal class JsonTypeWriter : IJsonWriter
     {
         private readonly Utf8JsonWriter _writer;
         private string _propertyName;
 
-        public JsonWriter(Utf8JsonWriter writer)
+        public JsonTypeWriter(Utf8JsonWriter writer)
         {
             _writer = writer;
         }
@@ -51,100 +51,100 @@ namespace MySqlCdc.Providers.MySql
         {
             if (_propertyName != null)
             {
-                _writer.WriteNumber(_propertyName, value);
+                _writer.WriteString(_propertyName, "Int16");
                 _propertyName = null;
             }
-            else _writer.WriteNumberValue(value);
+            else _writer.WriteStringValue("Int16");
         }
 
         public void WriteValue(ushort value)
         {
             if (_propertyName != null)
             {
-                _writer.WriteNumber(_propertyName, value);
+                _writer.WriteString(_propertyName, "UInt16");
                 _propertyName = null;
             }
-            else _writer.WriteNumberValue(value);
+            else _writer.WriteStringValue("UInt16");
         }
 
         public void WriteValue(int value)
         {
             if (_propertyName != null)
             {
-                _writer.WriteNumber(_propertyName, value);
+                _writer.WriteString(_propertyName, "Int32");
                 _propertyName = null;
             }
-            else _writer.WriteNumberValue(value);
+            else _writer.WriteStringValue("Int32");
         }
 
         public void WriteValue(uint value)
         {
             if (_propertyName != null)
             {
-                _writer.WriteNumber(_propertyName, value);
+                _writer.WriteString(_propertyName, "UInt32");
                 _propertyName = null;
             }
-            else _writer.WriteNumberValue(value);
+            else _writer.WriteStringValue("UInt32");
         }
 
         public void WriteValue(long value)
         {
             if (_propertyName != null)
             {
-                _writer.WriteNumber(_propertyName, value);
+                _writer.WriteString(_propertyName, "Int64");
                 _propertyName = null;
             }
-            else _writer.WriteNumberValue(value);
+            else _writer.WriteStringValue("Int64");
         }
 
         public void WriteValue(ulong value)
         {
             if (_propertyName != null)
             {
-                _writer.WriteNumber(_propertyName, value);
+                _writer.WriteString(_propertyName, "UInt64");
                 _propertyName = null;
             }
-            else _writer.WriteNumberValue(value);
+            else _writer.WriteStringValue("UInt64");
         }
 
         public void WriteValue(double value)
         {
             if (_propertyName != null)
             {
-                _writer.WriteNumber(_propertyName, value);
+                _writer.WriteString(_propertyName, "double");
                 _propertyName = null;
             }
-            else _writer.WriteNumberValue(value);
+            else _writer.WriteStringValue("double");
         }
 
         public void WriteValue(string value)
         {
             if (_propertyName != null)
             {
-                _writer.WriteString(_propertyName, value);
+                _writer.WriteString(_propertyName, "string");
                 _propertyName = null;
             }
-            else _writer.WriteStringValue(value);
+            else _writer.WriteStringValue("string");
         }
 
         public void WriteValue(bool value)
         {
             if (_propertyName != null)
             {
-                _writer.WriteBoolean(_propertyName, value);
+                _writer.WriteString(_propertyName, "bool");
                 _propertyName = null;
             }
-            else _writer.WriteBooleanValue(value);
+            else _writer.WriteStringValue("bool");
         }
 
         public void WriteNull()
         {
             if (_propertyName != null)
             {
-                _writer.WriteNull(_propertyName);
+                _writer.WriteString(_propertyName, "null");
                 _propertyName = null;
             }
-            else _writer.WriteNullValue();
+            else _writer.WriteStringValue("null");
         }
     }
 }

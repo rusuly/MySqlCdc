@@ -78,19 +78,19 @@ namespace MySqlCdc.Providers.MySql
                     _writer.WriteValue((Int16)reader.ReadUInt16LittleEndian());
                     break;
                 case ValueType.UINT16:
-                    _writer.WriteValue(reader.ReadUInt16LittleEndian());
+                    _writer.WriteValue((UInt16)reader.ReadUInt16LittleEndian());
                     break;
                 case ValueType.INT32:
-                    _writer.WriteValue((int)reader.ReadUInt32LittleEndian());
+                    _writer.WriteValue((Int32)reader.ReadUInt32LittleEndian());
                     break;
                 case ValueType.UINT32:
-                    _writer.WriteValue(reader.ReadUInt32LittleEndian());
+                    _writer.WriteValue((UInt32)reader.ReadUInt32LittleEndian());
                     break;
                 case ValueType.INT64:
-                    _writer.WriteValue(reader.ReadInt64LittleEndian());
+                    _writer.WriteValue((Int64)reader.ReadInt64LittleEndian());
                     break;
                 case ValueType.UINT64:
-                    _writer.WriteValue((ulong)reader.ReadInt64LittleEndian());
+                    _writer.WriteValue((UInt64)reader.ReadInt64LittleEndian());
                     break;
                 case ValueType.DOUBLE:
                     _writer.WriteValue((double)ColumnParser.ParseDouble(ref reader, 0));
@@ -151,16 +151,16 @@ namespace MySqlCdc.Providers.MySql
                 }
                 else if (type == ValueType.UINT16)
                 {
-                    entries[i] = ValueEntry.FromInlined(type, reader.ReadUInt16LittleEndian());
+                    entries[i] = ValueEntry.FromInlined(type, (UInt16)reader.ReadUInt16LittleEndian());
                     reader.Advance(valueSize - 2);
                 }
                 else if (type == ValueType.INT32 && !small)
                 {
-                    entries[i] = ValueEntry.FromInlined(type, (int)reader.ReadUInt32LittleEndian());
+                    entries[i] = ValueEntry.FromInlined(type, (Int32)reader.ReadUInt32LittleEndian());
                 }
                 else if (type == ValueType.UINT32 && !small)
                 {
-                    entries[i] = ValueEntry.FromInlined(type, reader.ReadUInt32LittleEndian());
+                    entries[i] = ValueEntry.FromInlined(type, (UInt32)reader.ReadUInt32LittleEndian());
                 }
                 else
                 {
@@ -197,14 +197,20 @@ namespace MySqlCdc.Providers.MySql
                     Advance(ref reader, startIndex, entry.Offset);
                     ParseNode(ref reader, entry.Type);
                 }
+
                 else if (entry.Value == null)
                     _writer.WriteNull();
                 else if (entry.Type == ValueType.LITERAL)
                     _writer.WriteValue((bool)entry.Value);
+
+                else if (entry.Type == ValueType.INT16)
+                    _writer.WriteValue((Int16)entry.Value);
+                else if (entry.Type == ValueType.UINT16)
+                    _writer.WriteValue((UInt16)entry.Value);
+                else if (entry.Type == ValueType.INT32)
+                    _writer.WriteValue((Int32)entry.Value);
                 else if (entry.Type == ValueType.UINT32)
-                    _writer.WriteValue((uint)entry.Value);
-                else
-                    _writer.WriteValue((int)entry.Value);
+                    _writer.WriteValue((UInt32)entry.Value);
             }
             if (isObject) _writer.WriteEndObject(); else _writer.WriteEndArray();
 

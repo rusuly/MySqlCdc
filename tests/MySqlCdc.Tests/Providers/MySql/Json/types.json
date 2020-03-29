@@ -1,0 +1,43 @@
+{
+    "smallObject":{
+        "smallObject": {"ids": [], "users":["string", "string", "string"]},
+        "smallArray": [{}, "Int16", "Int16", "Int16"],
+        "literalNull": "null",
+        "literalTrue": "bool",
+        "literalFalse": "bool",
+        "int16": "Int16",
+        "uint16": /*"UInt16"*/"Int32",
+        "int32": "Int32",
+        "uint32": /*"UInt32"*/"Int64",
+        "int64": "Int64",
+        "uint64": "UInt64",
+        "double": "double",
+        "string": "string"
+    },
+    "smallArray": [
+        {"ids": [], "users":["string", "string", "string"]},
+        [{}, "Int16", "Int16", "Int16"],
+        "null",
+        "bool",
+        "bool",
+        "Int16",
+        /*"UInt16"*/"Int32",
+        "Int32",
+        /*"UInt32"*/"Int64",
+        "Int64",
+        "UInt64",
+        "double",
+        "string"
+    ],
+    "literalNull": "null",
+    "literalTrue": "bool",
+    "literalFalse": "bool",
+    "int16": "Int16",
+    "uint16": /*"UInt16"*/"Int32",
+    "int32": "Int32",
+    "uint32": /*"UInt32"*/"Int64",
+    "int64": "Int64",
+    "uint64": "UInt64",
+    "double": "double",
+    "string": "string"
+}

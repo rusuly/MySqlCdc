@@ -33,6 +33,16 @@ namespace MySqlCdc.Providers.MySql
         void WriteEndArray();
 
         /// <summary>
+        /// Writes Int16 value.
+        /// </summary>
+        void WriteValue(Int16 value);
+
+        /// <summary>
+        /// Writes UInt16 value.
+        /// </summary>
+        void WriteValue(UInt16 value);
+
+        /// <summary>
         /// Writes Int32 value.
         /// </summary>
         void WriteValue(Int32 value);
