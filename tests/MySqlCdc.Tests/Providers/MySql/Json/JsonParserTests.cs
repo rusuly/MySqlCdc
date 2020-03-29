@@ -37,5 +37,60 @@ namespace MySqlCdc.Tests.Providers
             var expectedToken = JToken.Parse(expectedTypes);
             Assert.True(JToken.DeepEquals(actualToken, expectedToken));
         }
+
+        [Fact]
+        public void Test_JsonObject_WithNestedObject()
+        {
+            byte[] payload = new byte[] { 0, 1, 0, 60, 0, 11, 0, 1, 0, 0, 12, 0, 97, 1, 0, 48, 0, 11, 0, 1, 0, 0, 12, 0, 98, 2, 0, 36, 0, 18, 0, 1, 0, 19, 0, 1, 0, 12, 20, 0, 2, 22, 0, 99, 101, 1, 100, 2, 0, 14, 0, 12, 10, 0, 12, 12, 0, 1, 102, 1, 103 };
+            var actualToken = JToken.Parse(JsonParser.Parse(payload));
+            var expectedToken = JToken.Parse("{\"a\":{\"b\":{\"c\":\"d\",\"e\":[\"f\",\"g\"]}}}");
+            Assert.True(JToken.DeepEquals(actualToken, expectedToken));
+        }
+
+
+        [Fact]
+        public void Test_JsonArray_WithNestedArray()
+        {
+            byte[] payload = new byte[] { 2, 3, 0, 34, 0, 5, 255, 255, 2, 13, 0, 5, 1, 0, 2, 0, 21, 0, 12, 10, 0, 2, 12, 0, 1, 98, 1, 0, 9, 0, 12, 7, 0, 1, 99 };
+            var actualToken = JToken.Parse(JsonParser.Parse(payload));
+            var expectedToken = JToken.Parse("[-1,[\"b\",[\"c\"]],1]");
+            Assert.True(JToken.DeepEquals(actualToken, expectedToken));
+        }
+
+        [Fact]
+        public void Test_JsonObject_WithEmptyKey()
+        {
+            byte[] payload = new byte[] { 0, 1, 0, 29, 0, 11, 0, 7, 0, 0, 18, 0, 98, 105, 116, 114, 97, 116, 101, 1, 0, 11, 0, 11, 0, 0, 0, 5, 0, 0 };
+            var actualToken = JToken.Parse(JsonParser.Parse(payload));
+            var expectedToken = JToken.Parse("{\"bitrate\":{\"\":0}}");
+            Assert.True(JToken.DeepEquals(actualToken, expectedToken));
+        }
+
+        [Fact]
+        public void Test_ScalarLiteral_Null()
+        {
+            byte[] payload = new byte[] { 4, 0 };
+            var actualToken = JToken.Parse(JsonParser.Parse(payload));
+            var expectedToken = JToken.Parse("null");
+            Assert.True(JToken.DeepEquals(actualToken, expectedToken));
+        }
+
+        [Fact]
+        public void Test_ScalarLiteral_True()
+        {
+            byte[] payload = new byte[] { 4, 1 };
+            var actualToken = JToken.Parse(JsonParser.Parse(payload));
+            var expectedToken = JToken.Parse("true");
+            Assert.True(JToken.DeepEquals(actualToken, expectedToken));
+        }
+
+        [Fact]
+        public void Test_ScalarLiteral_False()
+        {
+            byte[] payload = new byte[] { 4, 2 };
+            var actualToken = JToken.Parse(JsonParser.Parse(payload));
+            var expectedToken = JToken.Parse("false");
+            Assert.True(JToken.DeepEquals(actualToken, expectedToken));
+        }
     }
 }

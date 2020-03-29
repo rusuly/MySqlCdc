@@ -5,9 +5,24 @@ namespace MySqlCdc.Events
     /// </summary>
     public class XaPrepareEvent : BinlogEvent
     {
+        /// <summary>
+        /// XA transaction commit type. False => XA PREPARE. True => XA COMMIT ... ONE PHASE
+        /// </summary>
         public bool OnePhase { get; }
-        public int FormatId { get; }        
+
+        /// <summary>
+        /// The formatID part of the transaction xid.
+        /// </summary>
+        public int FormatId { get; }
+
+        /// <summary>
+        /// A global transaction identifier.
+        /// </summary>  
         public string Gtrid { get; }
+
+        /// <summary>
+        /// A branch qualifier.
+        /// </summary>  
         public string Bqual { get; }
 
         /// <summary>
