@@ -1,4 +1,5 @@
 using System;
+using MySqlCdc.Constants;
 
 namespace MySqlCdc.Providers.MySql
 {
@@ -81,5 +82,25 @@ namespace MySqlCdc.Providers.MySql
         /// Writes null literal.
         /// </summary>
         void WriteNull();
+
+        /// <summary>
+        /// Writes Date value.
+        /// </summary>
+        void WriteDate(DateTime value);
+
+        /// <summary>
+        /// Writes Time value.
+        /// </summary>
+        void WriteTime(TimeSpan value);
+
+        /// <summary>
+        /// Writes DateTime value.
+        /// </summary>
+        void WriteDateTime(DateTime value);
+
+        /// <summary>
+        /// Writes opaque value.
+        /// </summary>
+        void WriteOpaque(ColumnType columnType, byte[] value);
     }
 }

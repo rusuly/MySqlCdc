@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using System.Text.Json;
 using MySqlCdc.Columns;
+using MySqlCdc.Constants;
 using MySqlCdc.Protocol;
 
 namespace MySqlCdc.Providers.MySql
@@ -99,7 +100,8 @@ namespace MySqlCdc.Providers.MySql
                     ParseString(ref reader);
                     break;
                 case ValueType.CUSTOM:
-                    throw new NotSupportedException($"Parsing JSON opaque types is not supported");
+                    ParseOpaque(ref reader);
+                    break;
                 default:
                     throw new NotSupportedException($"Unknown JSON value type {valueType}");
             }
@@ -232,6 +234,74 @@ namespace MySqlCdc.Providers.MySql
             int length = ReadDataLength(ref reader);
             string value = reader.ReadString(length);
             _writer.WriteValue(value);
+        }
+
+        private void ParseOpaque(ref PacketReader reader)
+        {
+            var customType = (ColumnType)reader.ReadByte();
+            int length = ReadDataLength(ref reader);
+
+            switch (customType)
+            {
+                case ColumnType.DECIMAL:
+                case ColumnType.NEWDECIMAL:
+                    int metadata = reader.ReadUInt16LittleEndian();
+                    var number = ColumnParser.ParseNewDecimal(ref reader, metadata);
+                    _writer.WriteValue((string)number);
+                    break;
+
+                // In JSON fractional seconds part always has 3 bytes
+                // Logic is the same as ColumnParser.ParseDateTime2 but data is in little-endian order
+                // TIMESTAMP2 is coverted by the server to DATETIME2
+                case ColumnType.DATE:
+                    _writer.WriteDate(ReadDateTime(ref reader));
+                    break;
+                case ColumnType.TIME:
+                case ColumnType.TIME2:
+                    _writer.WriteTime(ReadTime(ref reader));
+                    break;
+                case ColumnType.DATETIME:
+                case ColumnType.DATETIME2:
+                case ColumnType.TIMESTAMP:
+                case ColumnType.TIMESTAMP2:
+                    _writer.WriteDateTime(ReadDateTime(ref reader));
+                    break;
+                default:
+                    var opaque = reader.ReadByteArraySlow(length);
+                    _writer.WriteOpaque(customType, opaque);
+                    break;
+            }
+        }
+
+        private DateTime ReadDateTime(ref PacketReader reader)
+        {
+            long raw = reader.ReadInt64LittleEndian();
+            long value = raw >> 24;
+            int yearMonth = (int)(value >> 22) % (1 << 17);
+            int year = yearMonth / 13;
+            int month = yearMonth % 13;
+            int day = (int)(value >> 17) % (1 << 5);
+            int hour = (int)(value >> 12) % (1 << 5);
+            int minute = (int)(value >> 6) % (1 << 6);
+            int second = (int)(value % (1 << 6));
+            int microSecond = (int)(raw % (1 << 24));
+            return new DateTime(year, month, day, hour, minute, second, microSecond / 1000);
+        }
+
+        private TimeSpan ReadTime(ref PacketReader reader)
+        {
+            long raw = reader.ReadInt64LittleEndian();
+            long value = raw >> 24;
+
+            bool negative = value < 0L;
+            if (negative)
+                throw new NotSupportedException("Time columns with negative values are not supported in this version");
+
+            int hour = (int)(value >> 12) % (1 << 10);
+            int minute = (int)(value >> 6) % (1 << 6);
+            int second = (int)value % (1 << 6);
+            int microSecond = (int)(raw % (1 << 24));
+            return new TimeSpan(0, hour, minute, second, microSecond / 1000);
         }
 
         private bool? ReadLiteral(ref PacketReader reader)

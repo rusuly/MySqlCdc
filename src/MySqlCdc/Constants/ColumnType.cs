@@ -5,7 +5,7 @@ namespace MySqlCdc.Constants
     /// See <a href="https://mariadb.com/kb/en/library/resultset/#column-definition-packet">MariaDB docs</a>
     /// See <a href="https://dev.mysql.com/doc/internals/en/com-query-response.html#column-type">MySQL docs</a>
     /// </summary>
-    internal enum ColumnType
+    public enum ColumnType
     {
         DECIMAL = 0,
         TINY,

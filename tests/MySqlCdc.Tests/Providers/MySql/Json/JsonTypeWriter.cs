@@ -1,4 +1,6 @@
+using System;
 using System.Text.Json;
+using MySqlCdc.Constants;
 
 namespace MySqlCdc.Providers.MySql
 {
@@ -145,6 +147,26 @@ namespace MySqlCdc.Providers.MySql
                 _propertyName = null;
             }
             else _writer.WriteStringValue("null");
+        }
+
+        public void WriteDate(DateTime value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void WriteTime(TimeSpan value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void WriteDateTime(DateTime value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void WriteOpaque(ColumnType columnType, byte[] value)
+        {
+            throw new NotImplementedException();
         }
     }
 }
