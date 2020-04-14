@@ -78,6 +78,9 @@ namespace MySqlCdc.Network
 
         private bool ValidateServerCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
+            if (_options.SslMode == SslMode.IF_AVAILABLE || _options.SslMode == SslMode.REQUIRE)
+                return true;
+
             if (sslPolicyErrors == SslPolicyErrors.None)
                 return true;
 

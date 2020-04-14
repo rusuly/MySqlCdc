@@ -91,9 +91,9 @@ Data is stored in Cells property of row events in the same order. See the C# sam
 var client = new BinlogClient(options =>
 {
     options.Port = 3306;
-    options.UseSsl = false;
     options.Username = "root";
     options.Password = "Qwertyu1";
+    options.SslMode = SslMode.DISABLED;
     options.HeartbeatInterval = TimeSpan.FromSeconds(30);
     options.Blocking = true;
 

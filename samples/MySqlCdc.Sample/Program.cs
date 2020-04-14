@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using MySqlCdc.Constants;
 using MySqlCdc.Events;
 using MySqlCdc.Providers.MariaDb;
 using MySqlCdc.Providers.MySql;
@@ -16,9 +17,9 @@ namespace MySqlCdc.Sample
             var client = new BinlogClient(options =>
             {
                 options.Port = 3306;
-                options.UseSsl = false;
                 options.Username = "root";
                 options.Password = "Qwertyu1";
+                options.SslMode = SslMode.DISABLED;
                 options.HeartbeatInterval = TimeSpan.FromSeconds(30);
                 options.Blocking = true;
 

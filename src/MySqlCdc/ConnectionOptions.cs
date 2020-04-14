@@ -1,4 +1,5 @@
 using System;
+using MySqlCdc.Constants;
 
 namespace MySqlCdc
 {
@@ -18,9 +19,9 @@ namespace MySqlCdc
         public string Hostname { get; set; } = "localhost";
 
         /// <summary>
-        /// Defines whether SSL/TLS must be used. Defaults to false.
+        /// Defines whether SSL/TLS must be used. Defaults to SslMode.DISABLED.
         /// </summary>
-        public bool UseSsl { get; set; } = false;
+        public SslMode SslMode { get; set; } = SslMode.DISABLED;
 
         /// <summary>
         /// A database user which is used to register as a database slave.

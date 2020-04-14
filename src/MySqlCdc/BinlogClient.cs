@@ -41,6 +41,9 @@ namespace MySqlCdc
         public BinlogClient(Action<ConnectionOptions> configureOptions)
         {
             configureOptions(_options);
+
+            if (_options.SslMode == SslMode.REQUIRE_VERIFY_CA || _options.SslMode == SslMode.REQUIRE_VERIFY_FULL)
+                throw new NotSupportedException($"{nameof(SslMode.REQUIRE_VERIFY_CA)} and {nameof(SslMode.REQUIRE_VERIFY_FULL)} ssl modes are not supported");
         }
 
         /// <summary>
@@ -67,12 +70,21 @@ namespace MySqlCdc
         {
             byte sequenceNumber = 1;
 
-            if (_options.UseSsl)
+            bool useSsl = false;
+            if (_options.SslMode != SslMode.DISABLED)
             {
-                var command = new SslRequestCommand(PacketConstants.Utf8Mb4GeneralCi);
-                await _channel.WriteCommandAsync(command, sequenceNumber, cancellationToken);
-                sequenceNumber += 1;
-                _channel.UpgradeToSsl();
+                bool sslAvailable = (handshake.ServerCapabilities & (long)CapabilityFlags.SSL) != 0;
+
+                if (!sslAvailable && _options.SslMode >= SslMode.REQUIRE)
+                    throw new InvalidOperationException("The server doesn't support SSL encryption");
+
+                if (sslAvailable)
+                {
+                    var command = new SslRequestCommand(PacketConstants.Utf8Mb4GeneralCi);
+                    await _channel.WriteCommandAsync(command, sequenceNumber++, cancellationToken);
+                    _channel.UpgradeToSsl();
+                    useSsl = true;
+                }
             }
 
             var authenticateCommand = new AuthenticateCommand(_options, PacketConstants.Utf8Mb4GeneralCi, handshake.Scramble, handshake.AuthPluginName);
@@ -89,15 +101,15 @@ namespace MySqlCdc
             {
                 var body = new ReadOnlySequence<byte>(packet, 1, packet.Length - 1);
                 var switchRequest = new AuthPluginSwitchPacket(body);
-                await HandleAuthPluginSwitch(switchRequest, sequenceNumber, cancellationToken);
+                await HandleAuthPluginSwitch(switchRequest, sequenceNumber, useSsl, cancellationToken);
             }
             else
             {
-                await AuthenticateSha256Async(packet, handshake.Scramble, sequenceNumber, cancellationToken);
+                await AuthenticateSha256Async(packet, handshake.Scramble, sequenceNumber, useSsl, cancellationToken);
             }
         }
 
-        private async Task HandleAuthPluginSwitch(AuthPluginSwitchPacket switchRequest, byte sequenceNumber, CancellationToken cancellationToken = default)
+        private async Task HandleAuthPluginSwitch(AuthPluginSwitchPacket switchRequest, byte sequenceNumber, bool useSsl, CancellationToken cancellationToken = default)
         {
             if (!_allowedAuthPlugins.Contains(switchRequest.AuthPluginName))
                 throw new InvalidOperationException($"Authentication plugin {switchRequest.AuthPluginName} is not supported.");
@@ -110,11 +122,11 @@ namespace MySqlCdc
 
             if (switchRequest.AuthPluginName == AuthPluginNames.CachingSha2Password)
             {
-                await AuthenticateSha256Async(packet, switchRequest.AuthPluginData, sequenceNumber, cancellationToken);
+                await AuthenticateSha256Async(packet, switchRequest.AuthPluginData, sequenceNumber, useSsl, cancellationToken);
             }
         }
 
-        private async Task AuthenticateSha256Async(byte[] packet, string scramble, byte sequenceNumber, CancellationToken cancellationToken = default)
+        private async Task AuthenticateSha256Async(byte[] packet, string scramble, byte sequenceNumber, bool useSsl, CancellationToken cancellationToken = default)
         {
             // See https://mariadb.com/kb/en/caching_sha2_password-authentication-plugin/
             // Success authentication.
@@ -123,7 +135,7 @@ namespace MySqlCdc
 
             // Send clear password if ssl is used.
             var writer = new PacketWriter(sequenceNumber);
-            if (_options.UseSsl)
+            if (useSsl)
             {
                 writer.WriteNullTerminatedString(_options.Password);
                 await _channel.WriteBytesAsync(writer.CreatePacket(), cancellationToken);
