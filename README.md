@@ -21,6 +21,7 @@ Transaction log events are immutable and appended in strictly sequential order. 
 Be careful when working with binary log event streaming.
 - Binlog stream includes changes made to all databases on the master server including sql queries with sensitive information and you may leak data from the databases. Consider deploying your database to an isolated instance.
 - Transaction log represents a sequence of append-only files. It includes changes for databases/tables that you deleted and then recreated. Make sure you don't replay the phantom events in your application.
+- In transactional [storage engines](https://dev.mysql.com/doc/refman/8.0/en/replication-features-transactions.html)(InnoDB, MyRocks) binlog will only include committed transactions in their commit order to guarantee consistency. Aborted or rolled-back transactions will not appear in the binary log. On the other hand in non-transactional storage engines(MyISAM) binlog will also include changes from rolled-back transactions.
 
 ## Limitations
 Please note the lib currently has the following limitations:
@@ -159,14 +160,10 @@ using (Stream stream = File.OpenRead("mariadb-bin.000002"))
     while (true)
     {
         var @event = await reader.ReadEventAsync();
-        if (@event != null)
-        {
-            await PrintEventAsync(@event);
-        }
-        else
-        {
+        if (@event == null)
             break;
-        }
+
+        await PrintEventAsync(@event);
     }
 }
 ```
@@ -244,11 +241,6 @@ MySqlCdc supports both MariaDB & MySQL server.
   | 5.6      | ✅ Supported             |
   | 5.7      | ✅ Supported             |
   | 8.0      | ✅ Supported             |
-
-## Q&A
-Are uncommitted changes written to binlog?
-- If you make [transactional changes](https://dev.mysql.com/doc/refman/5.7/en/replication-features-transactions.html) binlog will only include committed transactions in their commit order to provide consistency.
-- If you make non-transactional changes binlog will include changes from uncommitted transactions even if the transactions are rolled back.
 
 ## License
 The library is provided under the [MIT License](LICENSE).

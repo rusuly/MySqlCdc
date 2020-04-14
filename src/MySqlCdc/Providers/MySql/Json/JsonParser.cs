@@ -241,6 +241,10 @@ namespace MySqlCdc.Providers.MySql
             var customType = (ColumnType)reader.ReadByte();
             int length = ReadDataLength(ref reader);
 
+            // In JSON fractional seconds part always has 3 bytes
+            // Format is the same as ParseDateTime2 but data is in little-endian order
+            // TIMESTAMP is converted to DATETIME by the server
+            // DATETIME2 dates have ColumnType.DATETIME marker which is confusing
             switch (customType)
             {
                 case ColumnType.DECIMAL:
@@ -249,10 +253,6 @@ namespace MySqlCdc.Providers.MySql
                     var number = ColumnParser.ParseNewDecimal(ref reader, metadata);
                     _writer.WriteValue((string)number);
                     break;
-
-                // In JSON fractional seconds part always has 3 bytes
-                // Logic is the same as ColumnParser.ParseDateTime2 but data is in little-endian order
-                // TIMESTAMP2 is coverted by the server to DATETIME2
                 case ColumnType.DATE:
                     _writer.WriteDate(ReadDateTime(ref reader));
                     break;

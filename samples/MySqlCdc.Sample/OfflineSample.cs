@@ -19,14 +19,10 @@ namespace MySqlCdc.Sample
                 while (true)
                 {
                     var @event = await reader.ReadEventAsync();
-                    if (@event != null)
-                    {
-                        await PrintEventAsync(@event);
-                    }
-                    else
-                    {
+                    if (@event == null)
                         break;
-                    }
+
+                    await PrintEventAsync(@event);
                 }
             }
         }
