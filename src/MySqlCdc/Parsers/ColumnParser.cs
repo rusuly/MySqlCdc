@@ -88,14 +88,22 @@ namespace MySqlCdc.Columns
 
         public string ParseString(ref PacketReader reader, int metadata)
         {
-            int length = metadata > 255 ? reader.ReadUInt16LittleEndian() : reader.ReadByte();
+            int length = metadata < 256 ? reader.ReadByte() : reader.ReadUInt16LittleEndian();
             return reader.ReadString(length);
+        }
+
+        public byte[] ParseBlob(ref PacketReader reader, int metadata)
+        {
+            var length = reader.ReadIntLittleEndian(metadata);
+            return reader.ReadByteArraySlow(length);
         }
 
         public bool[] ParseBit(ref PacketReader reader, int metadata)
         {
             int length = (metadata >> 8) * 8 + (metadata & 0xFF);
-            return reader.ReadBitmapBigEndian(length);
+            var bitmap = reader.ReadBitmapBigEndian(length);
+            Array.Reverse(bitmap);
+            return bitmap;
         }
 
         public int ParseEnum(ref PacketReader reader, int metadata)
@@ -206,12 +214,6 @@ namespace MySqlCdc.Columns
                 return null;
 
             return new DateTime(year, month, day, hour, minute, second, millisecond);
-        }
-
-        public byte[] ParseBlob(ref PacketReader reader, int metadata)
-        {
-            var length = reader.ReadIntLittleEndian(metadata);
-            return reader.ReadByteArraySlow(length);
         }
 
         private int ParseFractionalPart(ref PacketReader reader, int metadata)
