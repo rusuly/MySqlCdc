@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using MySqlCdc.Columns;
 using MySqlCdc.Protocol;
@@ -248,5 +249,146 @@ namespace MySqlCdc.Tests.Providers
             Assert.Equal(2155, _columnParser.ParseYear(ref reader, 0));
             Assert.Equal(1, reader.Consumed);
         }
+
+        [Fact]
+        public void Test_Date()
+        {
+            byte[] payload = new byte[] { 87, 131, 15 };
+            var reader = new PacketReader(payload);
+
+            Assert.Equal(new DateTime(1985, 10, 23), _columnParser.ParseDate(ref reader, 0));
+            Assert.Equal(3, reader.Consumed);
+        }
+
+        [Fact]
+        public void Test_Date_Invalid()
+        {
+            byte[] payload = new byte[] { 0, 0, 0 };
+            var reader = new PacketReader(payload);
+
+            Assert.Equal(null, _columnParser.ParseDate(ref reader, 0));
+            Assert.Equal(3, reader.Consumed);
+        }
+
+        [Fact]
+        public void Test_Time2_Positive()
+        {
+            // time(2), column = '15:22:33.67'
+            byte[] payload = new byte[] { 128, 245, 161, 67 };
+            var reader = new PacketReader(payload);
+            int metadata = 2;
+
+            Assert.Equal(new TimeSpan(0, 15, 22, 33, 670), _columnParser.ParseTime2(ref reader, metadata));
+            Assert.Equal(4, reader.Consumed);
+        }
+
+        [Fact(Skip = "See ParseTime2 method implementation")]
+        public void Test_Time2_Negative()
+        {
+            // time(2), column = '-15:22:33.67'
+            byte[] payload = new byte[] { 127, 10, 94, 189 };
+            var reader = new PacketReader(payload);
+            int metadata = 2;
+
+            Assert.Equal(new TimeSpan(0, -15, 22, 33, 67), _columnParser.ParseTime2(ref reader, metadata));
+            Assert.Equal(4, reader.Consumed);
+        }
+
+        [Fact]
+        public void Test_TimeStamp2()
+        {
+            // timestamp(3), column = '1985-10-13 13:22:23.567'
+            byte[] payload = new byte[] { 29, 175, 151, 223, 22, 38 };
+            var reader = new PacketReader(payload);
+            int metadata = 3;
+
+            var dateTime = new DateTime(1985, 10, 13, 13, 22, 23, 567);
+            Assert.Equal(new DateTimeOffset(dateTime), _columnParser.ParseTimeStamp2(ref reader, metadata));
+            Assert.Equal(6, reader.Consumed);
+        }
+
+        [Fact]
+        public void Test_DateTime2()
+        {
+            // datetime(3), column = '1988-10-14 14:12:13.345'
+            byte[] payload = new byte[] { 153, 63, 156, 227, 13, 13, 122 };
+            var reader = new PacketReader(payload);
+            int metadata = 3;
+
+            Assert.Equal(new DateTime(1988, 10, 14, 14, 12, 13, 345), _columnParser.ParseDateTime2(ref reader, metadata));
+            Assert.Equal(7, reader.Consumed);
+        }
+
+        [Fact]
+        public void Test_DateTime2_Invalid()
+        {
+            // datetime(3), 0000-00-00
+            byte[] payload = new byte[] { 0, 0, 0, 0, 0, 13, 122 };
+            var reader = new PacketReader(payload);
+            int metadata = 3;
+
+            Assert.Equal(null, _columnParser.ParseDateTime2(ref reader, metadata));
+            Assert.Equal(7, reader.Consumed);
+        }
+
+        #region MYSQL5_5_DATETIME_FORMAT - These tests were reproduced in MariaDB 10.4 by setting mysql56_temporal_format = OFF
+        [Fact]
+        public void Test_Time_Positive()
+        {
+            // time, column = '14:12:13'
+            byte[] payload = new byte[] { 157, 39, 2 };
+            var reader = new PacketReader(payload);
+
+            Assert.Equal(new TimeSpan(0, 14, 12, 13), _columnParser.ParseTime(ref reader, 0));
+            Assert.Equal(3, reader.Consumed);
+        }
+
+        [Fact(Skip = "See ParseTime method implementation")]
+        public void Test_Time_Negative()
+        {
+            // time, column = '-14:12:13'
+            byte[] payload = new byte[] { 99, 216, 253 };
+            var reader = new PacketReader(payload);
+
+            Assert.Equal(new TimeSpan(0, -14, 12, 13), _columnParser.ParseTime(ref reader, 0));
+            Assert.Equal(3, reader.Consumed);
+        }
+
+        [Fact]
+        public void Test_TimeStamp()
+        {
+            // timestamp, column = '1985-10-13 13:22:23'
+            byte[] payload = new byte[] { 223, 151, 175, 29 };
+            var reader = new PacketReader(payload);
+
+            var dateTime = new DateTime(1985, 10, 13, 13, 22, 23);
+            Assert.Equal(new DateTimeOffset(dateTime), _columnParser.ParseTimeStamp(ref reader, 0));
+            Assert.Equal(4, reader.Consumed);
+        }
+
+        [Fact]
+        public void Test_DateTime()
+        {
+            // datetime, column = '1988-10-16 14:12:13'
+            byte[] payload = new byte[] { 157, 165, 231, 232, 20, 18, 0, 0 };
+            var reader = new PacketReader(payload);
+            int metadata = 3;
+
+            Assert.Equal(new DateTime(1988, 10, 16, 14, 12, 13), _columnParser.ParseDateTime(ref reader, metadata));
+            Assert.Equal(8, reader.Consumed);
+        }
+
+        [Fact]
+        public void Test_DateTime_Invalid()
+        {
+            // datetime, 0000-00-00
+            byte[] payload = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };
+            var reader = new PacketReader(payload);
+            int metadata = 3;
+
+            Assert.Equal(null, _columnParser.ParseDateTime(ref reader, metadata));
+            Assert.Equal(8, reader.Consumed);
+        }
     }
+    #endregion
 }

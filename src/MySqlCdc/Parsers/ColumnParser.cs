@@ -70,7 +70,11 @@ namespace MySqlCdc.Columns
 
         public Int16 ParseSmallInt(ref PacketReader reader, int metadata) => (Int16)reader.ReadUInt16LittleEndian();
 
-        public Int32 ParseMediumInt(ref PacketReader reader, int metadata) => (reader.ReadIntLittleEndian(3) << 8) >> 8;
+        public Int32 ParseMediumInt(ref PacketReader reader, int metadata)
+        {
+            /* Adjust negative 3-byte number to Int32 */
+            return (reader.ReadIntLittleEndian(3) << 8) >> 8;
+        }
 
         public Int32 ParseInt(ref PacketReader reader, int metadata) => (Int32)reader.ReadUInt32LittleEndian();
 
@@ -125,9 +129,10 @@ namespace MySqlCdc.Columns
         {
             int value = reader.ReadIntLittleEndian(3);
 
-            int year = GetBitSliceValue(value, 0, 15, 24);
-            int month = GetBitSliceValue(value, 15, 4, 24);
-            int day = GetBitSliceValue(value, 19, 5, 24);
+            // Bits 1-5 store the day. Bits 6-9 store the month. The remaining bits store the year.
+            int day = value % (1 << 5);
+            int month = (value >> 5) % (1 << 4);
+            int year = value >> 9;
 
             if (year == 0 || month == 0 || day == 0)
                 return null;
@@ -137,7 +142,11 @@ namespace MySqlCdc.Columns
 
         public TimeSpan ParseTime(ref PacketReader reader, int metadata)
         {
-            int value = reader.ReadIntLittleEndian(3);
+            int value = (reader.ReadIntLittleEndian(3) << 8) >> 8;
+
+            if (value < 0)
+                throw new NotSupportedException("Parsing negative TIME values is not supported in this version");
+
             int seconds = value % 100;
             value = value / 100;
             int minutes = value % 100;
@@ -155,15 +164,15 @@ namespace MySqlCdc.Columns
         public DateTime? ParseDateTime(ref PacketReader reader, int metadata)
         {
             long value = reader.ReadInt64LittleEndian();
-            int second = (int)value % 100;
+            int second = (int)(value % 100);
             value = value / 100;
-            int minute = (int)value % 100;
+            int minute = (int)(value % 100);
             value = value / 100;
-            int hour = (int)value % 100;
+            int hour = (int)(value % 100);
             value = value / 100;
-            int day = (int)value % 100;
+            int day = (int)(value % 100);
             value = value / 100;
-            int month = (int)value % 100;
+            int month = (int)(value % 100);
             value = value / 100;
             int year = (int)value;
 
@@ -175,16 +184,24 @@ namespace MySqlCdc.Columns
 
         public TimeSpan ParseTime2(ref PacketReader reader, int metadata)
         {
-            long value = reader.ReadLongBigEndian(3);
+            int value = reader.ReadIntBigEndian(3);
             int millisecond = ParseFractionalPart(ref reader, metadata) / 1000;
 
             bool negative = ((value >> 23) & 1) == 0;
             if (negative)
-                throw new NotSupportedException("Time columns with negative values are not supported in this version");
+            {
+                // It looks like other similar clients don't parse TIME2 values properly
+                // In negative time values both TIME and FSP are stored in reverse order
+                // See https://github.com/mysql/mysql-server/blob/ea7d2e2d16ac03afdd9cb72a972a95981107bf51/sql/log_event.cc#L2022
+                // See https://github.com/mysql/mysql-server/blob/ea7d2e2d16ac03afdd9cb72a972a95981107bf51/mysys/my_time.cc#L1784
+                throw new NotSupportedException("Parsing negative TIME values is not supported in this version");
+            }
 
-            int hour = (int)(value >> 12) % (1 << 10);
-            int minute = (int)(value >> 6) % (1 << 6);
-            int second = (int)value % (1 << 6);
+            // 1 bit sign. 1 bit unused. 10 bits hour. 6 bits minute. 6 bits second.
+            int hour = (value >> 12) % (1 << 10);
+            int minute = (value >> 6) % (1 << 6);
+            int second = value % (1 << 6);
+
             return new TimeSpan(0, hour, minute, second, millisecond);
         }
 
@@ -202,13 +219,14 @@ namespace MySqlCdc.Columns
             long value = reader.ReadLongBigEndian(5);
             int millisecond = ParseFractionalPart(ref reader, metadata) / 1000;
 
-            int yearMonth = GetBitSliceValue(value, 1, 17, 40);
+            // 1 bit sign(always true). 17 bits year*13+month. 5 bits day. 5 bits hour. 6 bits minute. 6 bits second.
+            int yearMonth = (int)((value >> 22) % (1 << 17));
             int year = yearMonth / 13;
             int month = yearMonth % 13;
-            int day = GetBitSliceValue(value, 18, 5, 40);
-            int hour = GetBitSliceValue(value, 23, 5, 40);
-            int minute = GetBitSliceValue(value, 28, 6, 40);
-            int second = GetBitSliceValue(value, 34, 6, 40);
+            int day = (int)((value >> 17) % (1 << 5));
+            int hour = (int)((value >> 12) % (1 << 5));
+            int minute = (int)((value >> 6) % (1 << 6));
+            int second = (int)(value % (1 << 6));
 
             if (year == 0 || month == 0 || day == 0)
                 return null;
@@ -224,12 +242,6 @@ namespace MySqlCdc.Columns
 
             int fraction = reader.ReadIntBigEndian(length);
             return fraction * (int)Math.Pow(100, 3 - length);
-        }
-
-        private int GetBitSliceValue(long value, int startIndex, int length, int totalSize)
-        {
-            long result = value >> totalSize - (startIndex + length);
-            return (int)(result & ((1 << length) - 1));
         }
     }
 }
