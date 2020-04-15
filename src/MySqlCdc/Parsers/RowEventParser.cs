@@ -85,8 +85,7 @@ namespace MySqlCdc.Parsers
         {
             return (ColumnType)columnType switch
             {
-                /* Numeric types. The only place where numbers can be negative */
-                ColumnType.BIT => _columnParser.ParseBit(ref reader, metadata),
+                /* Numeric types. The only place where numbers can be negative */                
                 ColumnType.TINY => _columnParser.ParseTinyInt(ref reader, metadata),
                 ColumnType.SHORT => _columnParser.ParseSmallInt(ref reader, metadata),
                 ColumnType.INT24 => _columnParser.ParseMediumInt(ref reader, metadata),
@@ -101,7 +100,8 @@ namespace MySqlCdc.Parsers
                 ColumnType.VARCHAR => _columnParser.ParseString(ref reader, metadata),
                 ColumnType.VAR_STRING => _columnParser.ParseString(ref reader, metadata),
 
-                /* ENUM, SET types */
+                /* BIT, ENUM, SET types */
+                ColumnType.BIT => _columnParser.ParseBit(ref reader, metadata),
                 ColumnType.ENUM => _columnParser.ParseEnum(ref reader, metadata),
                 ColumnType.SET => _columnParser.ParseSet(ref reader, metadata),
 
@@ -114,6 +114,8 @@ namespace MySqlCdc.Parsers
                 /* Date and time types */
                 ColumnType.YEAR => _columnParser.ParseYear(ref reader, metadata),
                 ColumnType.DATE => _columnParser.ParseDate(ref reader, metadata),
+
+                // Older versions of MySQL.
                 ColumnType.TIME => _columnParser.ParseTime(ref reader, metadata),
                 ColumnType.TIMESTAMP => _columnParser.ParseTimeStamp(ref reader, metadata),
                 ColumnType.DATETIME => _columnParser.ParseDateTime(ref reader, metadata),

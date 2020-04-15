@@ -13,7 +13,7 @@ namespace MySqlCdc.Columns
         private const int DigitsPerInt = 9;
         private static readonly int[] CompressedBytes = new int[] { 0, 1, 1, 2, 2, 3, 3, 4, 4, 4 };
 
-        public object ParseNewDecimal(ref PacketReader reader, int metadata)
+        public string ParseNewDecimal(ref PacketReader reader, int metadata)
         {
             int precision = metadata & 0xFF;
             int scale = metadata >> 8;
@@ -66,60 +66,54 @@ namespace MySqlCdc.Columns
             return result.ToString();
         }
 
-        public object ParseBit(ref PacketReader reader, int metadata)
-        {
-            int length = (metadata >> 8) * 8 + (metadata & 0xFF);
-            return reader.ReadBitmapBigEndian(length);
-        }
+        public byte ParseTinyInt(ref PacketReader reader, int metadata) => reader.ReadByte();
 
-        public object ParseTinyInt(ref PacketReader reader, int metadata) => reader.ReadByte();
+        public Int16 ParseSmallInt(ref PacketReader reader, int metadata) => (Int16)reader.ReadUInt16LittleEndian();
 
-        public object ParseSmallInt(ref PacketReader reader, int metadata) => (Int16)reader.ReadUInt16LittleEndian();
+        public Int32 ParseMediumInt(ref PacketReader reader, int metadata) => (reader.ReadIntLittleEndian(3) << 8) >> 8;
 
-        public object ParseMediumInt(ref PacketReader reader, int metadata)
-        {
-            return (reader.ReadIntLittleEndian(3) << 8) >> 8;
-        }
+        public Int32 ParseInt(ref PacketReader reader, int metadata) => (Int32)reader.ReadUInt32LittleEndian();
 
-        public object ParseInt(ref PacketReader reader, int metadata) => (Int32)reader.ReadUInt32LittleEndian();
+        public Int64 ParseBigInt(ref PacketReader reader, int metadata) => reader.ReadInt64LittleEndian();
 
-        public object ParseBigInt(ref PacketReader reader, int metadata)
-        {
-            return reader.ReadInt64LittleEndian();
-        }
-
-        public object ParseFloat(ref PacketReader reader, int metadata)
+        public float ParseFloat(ref PacketReader reader, int metadata)
         {
             return BitConverter.ToSingle(BitConverter.GetBytes(reader.ReadUInt32LittleEndian()), 0);
         }
 
-        public object ParseDouble(ref PacketReader reader, int metadata)
+        public double ParseDouble(ref PacketReader reader, int metadata)
         {
             return BitConverter.Int64BitsToDouble(reader.ReadInt64LittleEndian());
         }
 
-        public object ParseString(ref PacketReader reader, int metadata)
+        public string ParseString(ref PacketReader reader, int metadata)
         {
             int length = metadata > 255 ? reader.ReadUInt16LittleEndian() : reader.ReadByte();
             return reader.ReadString(length);
         }
 
-        public object ParseEnum(ref PacketReader reader, int metadata)
+        public bool[] ParseBit(ref PacketReader reader, int metadata)
+        {
+            int length = (metadata >> 8) * 8 + (metadata & 0xFF);
+            return reader.ReadBitmapBigEndian(length);
+        }
+
+        public int ParseEnum(ref PacketReader reader, int metadata)
         {
             return reader.ReadIntLittleEndian(metadata);
         }
 
-        public object ParseSet(ref PacketReader reader, int metadata)
+        public long ParseSet(ref PacketReader reader, int metadata)
         {
             return reader.ReadLongLittleEndian(metadata);
         }
 
-        public object ParseYear(ref PacketReader reader, int metadata)
+        public int ParseYear(ref PacketReader reader, int metadata)
         {
             return 1900 + (int)reader.ReadByte();
         }
 
-        public object ParseDate(ref PacketReader reader, int metadata)
+        public DateTime? ParseDate(ref PacketReader reader, int metadata)
         {
             int value = reader.ReadIntLittleEndian(3);
 
@@ -133,7 +127,7 @@ namespace MySqlCdc.Columns
             return new DateTime(year, month, day);
         }
 
-        public object ParseTime(ref PacketReader reader, int metadata)
+        public TimeSpan ParseTime(ref PacketReader reader, int metadata)
         {
             int value = reader.ReadIntLittleEndian(3);
             int seconds = value % 100;
@@ -144,13 +138,13 @@ namespace MySqlCdc.Columns
             return new TimeSpan(hours, minutes, seconds);
         }
 
-        public object ParseTimeStamp(ref PacketReader reader, int metadata)
+        public DateTimeOffset ParseTimeStamp(ref PacketReader reader, int metadata)
         {
             long seconds = reader.ReadUInt32LittleEndian();
             return DateTimeOffset.FromUnixTimeSeconds(seconds);
         }
 
-        public object ParseDateTime(ref PacketReader reader, int metadata)
+        public DateTime? ParseDateTime(ref PacketReader reader, int metadata)
         {
             long value = reader.ReadInt64LittleEndian();
             int second = (int)value % 100;
@@ -171,7 +165,7 @@ namespace MySqlCdc.Columns
             return new DateTime(year, month, day, hour, minute, second);
         }
 
-        public object ParseTime2(ref PacketReader reader, int metadata)
+        public TimeSpan ParseTime2(ref PacketReader reader, int metadata)
         {
             long value = reader.ReadLongBigEndian(3);
             int millisecond = ParseFractionalPart(ref reader, metadata) / 1000;
@@ -186,7 +180,7 @@ namespace MySqlCdc.Columns
             return new TimeSpan(0, hour, minute, second, millisecond);
         }
 
-        public object ParseTimeStamp2(ref PacketReader reader, int metadata)
+        public DateTimeOffset ParseTimeStamp2(ref PacketReader reader, int metadata)
         {
             long seconds = reader.ReadUInt32BigEndian();
             int millisecond = ParseFractionalPart(ref reader, metadata) / 1000;
@@ -195,7 +189,7 @@ namespace MySqlCdc.Columns
             return DateTimeOffset.FromUnixTimeMilliseconds(timestamp);
         }
 
-        public object ParseDateTime2(ref PacketReader reader, int metadata)
+        public DateTime? ParseDateTime2(ref PacketReader reader, int metadata)
         {
             long value = reader.ReadLongBigEndian(5);
             int millisecond = ParseFractionalPart(ref reader, metadata) / 1000;
@@ -214,7 +208,7 @@ namespace MySqlCdc.Columns
             return new DateTime(year, month, day, hour, minute, second, millisecond);
         }
 
-        public object ParseBlob(ref PacketReader reader, int metadata)
+        public byte[] ParseBlob(ref PacketReader reader, int metadata)
         {
             var length = reader.ReadIntLittleEndian(metadata);
             return reader.ReadByteArraySlow(length);
