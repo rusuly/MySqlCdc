@@ -120,7 +120,7 @@ namespace MySqlCdc.Parsers
                 ColumnType.TIMESTAMP => _columnParser.ParseTimeStamp(ref reader, metadata),
                 ColumnType.DATETIME => _columnParser.ParseDateTime(ref reader, metadata),
 
-                // MySQL 5.6.4+ types. Supported in MariaDB.
+                // MySQL 5.6.4+ types. Supported from MariaDB 10.1.2.
                 ColumnType.TIME2 => _columnParser.ParseTime2(ref reader, metadata),
                 ColumnType.TIMESTAMP2 => _columnParser.ParseTimeStamp2(ref reader, metadata),
                 ColumnType.DATETIME2 => _columnParser.ParseDateTime2(ref reader, metadata),

@@ -297,13 +297,14 @@ namespace MySqlCdc.Tests.Providers
         [Fact]
         public void Test_TimeStamp2()
         {
-            // timestamp(3), column = '1985-10-13 13:22:23.567'
+            // timestamp(3), column = '1985-10-13 13:22:23.567' - was set in Ukraine (GMT+3)
             byte[] payload = new byte[] { 29, 175, 151, 223, 22, 38 };
             var reader = new PacketReader(payload);
             int metadata = 3;
 
-            var dateTime = new DateTime(1985, 10, 13, 13, 22, 23, 567);
-            Assert.Equal(new DateTimeOffset(dateTime), _columnParser.ParseTimeStamp2(ref reader, metadata));
+            var actual = _columnParser.ParseTimeStamp2(ref reader, metadata);
+            Assert.Equal(new DateTimeOffset(1985, 10, 13, 10, 22, 23, 567, TimeSpan.Zero), actual);
+            Assert.Equal(new DateTimeOffset(1985, 10, 13, 13, 22, 23, 567, TimeSpan.FromHours(3)), actual);
             Assert.Equal(6, reader.Consumed);
         }
 
@@ -357,12 +358,13 @@ namespace MySqlCdc.Tests.Providers
         [Fact]
         public void Test_TimeStamp()
         {
-            // timestamp, column = '1985-10-13 13:22:23'
+            // timestamp, column = '1985-10-13 13:22:23' - was set in Ukraine (GMT+3)
             byte[] payload = new byte[] { 223, 151, 175, 29 };
             var reader = new PacketReader(payload);
 
-            var dateTime = new DateTime(1985, 10, 13, 13, 22, 23);
-            Assert.Equal(new DateTimeOffset(dateTime), _columnParser.ParseTimeStamp(ref reader, 0));
+            var actual = _columnParser.ParseTimeStamp(ref reader, 0);
+            Assert.Equal(new DateTimeOffset(1985, 10, 13, 10, 22, 23, TimeSpan.Zero), actual);
+            Assert.Equal(new DateTimeOffset(1985, 10, 13, 13, 22, 23, TimeSpan.FromHours(3)), actual);
             Assert.Equal(4, reader.Consumed);
         }
 

@@ -172,6 +172,7 @@ using (Stream stream = File.OpenRead("mariadb-bin.000002"))
 
   | MySQL Type         | .NET type            |
   | ------------------ | -------------------- |
+  | BLOB types         | byte[]               |
   | GEOMETRY           | byte[]               |
   | JSON (MySQL)       | byte[], see below    |
   | JSON (MariaDB)     | byte[], see below    |
@@ -193,7 +194,6 @@ using (Stream stream = File.OpenRead("mariadb-bin.000002"))
   | DATETIME           | Nullable&lt;DateTime&gt; |
   | TIME               | TimeSpan             |
   | TIMESTAMP          | DateTimeOffset       |
-  | BLOB types         | byte[]               |
 
 - Invalid DATE, DATETIME values(0000-00-00) are parsed as DateTime null.
 - TIME, DATETIME, TIMESTAMP (MySQL 5.6.4+) will lose microseconds when converted to .NET types as MySQL types have bigger fractional part than corresponding .NET types can store.
