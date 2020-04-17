@@ -27,6 +27,9 @@ namespace MySqlCdc.Columns
                 (uncompressedIntegral << 2) + CompressedBytes[compressedIntegral] +
                 (uncompressedFractional << 2) + CompressedBytes[compressedFractional];
 
+            // Format
+            // [1-3 bytes]  [4 bytes]      [4 bytes]        [4 bytes]      [4 bytes]      [1-3 bytes]
+            // [Compressed] [Uncompressed] [Uncompressed] . [Uncompressed] [Uncompressed] [Compressed]
             byte[] value = reader.ReadByteArraySlow(length);
             var result = new StringBuilder();
 
@@ -43,16 +46,40 @@ namespace MySqlCdc.Columns
             using var memoryOwner = new MemoryOwner(new ReadOnlySequence<byte>(value));
             var buffer = new PacketReader(memoryOwner.Memory.Span);
 
+            bool started = false;
             int size = CompressedBytes[compressedIntegral];
+
             if (size > 0)
             {
-                result.Append(buffer.ReadIntBigEndian(size));
+                var number = buffer.ReadIntBigEndian(size);
+                if (number > 0)
+                {
+                    started = true;
+                    result.Append(number);
+                }
             }
             for (int i = 0; i < uncompressedIntegral; i++)
             {
-                result.Append(buffer.ReadUInt32BigEndian().ToString("D9"));
+                var number = buffer.ReadUInt32BigEndian();
+                if (started)
+                {
+                    result.Append(number.ToString("D9"));
+                }
+                else if (number > 0)
+                {
+                    started = true;
+                    result.Append(number);
+                }
             }
-            result.Append(".");
+            if (!started) // There has to be at least 0
+            {
+                result.Append(0);
+            }
+
+            if (scale > 0)
+            {
+                result.Append(".");
+            }
 
             size = CompressedBytes[compressedFractional];
             for (int i = 0; i < uncompressedFractional; i++)

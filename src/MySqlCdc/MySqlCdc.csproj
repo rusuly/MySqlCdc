@@ -5,7 +5,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>8.0</LangVersion>
     <PackageId>MySqlCdc</PackageId>
-    <Version>1.0.0-preview.18</Version>
+    <Version>1.0.0-preview.19</Version>
     <Authors>Ruslan Ulianets</Authors>
     <PackageTags>MySQL;MariaDB;Binlog;CDC;Change Data Capture;Replication;Streaming</PackageTags>
     <Description>MySQL/MariaDB binlog change data capture (CDC) connector for .NET and .NET Core</Description>
@@ -13,8 +13,12 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReleaseNotes>
 This version includes:
-1. Fixed parsing inline values in JsonParser.
-2. Added XaPrepareEvent.
+1. Support parsing opaque values in JsonParser.
+2. Fixed parsing old datetime format.
+3. Fixed parsing bit columns format.
+4. Polished parsing decimal values.
+5. Implemented 3/5 SSL strategies.
+6. Updated libs.
     </PackageReleaseNotes>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>

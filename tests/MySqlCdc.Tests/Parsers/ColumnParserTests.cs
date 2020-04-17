@@ -195,7 +195,7 @@ namespace MySqlCdc.Tests.Providers
         [Fact]
         public void Test_Bit()
         {
-            // bit(28), column = '0111101101010101011110000111', select bin(column) from table
+            // bit(28), column = b'0111101101010101011110000111', select bin(column) from table
             byte[] payload = new byte[] { 7, 181, 87, 135 };
             int metadata = 772;
             var reader = new PacketReader(payload);
