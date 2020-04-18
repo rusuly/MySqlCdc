@@ -391,6 +391,6 @@ namespace MySqlCdc.Tests.Providers
             Assert.Equal(null, _columnParser.ParseDateTime(ref reader, metadata));
             Assert.Equal(8, reader.Consumed);
         }
+        #endregion
     }
-    #endregion
 }

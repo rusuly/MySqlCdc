@@ -85,7 +85,7 @@ namespace MySqlCdc.Parsers
         {
             return (ColumnType)columnType switch
             {
-                /* Numeric types. The only place where numbers can be negative */                
+                /* Numeric types. The only place where numbers can be negative */
                 ColumnType.TINY => _columnParser.ParseTinyInt(ref reader, metadata),
                 ColumnType.SHORT => _columnParser.ParseSmallInt(ref reader, metadata),
                 ColumnType.INT24 => _columnParser.ParseMediumInt(ref reader, metadata),
@@ -146,10 +146,10 @@ namespace MySqlCdc.Parsers
             return value;
         }
 
-        private void GetActualStringType(ref int columnType, ref int metadata)
+        public static void GetActualStringType(ref int columnType, ref int metadata)
         {
             // See: https://bugs.mysql.com/bug.php?id=37426
-            // See: https://github.com/mysql/mysql-server/blob/9c3a49ec84b521cb0b35383f119099b2eb25d4ff/sql/log_event.cc#L1988            
+            // See: https://github.com/mysql/mysql-server/blob/9c3a49ec84b521cb0b35383f119099b2eb25d4ff/sql/log_event.cc#L1988
 
             // CHAR column type
             if (metadata < 256)
