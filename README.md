@@ -44,7 +44,7 @@ Please make sure the following requirements are met:
     server-id = 1
     ```
 
-3. Optionally you can enable logging table metadata in MySQL(like column names, see `TableMetadata` class). Note the metadata is not supported in MariaDB.
+3. Optionally in MySQL 5.6+ / MariaDB 10.5+ you can enable logging table metadata(column names, types, see `TableMetadata` class).
 
     ```conf
     binlog_row_metadata = full
@@ -79,7 +79,7 @@ from INFORMATION_SCHEMA.COLUMNS
 where TABLE_NAME='AspNetUsers' and TABLE_SCHEMA='Identity'
 order by ORDINAL_POSITION;
 ```
-Alternatively, in MySQL 5.6 and newer(but not in MariaDB) you can obtain column names by logging full metadata (see `TableMetadataEvent.Metadata`).
+Alternatively, in MySQL 5.6 / MariaDB 10.5 and newer you can obtain column names by logging full metadata (see `TableMetadataEvent.Metadata`).
 This way the metadata is logged with each `TableMapEvent` which impacts bandwidth. 
 ```conf
 binlog_row_metadata = full
@@ -235,6 +235,7 @@ MySqlCdc supports both MariaDB & MySQL server.
   | 10.2     | ✅ Supported             |
   | 10.3     | ✅ Supported             |
   | 10.4     | ✅ Supported             |
+  | 10.5     | ✅ Supported             |
 
   | MySQL    | Status                   |
   | -------- |:------------------------:|

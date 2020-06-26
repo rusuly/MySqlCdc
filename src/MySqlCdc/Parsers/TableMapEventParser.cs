@@ -1,7 +1,7 @@
 using MySqlCdc.Constants;
 using MySqlCdc.Events;
 using MySqlCdc.Protocol;
-using MySqlCdc.Providers.MySql;
+using MySqlCdc.Metadata;
 
 namespace MySqlCdc.Parsers
 {
@@ -37,7 +37,7 @@ namespace MySqlCdc.Parsers
             TableMetadata tableMetadata = null;
             if (!reader.IsEmpty())
             {
-                // Read MySQL 5.6+ metadata. Not supported in MariaDB.
+                // Table metadata is supported in MySQL 5.6+ and MariaDB 10.5+.
                 tableMetadata = new TableMetadata(ref reader, columnTypes);
             }
 

@@ -1,4 +1,4 @@
-using MySqlCdc.Providers.MySql;
+using MySqlCdc.Metadata;
 
 namespace MySqlCdc.Events
 {

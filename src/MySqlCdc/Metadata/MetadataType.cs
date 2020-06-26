@@ -1,4 +1,4 @@
-namespace MySqlCdc.Providers.MySql
+namespace MySqlCdc.Metadata
 {
     internal enum MetadataType
     {

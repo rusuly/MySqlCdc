@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace MySqlCdc.Providers.MySql
+namespace MySqlCdc.Metadata
 {
     /// <summary>
     /// Represents charsets of character columns.

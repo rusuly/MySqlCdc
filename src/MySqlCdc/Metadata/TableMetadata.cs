@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using MySqlCdc.Constants;
 using MySqlCdc.Protocol;
 
-namespace MySqlCdc.Providers.MySql
+namespace MySqlCdc.Metadata
 {
     /// <summary>
     /// Contains metadata for table columns.
