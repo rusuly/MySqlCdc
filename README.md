@@ -5,6 +5,8 @@ Acts as a replication client streaming binary log events in real-time.
 
 Designed for reactive push-model applications, event sourcing or derived data systems.
 
+Before integrating MySqlCdc in your project consider using Kafka. It can be more suitable for your architecture.
+
 NuGet feed: [MySqlCdc](https://www.nuget.org/packages/MySqlCdc)
 
 ## Use cases
