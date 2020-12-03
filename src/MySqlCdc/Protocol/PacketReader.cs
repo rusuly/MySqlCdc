@@ -153,7 +153,7 @@ namespace MySqlCdc.Protocol
             else if (firstByte == 0xFD)
                 return ReadIntLittleEndian(3);
             else if (firstByte == 0xFE)
-            {                
+            {
                 long value = ReadInt64LittleEndian();
                 if (value < 0 || value > Int32.MaxValue)
                     throw new OverflowException($"Length encoded integer cannot exceed {nameof(Int32.MaxValue)}.");
@@ -293,7 +293,7 @@ namespace MySqlCdc.Protocol
         private string ParseString(ReadOnlySpan<byte> span)
         {
             if (span.Length == 0)
-                return null;
+                return string.Empty;
 
 #if NETSTANDARD2_1
             return Encoding.UTF8.GetString(span);

@@ -182,7 +182,7 @@ namespace MySqlCdc.Providers.MySql
                 {
                     // 1 - Remove a hole between keys
                     Advance(ref reader, startIndex, keyOffset[i]);
-                    keys[i] = reader.ReadString(keyLength[i]) ?? string.Empty /* JSON can have empty keys */;
+                    keys[i] = reader.ReadString(keyLength[i]);
                 }
             }
 
