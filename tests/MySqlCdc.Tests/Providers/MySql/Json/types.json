@@ -39,5 +39,6 @@
     "int64": "Int64",
     "uint64": "UInt64",
     "double": "double",
-    "string": "string"
+    "string": "string",
+    "empty": "string"
 }

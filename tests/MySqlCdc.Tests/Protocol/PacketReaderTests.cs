@@ -211,6 +211,16 @@ namespace MySqlCdc.Tests.Protocol
         }
 
         [Fact]
+        public void Test_ReadString_ReturnsEmptyString()
+        {
+            var payload = new byte[] { 123 };
+            var reader = new PacketReader(payload);
+
+            Assert.Equal("", reader.ReadString(0));
+            Assert.Equal(0, reader.Consumed);
+        }
+
+        [Fact]
         public void Test_ReadString_ReturnsFixedString()
         {
             var payload = new byte[] { 76, 111, 114, 101, 109, 32, 105, 112, 115, 117, 109 };

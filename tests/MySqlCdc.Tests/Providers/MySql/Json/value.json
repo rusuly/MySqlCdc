@@ -39,5 +39,6 @@
     "int64": -3000000000,
     "uint64": 300000000000,
     "double": 12345678.87654321,
-    "string": "Monica"
+    "string": "Monica",
+    "empty": ""
 }
