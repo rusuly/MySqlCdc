@@ -1,3 +1,4 @@
+using System;
 using System.Buffers;
 using MySqlCdc.Checksum;
 using MySqlCdc.Events;
@@ -82,12 +83,9 @@ namespace MySqlCdc.Tests.Network
                 0xFD,
                 3,0,2,8
             };
-            var packet = reader.ReadPacket(new ReadOnlySequence<byte>(payload));
 
-            Assert.IsType<ExceptionPacket>(packet);
-
-            var exceptionPacket = packet as ExceptionPacket;
-            Assert.Equal("Unknown network stream status", exceptionPacket.Exception.Message);
+            var exception = Assert.Throws<Exception>(() => reader.ReadPacket(new ReadOnlySequence<byte>(payload)));
+            Assert.Equal("Unknown network stream status", exception.Message);
         }
 
 
@@ -108,12 +106,9 @@ namespace MySqlCdc.Tests.Network
                 5, // We changed checksum type
                 225,100,86,201
             };
-            var packet = reader.ReadPacket(new ReadOnlySequence<byte>(payload));
 
-            Assert.IsType<ExceptionPacket>(packet);
-
-            var exceptionPacket = packet as ExceptionPacket;
-            Assert.Equal("The master checksum type is not supported.", exceptionPacket.Exception.Message);
+            var exception = Assert.Throws<InvalidOperationException>(() => reader.ReadPacket(new ReadOnlySequence<byte>(payload)));
+            Assert.Equal("The master checksum type is not supported.", exception.Message);
         }
     }
 }

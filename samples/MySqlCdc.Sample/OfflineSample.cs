@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using MySqlCdc.Events;
 using MySqlCdc.Providers.MariaDb;
+using MySqlCdc.Providers.MySql;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -11,18 +12,19 @@ namespace MySqlCdc.Sample
 {
     class OfflineSample
     {
-        internal static async Task Start()
+        internal static async Task Start(bool mariadb)
         {
-            using (Stream stream = File.OpenRead("mariadb-bin.000002"))
+            using (Stream stream = File.OpenRead("binlog.000003"))
             {
-                var reader = new BinlogReader(new MariaDbEventDeserializer(), stream);
-                while (true)
-                {
-                    var @event = await reader.ReadEventAsync();
-                    if (@event == null)
-                        break;
+                EventDeserializer deserializer = mariadb
+                ? new MariaDbEventDeserializer()
+                : new MySqlEventDeserializer();
 
-                    await PrintEventAsync(@event);
+                var reader = new BinlogReader(deserializer, stream);
+
+                await foreach (var binlogEvent in reader.ReadEvents())
+                {
+                    await PrintEventAsync(binlogEvent);
                 }
             }
         }

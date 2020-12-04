@@ -1,6 +1,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
@@ -184,10 +185,9 @@ namespace MySqlCdc
         /// <summary>
         /// Replicates binlog events from the server
         /// </summary>
-        /// <param name="handleEvent">Client callback function</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Task completed when last event is read in non-blocking mode</returns>
-        public async Task ReplicateAsync(Func<IBinlogEvent, Task> handleEvent, CancellationToken cancellationToken = default)
+        public async IAsyncEnumerable<IBinlogEvent> Replicate([EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             await ConnectAsync(cancellationToken);
 
@@ -199,34 +199,29 @@ namespace MySqlCdc
             await SetMasterHeartbeat(cancellationToken);
             await SetMasterBinlogChecksum(cancellationToken);
             await _databaseProvider.DumpBinlogAsync(_channel, _options, cancellationToken);
-            await ReadEventStreamAsync(handleEvent, cancellationToken);
-        }
 
-        private async Task ReadEventStreamAsync(Func<IBinlogEvent, Task> handleEvent, CancellationToken cancellationToken = default)
-        {
             var eventStreamReader = new EventStreamReader(_databaseProvider.Deserializer);
-            var channel = new EventStreamChannel(eventStreamReader, _channel.Stream, cancellationToken);
+            var channel = new EventStreamChannel(eventStreamReader, _channel.Stream);
             var timeout = _options.HeartbeatInterval.Add(TimeSpan.FromMilliseconds(TimeoutConstants.Delta));
 
-            while (!cancellationToken.IsCancellationRequested)
+            await foreach (var packet in channel.ReadPacketAsync(cancellationToken))
             {
-                var packet = await channel.ReadPacketAsync(cancellationToken).WithTimeout(timeout, TimeoutConstants.Message);
-
                 if (packet is IBinlogEvent binlogEvent)
                 {
                     // We stop replication if client code throws an exception
                     // As a derived database may end up in an inconsistent state.
-                    await handleEvent(binlogEvent);
+                    yield return binlogEvent;
 
                     // Commit replication state if there is no exception.
                     UpdateGtidPosition(binlogEvent);
                     UpdateBinlogPosition(binlogEvent);
                 }
+                else if (packet is EndOfFilePacket && !_options.Blocking)
+                    yield break;
                 else if (packet is ErrorPacket error)
                     throw new InvalidOperationException($"Event stream error. {error.ToString()}");
-                else if (packet is EndOfFilePacket && !_options.Blocking)
-                    return;
-                else throw new InvalidOperationException($"Event stream unexpected error.");
+                else
+                    throw new InvalidOperationException($"Event stream unexpected error.");
             }
         }
 

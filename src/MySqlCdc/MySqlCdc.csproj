@@ -5,22 +5,29 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>8.0</LangVersion>
     <PackageId>MySqlCdc</PackageId>
-    <Version>1.0.1</Version>
+    <Version>2.0.0</Version>
     <Authors>Ruslan Ulianets</Authors>
     <PackageTags>MySQL;MariaDB;Binlog;CDC;Change Data Capture;Replication;Streaming</PackageTags>
     <Description>MySQL/MariaDB binlog change data capture (CDC) connector for .NET and .NET Core</Description>
     <PackageProjectUrl>https://github.com/rusuly/MySqlCdc</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReleaseNotes>
-This version includes an important fix for the following bug:
-1. Empty values were parsed as null values.
+The version:
+1. Uses async streams based on IAsyncEnumerable.
+2. Uses SequenceReader for best performance.
+3. MemoryOwner class removed.
+4. CertificateImporter class removed.
+5. System.Threading.Channels dependency removed.
+
+Breaking changes:
+1. Targets .NET Standard 2.1 and works only on .NET Core 3.0 or later.
+2. Replicate method adjusted to async streams.
     </PackageReleaseNotes>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.IO.Pipelines" Version="4.7.2" />
-    <PackageReference Include="System.Text.Json" Version="4.7.2" />
-    <PackageReference Include="System.Threading.Channels" Version="4.7.1" />
+    <PackageReference Include="System.IO.Pipelines" Version="5.0.0" />
+    <PackageReference Include="System.Text.Json" Version="5.0.0" />
   </ItemGroup>
 </Project>

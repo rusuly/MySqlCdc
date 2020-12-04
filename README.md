@@ -112,7 +112,7 @@ var client = new BinlogClient(options =>
     options.Binlog = BinlogOptions.FromStart();
 });
 
-await client.ReplicateAsync(async (binlogEvent) =>
+await foreach (var binlogEvent in client.Replicate())
 {
     var state = client.State;
 
@@ -133,7 +133,7 @@ await client.ReplicateAsync(async (binlogEvent) =>
         await HandleDeleteRowsEvent(deleteRows);
     }
     else await PrintEventAsync(binlogEvent);
-});
+}
 ```
 A typical transaction has the following structure.
 1. `GtidEvent` if gtid mode is enabled.
@@ -152,16 +152,17 @@ Note that in GTID mode `FromGtid` has the following behavior:
 In some cases you will need to read binlog files offline from the file system.
 This can be done using `BinlogReader` class.
 ```csharp
-using (Stream stream = File.OpenRead("mariadb-bin.000002"))
+using (Stream stream = File.OpenRead("binlog.000003"))
 {
-    var reader = new BinlogReader(new MariaDbEventDeserializer(), stream);
-    while (true)
-    {
-        var @event = await reader.ReadEventAsync();
-        if (@event == null)
-            break;
+    EventDeserializer deserializer = mariadb
+    ? new MariaDbEventDeserializer()
+    : new MySqlEventDeserializer();
 
-        await PrintEventAsync(@event);
+    var reader = new BinlogReader(deserializer, stream);
+
+    await foreach (var binlogEvent in reader.ReadEvents())
+    {
+        await PrintEventAsync(binlogEvent);
     }
 }
 ```

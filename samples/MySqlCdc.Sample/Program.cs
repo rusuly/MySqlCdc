@@ -42,7 +42,7 @@ namespace MySqlCdc.Sample
                 options.Binlog = BinlogOptions.FromStart();
             });
 
-            await client.ReplicateAsync(async (binlogEvent) =>
+            await foreach (var binlogEvent in client.Replicate())
             {
                 var state = client.State;
 
@@ -63,7 +63,7 @@ namespace MySqlCdc.Sample
                     await HandleDeleteRowsEvent(deleteRows);
                 }
                 else await PrintEventAsync(binlogEvent);
-            });
+            }
         }
 
         private static async Task PrintEventAsync(IBinlogEvent binlogEvent)

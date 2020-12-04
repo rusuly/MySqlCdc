@@ -1,7 +1,9 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using MySqlCdc.Constants;
 using MySqlCdc.Network;
+using MySqlCdc.Protocol;
 using Xunit;
 
 namespace MySqlCdc.Tests.Network
@@ -19,9 +21,16 @@ namespace MySqlCdc.Tests.Network
             stream.Position = 0;
 
             var channel = new EventStreamChannel(new TestEventStreamReader(), stream);
-            var packet = await channel.ReadPacketAsync();
-            Assert.IsType<TestPacket>(packet);
-            Assert.Equal(packetBody, ((TestPacket)packet).Body);
+            var packets = new List<IPacket>();
+
+            await foreach (var packet in channel.ReadPacketAsync())
+            {
+                packets.Add(packet);
+            }
+
+            Assert.Equal(1, packets.Count);
+            Assert.IsType<TestPacket>(packets[0]);
+            Assert.Equal(packetBody, ((TestPacket)packets[0]).Body);
         }
 
         [Fact(Skip = SkipReason)]
@@ -33,9 +42,16 @@ namespace MySqlCdc.Tests.Network
             stream.Position = 0;
 
             var channel = new EventStreamChannel(new TestEventStreamReader(), stream);
-            var packet = await channel.ReadPacketAsync();
-            Assert.IsType<TestPacket>(packet);
-            Assert.Equal(packetBody, ((TestPacket)packet).Body);
+            var packets = new List<IPacket>();
+
+            await foreach (var packet in channel.ReadPacketAsync())
+            {
+                packets.Add(packet);
+            }
+
+            Assert.Equal(1, packets.Count);
+            Assert.IsType<TestPacket>(packets[0]);
+            Assert.Equal(packetBody, ((TestPacket)packets[0]).Body);
         }
 
         private byte[] CreateLargePacket(MemoryStream stream, int bodySize)

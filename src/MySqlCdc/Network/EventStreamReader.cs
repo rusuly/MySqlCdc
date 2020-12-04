@@ -26,23 +26,14 @@ namespace MySqlCdc.Network
             var reader = new PacketReader(memoryOwner.Memory.Span);
             var status = (ResponseType)reader.ReadByte();
 
-            try
+            // Network stream has 3 possible status types.
+            return status switch
             {
-                // Network stream has 3 possible status types.
-                return status switch
-                {
-                    ResponseType.Ok => _eventDeserializer.DeserializeEvent(ref reader),
-                    ResponseType.Error => new ErrorPacket(buffer.Slice(1)),
-                    ResponseType.EndOfFile => new EndOfFilePacket(buffer.Slice(1)),
-                    _ => throw new Exception("Unknown network stream status"),
-                };
-            }
-            catch (Exception e)
-            {
-                // We stop replication if deserialization throws an exception 
-                // Since a derived database may end up in an inconsistent state.
-                return new ExceptionPacket(e);
-            }
+                ResponseType.Ok => _eventDeserializer.DeserializeEvent(ref reader),
+                ResponseType.Error => new ErrorPacket(buffer.Slice(1)),
+                ResponseType.EndOfFile => new EndOfFilePacket(buffer.Slice(1)),
+                _ => throw new Exception("Unknown network stream status"),
+            };
         }
     }
 }
