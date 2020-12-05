@@ -23,11 +23,14 @@ namespace MySqlCdc.Network
             _pipeReader = PipeReader.Create(stream);
         }
 
-        public async IAsyncEnumerable<IPacket> ReadPacketAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+        public async IAsyncEnumerable<IPacket> ReadPacketAsync(TimeSpan timeout, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                ReadResult result = await _pipeReader.ReadAsync(cancellationToken);
+                ReadResult result = await _pipeReader.ReadAsync(cancellationToken)
+                    .AsTask()
+                    .WithTimeout(timeout, TimeoutConstants.Message);
+
                 ReadOnlySequence<byte> buffer = result.Buffer;
 
                 while (!cancellationToken.IsCancellationRequested)

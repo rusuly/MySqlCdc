@@ -204,7 +204,7 @@ namespace MySqlCdc
             var channel = new EventStreamChannel(eventStreamReader, _channel.Stream);
             var timeout = _options.HeartbeatInterval.Add(TimeSpan.FromMilliseconds(TimeoutConstants.Delta));
 
-            await foreach (var packet in channel.ReadPacketAsync(cancellationToken))
+            await foreach (var packet in channel.ReadPacketAsync(timeout, cancellationToken).WithCancellation(cancellationToken))
             {
                 if (packet is IBinlogEvent binlogEvent)
                 {
