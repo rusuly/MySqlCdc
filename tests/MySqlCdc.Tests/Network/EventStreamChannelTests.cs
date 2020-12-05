@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -23,7 +24,7 @@ namespace MySqlCdc.Tests.Network
             var channel = new EventStreamChannel(new TestEventStreamReader(), stream);
             var packets = new List<IPacket>();
 
-            await foreach (var packet in channel.ReadPacketAsync())
+            await foreach (var packet in channel.ReadPacketAsync(TimeSpan.FromSeconds(30)))
             {
                 packets.Add(packet);
             }
@@ -44,7 +45,7 @@ namespace MySqlCdc.Tests.Network
             var channel = new EventStreamChannel(new TestEventStreamReader(), stream);
             var packets = new List<IPacket>();
 
-            await foreach (var packet in channel.ReadPacketAsync())
+            await foreach (var packet in channel.ReadPacketAsync(TimeSpan.FromSeconds(30)))
             {
                 packets.Add(packet);
             }
