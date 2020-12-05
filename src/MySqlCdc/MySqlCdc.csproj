@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>8.0</LangVersion>
     <PackageId>MySqlCdc</PackageId>
@@ -14,14 +14,10 @@
     <PackageReleaseNotes>
 The version:
 1. Uses async streams based on IAsyncEnumerable.
-2. Uses SequenceReader for best performance.
-3. MemoryOwner class removed.
-4. CertificateImporter class removed.
-5. System.Threading.Channels dependency removed.
+2. System.Threading.Channels dependency removed.
 
 Breaking changes:
-1. Targets .NET Standard 2.1 and works only on .NET Core 3.0 or later.
-2. Replicate method adjusted to async streams.
+1. Replicate method signature adjusted to async streams.
     </PackageReleaseNotes>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
