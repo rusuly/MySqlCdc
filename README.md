@@ -3,7 +3,7 @@ MySQL/MariaDB binlog change data capture (CDC) connector for .NET
 
 Acts as a replication client streaming binary log events in real-time.
 
-**MySqlCdc is designed for capturing MySQL changes. For event streaming consider Kafka.**
+**MySqlCdc is designed for capturing MySQL changes. Kafka event streaming may be [more suitable](https://scaling.dev/replication/cdc) for your architecture .**
 
 NuGet feed: [MySqlCdc](https://www.nuget.org/packages/MySqlCdc)
 
