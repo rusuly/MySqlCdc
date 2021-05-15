@@ -68,6 +68,11 @@ namespace MySqlCdc.Metadata
         public IReadOnlyList<int> EnumAndSetColumnCharsets { get; }
 
         /// <summary>
+        /// Gets visibility attribute of columns.
+        /// </summary>
+        public bool[] ColumnVisibility { get; }
+
+        /// <summary>
         /// Creates a new <see cref="TableMetadata"/>.
         /// </summary>
         public TableMetadata(ref PacketReader reader, byte[] columnTypes)
@@ -116,6 +121,9 @@ namespace MySqlCdc.Metadata
                         break;
                     case MetadataType.ENUM_AND_SET_COLUMN_CHARSET:
                         EnumAndSetColumnCharsets = ParseIntArray(ref buffer);
+                        break;
+                    case MetadataType.COLUMN_VISIBILITY:
+                        ColumnVisibility = ReadSignednessBitmap(ref buffer, columnTypes.Length);
                         break;
                     default:
                         throw new InvalidOperationException($"Table metadata type {metadataType} is not supported");
