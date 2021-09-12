@@ -152,7 +152,7 @@ Note that in GTID mode `FromGtid` has the following behavior:
 In some cases you will need to read binlog files offline from the file system.
 This can be done using `BinlogReader` class.
 ```csharp
-using (Stream stream = File.OpenRead("binlog.000003"))
+using (Stream stream = File.OpenRead("mysql-bin.000001"))
 {
     EventDeserializer deserializer = mariadb
     ? new MariaDbEventDeserializer()

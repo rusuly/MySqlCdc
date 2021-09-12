@@ -14,7 +14,7 @@ namespace MySqlCdc.Sample
     {
         internal static async Task Start(bool mariadb)
         {
-            using (Stream stream = File.OpenRead("binlog.000003"))
+            using (Stream stream = File.OpenRead("mysql-bin.000001"))
             {
                 EventDeserializer deserializer = mariadb
                 ? new MariaDbEventDeserializer()
