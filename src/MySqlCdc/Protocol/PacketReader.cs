@@ -295,17 +295,7 @@ namespace MySqlCdc.Protocol
             if (span.Length == 0)
                 return string.Empty;
 
-#if NETSTANDARD2_1
             return Encoding.UTF8.GetString(span);
-#else
-            unsafe
-            {
-                fixed (byte* ptr = span)
-                {
-                    return Encoding.UTF8.GetString(ptr, span.Length);
-                }
-            }
-#endif
         }
     }
 }

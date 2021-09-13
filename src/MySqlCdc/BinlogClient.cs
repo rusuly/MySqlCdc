@@ -167,11 +167,7 @@ namespace MySqlCdc
 
             using (var rsa = RSA.Create())
             {
-#if NETSTANDARD2_1
                 rsa.ImportSubjectPublicKeyInfo(publicKey, out _);
-#else
-                rsa.ImportParameters(CertificateImporter.DecodePublicKey(publicKey));
-#endif
                 var encryptedBody = rsa.Encrypt(encryptedPassword, RSAEncryptionPadding.OaepSHA1);
 
                 writer = new PacketWriter(sequenceNumber);
