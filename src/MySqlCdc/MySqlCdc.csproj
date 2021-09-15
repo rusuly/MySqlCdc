@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <PackageId>MySqlCdc</PackageId>
-    <Version>3.0.0-preview.7</Version>
+    <Version>3.0.0-rc.1</Version>
     <Authors>Ruslan Ulianets</Authors>
     <PackageTags>MySQL;MariaDB;Binlog;CDC;Change Data Capture;Replication;Streaming</PackageTags>
     <Description>MySQL/MariaDB binlog change data capture (CDC) connector for .NET</Description>
@@ -16,7 +16,7 @@ This version targets net6.0
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.IO.Pipelines" Version="6.0.0-preview.7.21377.19" />
-    <PackageReference Include="System.Text.Json" Version="6.0.0-preview.7.21377.19" />
+    <PackageReference Include="System.IO.Pipelines" Version="6.0.0-rc.1.21451.13" />
+    <PackageReference Include="System.Text.Json" Version="6.0.0-rc.1.21451.13" />
   </ItemGroup>
 </Project>

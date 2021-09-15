@@ -235,6 +235,7 @@ MySqlCdc supports both MariaDB & MySQL server.
   | 10.3     | ✅ Supported             |
   | 10.4     | ✅ Supported             |
   | 10.5     | ✅ Supported             |
+  | 10.6     | ✅ Supported             |
 
   | MySQL    | Status                   |
   | -------- |:------------------------:|
