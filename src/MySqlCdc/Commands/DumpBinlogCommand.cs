@@ -1,4 +1,3 @@
-using MySqlCdc.Constants;
 using MySqlCdc.Protocol;
 
 namespace MySqlCdc.Commands

@@ -42,9 +42,6 @@ namespace MySqlCdc
         public BinlogClient(Action<ConnectionOptions> configureOptions)
         {
             configureOptions(_options);
-
-            if (_options.SslMode == SslMode.REQUIRE_VERIFY_CA || _options.SslMode == SslMode.REQUIRE_VERIFY_FULL)
-                throw new NotSupportedException($"{nameof(SslMode.REQUIRE_VERIFY_CA)} and {nameof(SslMode.REQUIRE_VERIFY_FULL)} ssl modes are not supported");
         }
 
         /// <summary>
@@ -185,6 +182,9 @@ namespace MySqlCdc
         /// <returns>Task completed when last event is read in non-blocking mode</returns>
         public async IAsyncEnumerable<IBinlogEvent> Replicate([EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
+            if (_options.SslMode == SslMode.REQUIRE_VERIFY_CA || _options.SslMode == SslMode.REQUIRE_VERIFY_FULL)
+                throw new NotSupportedException($"{nameof(SslMode.REQUIRE_VERIFY_CA)} and {nameof(SslMode.REQUIRE_VERIFY_FULL)} ssl modes are not supported");
+
             await ConnectAsync(cancellationToken);
 
             // Clear on reconnect

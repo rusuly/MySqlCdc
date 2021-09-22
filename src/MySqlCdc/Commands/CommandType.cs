@@ -1,4 +1,4 @@
-namespace MySqlCdc.Constants
+namespace MySqlCdc.Commands
 {
     /// <summary>
     /// Command types are included in body headers to identify the commands
