@@ -65,15 +65,9 @@ namespace MySqlCdc.Events
             // ChecksumType.Verify(eventBuffer, checksumBuffer);
             reader.SliceFromEnd(ChecksumStrategy.Length);
 
-            IBinlogEvent binlogEvent = null;
-            if (EventParsers.TryGetValue(eventHeader.EventType, out var eventParser))
-            {
-                binlogEvent = eventParser.ParseEvent(eventHeader, ref reader);
-            }
-            else
-            {
-                binlogEvent = new UnknownEvent(eventHeader);
-            }
+            IBinlogEvent binlogEvent = EventParsers.TryGetValue(eventHeader.EventType, out var eventParser) 
+                ? eventParser.ParseEvent(eventHeader, ref reader) 
+                : new UnknownEvent(eventHeader);
 
             if (binlogEvent is FormatDescriptionEvent formatEvent)
             {

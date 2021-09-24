@@ -27,18 +27,18 @@ namespace MySqlCdc
         /// A database user which is used to register as a database slave.
         /// The user needs to have <c>REPLICATION SLAVE</c>, <c>REPLICATION CLIENT</c> privileges.
         /// </summary>
-        public string Username { get; set; }
+        public string Username { get; set; } = String.Empty;
 
         /// <summary>
         /// The password of the user which is used to connect.
         /// </summary>
-        public string Password { get; set; }
+        public string Password { get; set; } = String.Empty;
 
         /// <summary>
         /// Default database name specified in Handshake connection.
         /// Has nothing to do with filtering events by database name.
         /// </summary>
-        public string Database { get; set; }
+        public string? Database { get; set; }
 
         /// <summary>
         /// Specifies the slave server id and used only in blocking mode. Defaults to 65535.

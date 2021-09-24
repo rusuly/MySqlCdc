@@ -15,62 +15,62 @@ namespace MySqlCdc.Metadata
         /// <summary>
         /// Gets signedness of numeric colums.
         /// </summary>
-        public bool[] Signedness { get; }
+        public bool[]? Signedness { get; }
 
         /// <summary>
         /// Gets charsets of character columns.
         /// </summary>
-        public DefaultCharset DefaultCharset { get; }
+        public DefaultCharset? DefaultCharset { get; }
 
         /// <summary>
         /// Gets charsets of character columns.
         /// </summary>
-        public IReadOnlyList<int> ColumnCharsets { get; }
+        public IReadOnlyList<int>? ColumnCharsets { get; }
 
         /// <summary>
         /// Gets column names.
         /// </summary>
-        public IReadOnlyList<string> ColumnNames { get; }
+        public IReadOnlyList<string>? ColumnNames { get; }
 
         /// <summary>
         /// Gets string values of SET columns.
         /// </summary>
-        public IReadOnlyList<IReadOnlyList<string>> SetStringValues { get; }
+        public IReadOnlyList<IReadOnlyList<string>>? SetStringValues { get; }
 
         /// <summary>
         /// Gets string values of ENUM columns
         /// </summary>
-        public IReadOnlyList<IReadOnlyList<string>> EnumStringValues { get; }
+        public IReadOnlyList<IReadOnlyList<string>>? EnumStringValues { get; }
 
         /// <summary>
         /// Gets real types of geometry columns.
         /// </summary>
-        public IReadOnlyList<int> GeometryTypes { get; }
+        public IReadOnlyList<int>? GeometryTypes { get; }
 
         /// <summary>
         /// Gets primary keys without prefixes.
         /// </summary>
-        public IReadOnlyList<int> SimplePrimaryKeys { get; }
+        public IReadOnlyList<int>? SimplePrimaryKeys { get; }
 
         /// <summary>
         /// Gets primary keys with prefixes.
         /// </summary>
-        public IReadOnlyDictionary<int, int> PrimaryKeysWithPrefix { get; }
+        public IReadOnlyDictionary<int, int>? PrimaryKeysWithPrefix { get; }
 
         /// <summary>
         /// Gets charsets of ENUM and SET columns.
         /// </summary>
-        public DefaultCharset EnumAndSetDefaultCharset { get; }
+        public DefaultCharset? EnumAndSetDefaultCharset { get; }
 
         /// <summary>
         /// Gets charsets of ENUM and SET columns.
         /// </summary>
-        public IReadOnlyList<int> EnumAndSetColumnCharsets { get; }
+        public IReadOnlyList<int>? EnumAndSetColumnCharsets { get; }
 
         /// <summary>
         /// Gets visibility attribute of columns.
         /// </summary>
-        public bool[] ColumnVisibility { get; }
+        public bool[]? ColumnVisibility { get; }
 
         /// <summary>
         /// Creates a new <see cref="TableMetadata"/>.

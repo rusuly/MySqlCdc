@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Nullable>enable</Nullable>
     <PackageId>MySqlCdc</PackageId>
     <Version>3.0.0-rc.1</Version>
     <Authors>Ruslan Ulianets</Authors>

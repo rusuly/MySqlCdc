@@ -21,7 +21,7 @@ namespace MySqlCdc.Network
         public DatabaseConnection(ConnectionOptions options)
         {
             _options = options;
-            Exception ex = null;
+            Exception? ex = null;
 
             _socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
             foreach (var ip in Dns.GetHostAddresses(options.Hostname))
@@ -37,8 +37,8 @@ namespace MySqlCdc.Network
                 }
             }
 
-            if (ex != null && Stream == null)
-                throw ex;
+            if (Stream == null)
+                throw ex ?? new InvalidOperationException("Could not connect to the server");
         }
 
         public async Task WriteBytesAsync(byte[] array, CancellationToken cancellationToken = default)
@@ -71,12 +71,12 @@ namespace MySqlCdc.Network
 
         public void UpgradeToSsl()
         {
-            var sslStream = new SslStream(Stream, false, new RemoteCertificateValidationCallback(ValidateServerCertificate), null);
+            var sslStream = new SslStream(Stream, false, ValidateServerCertificate, null);
             sslStream.AuthenticateAsClient(_options.Hostname);
             Stream = sslStream;
         }
 
-        private bool ValidateServerCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        private bool ValidateServerCertificate(object sender, X509Certificate? certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors)
         {
             if (_options.SslMode == SslMode.IF_AVAILABLE || _options.SslMode == SslMode.REQUIRE)
                 return true;

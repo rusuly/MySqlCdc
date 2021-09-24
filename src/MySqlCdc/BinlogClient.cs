@@ -22,17 +22,17 @@ namespace MySqlCdc
     /// </summary>
     public class BinlogClient
     {
-        private readonly List<string> _allowedAuthPlugins = new List<string>
+        private readonly List<string> _allowedAuthPlugins = new()
         {
             AuthPluginNames.MySqlNativePassword,
             AuthPluginNames.CachingSha2Password
         };
 
-        private readonly ConnectionOptions _options = new ConnectionOptions();
-        private IDatabaseProvider _databaseProvider;
-        private DatabaseConnection _channel;
+        private readonly ConnectionOptions _options = new();
+        private IDatabaseProvider _databaseProvider = default!;
+        private DatabaseConnection _channel = default!;
 
-        private IGtid _gtid;
+        private IGtid? _gtid;
         private bool _transaction;
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace MySqlCdc
             if (!_allowedAuthPlugins.Contains(handshake.AuthPluginName))
                 throw new InvalidOperationException($"Authentication plugin {handshake.AuthPluginName} is not supported.");
 
-            _databaseProvider = handshake.ServerVersion.Contains("MariaDB") ? (IDatabaseProvider)new MariaDbProvider() : new MySqlProvider();
+            _databaseProvider = handshake.ServerVersion.Contains("MariaDB") ? new MariaDbProvider() : new MySqlProvider();
             await AuthenticateAsync(handshake, cancellationToken);
         }
 
@@ -259,7 +259,7 @@ namespace MySqlCdc
         {
             _transaction = false;
             if (_gtid != null)
-                _options.Binlog.GtidState.AddGtid(_gtid);
+                _options.Binlog.GtidState!.AddGtid(_gtid);
         }
 
         private void UpdateBinlogPosition(IBinlogEvent binlogEvent)
@@ -287,7 +287,7 @@ namespace MySqlCdc
                 return;
 
             // Ignore if position was read before in case of reconnect.
-            if (_options.Binlog.Filename != null)
+            if (!string.IsNullOrWhiteSpace(_options.Binlog.Filename))
                 return;
 
             var command = new QueryCommand("show master status");

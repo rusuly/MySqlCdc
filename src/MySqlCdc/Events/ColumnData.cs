@@ -10,12 +10,12 @@ namespace MySqlCdc.Events
         /// <summary>
         /// Column values of the changed row.
         /// </summary>
-        public IReadOnlyList<object> Cells { get; }
+        public IReadOnlyList<object?> Cells { get; }
 
         /// <summary>
         /// Creates a new <see cref="ColumnData"/>.
         /// </summary>
-        public ColumnData(IReadOnlyList<object> cells)
+        public ColumnData(IReadOnlyList<object?> cells)
         {
             Cells = cells;
         }

@@ -19,7 +19,7 @@ namespace MySqlCdc.Commands
         public string Username { get; }
         public string Password { get; }
         public string Scramble { get; }
-        public string Database { get; }
+        public string? Database { get; }
         public string AuthPluginName { get; }
 
         public AuthenticateCommand(ConnectionOptions options, int clientCollation, string scramble, string authPluginName, int maxPacketSize = 0)

@@ -266,7 +266,7 @@ namespace MySqlCdc.Tests.Providers
             byte[] payload = new byte[] { 0, 0, 0 };
             var reader = new PacketReader(payload);
 
-            Assert.Equal(null, _columnParser.ParseDate(ref reader, 0));
+            Assert.Null(_columnParser.ParseDate(ref reader, 0));
             Assert.Equal(3, reader.Consumed);
         }
 
@@ -328,7 +328,7 @@ namespace MySqlCdc.Tests.Providers
             var reader = new PacketReader(payload);
             int metadata = 3;
 
-            Assert.Equal(null, _columnParser.ParseDateTime2(ref reader, metadata));
+            Assert.Null(_columnParser.ParseDateTime2(ref reader, metadata));
             Assert.Equal(7, reader.Consumed);
         }
 
@@ -388,7 +388,7 @@ namespace MySqlCdc.Tests.Providers
             var reader = new PacketReader(payload);
             int metadata = 3;
 
-            Assert.Equal(null, _columnParser.ParseDateTime(ref reader, metadata));
+            Assert.Null(_columnParser.ParseDateTime(ref reader, metadata));
             Assert.Equal(8, reader.Consumed);
         }
         #endregion

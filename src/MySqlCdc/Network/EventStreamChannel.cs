@@ -15,7 +15,7 @@ namespace MySqlCdc.Network
     {
         private readonly IEventStreamReader _eventStreamReader;
         private readonly PipeReader _pipeReader;
-        private List<PacketSegment> _multipacket;
+        private List<PacketSegment>? _multipacket;
 
         public EventStreamChannel(IEventStreamReader eventStreamReader, Stream stream)
         {
@@ -74,7 +74,7 @@ namespace MySqlCdc.Network
             return bodySize;
         }
 
-        private IPacket TryReadPacket(ReadOnlySequence<byte> buffer)
+        private IPacket? TryReadPacket(ReadOnlySequence<byte> buffer)
         {
             if (_multipacket != null || buffer.Length == PacketConstants.MaxBodyLength)
             {

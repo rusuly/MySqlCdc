@@ -29,7 +29,7 @@ namespace MySqlCdc.Tests.Network
                 packets.Add(packet);
             }
 
-            Assert.Equal(1, packets.Count);
+            Assert.Single(packets);
             Assert.IsType<TestPacket>(packets[0]);
             Assert.Equal(packetBody, ((TestPacket)packets[0]).Body);
         }
@@ -50,7 +50,7 @@ namespace MySqlCdc.Tests.Network
                 packets.Add(packet);
             }
 
-            Assert.Equal(1, packets.Count);
+            Assert.Single(packets);
             Assert.IsType<TestPacket>(packets[0]);
             Assert.Equal(packetBody, ((TestPacket)packets[0]).Body);
         }

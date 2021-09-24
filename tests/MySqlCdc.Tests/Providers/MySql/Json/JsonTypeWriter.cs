@@ -7,7 +7,7 @@ namespace MySqlCdc.Providers.MySql
     internal class JsonTypeWriter : IJsonWriter
     {
         private readonly Utf8JsonWriter _writer;
-        private string _propertyName;
+        private string? _propertyName;
 
         public JsonTypeWriter(Utf8JsonWriter writer)
         {

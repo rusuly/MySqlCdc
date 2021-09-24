@@ -3,11 +3,11 @@ namespace MySqlCdc.Providers.MySql
     internal class ValueEntry
     {
         public ValueType Type { get; }
-        public object Value { get; }
+        public object? Value { get; }
         public int Offset { get; }
         public bool Inlined { get; }
 
-        private ValueEntry(ValueType type, object value, int offset, bool inlined)
+        private ValueEntry(ValueType type, object? value, int offset, bool inlined)
         {
             Type = type;
             Value = value;
@@ -15,7 +15,7 @@ namespace MySqlCdc.Providers.MySql
             Inlined = inlined;
         }
 
-        public static ValueEntry FromInlined(ValueType type, object value)
+        public static ValueEntry FromInlined(ValueType type, object? value)
         {
             return new ValueEntry(type, value, 0, true);
         }

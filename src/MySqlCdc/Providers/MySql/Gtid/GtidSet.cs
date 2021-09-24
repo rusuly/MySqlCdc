@@ -21,9 +21,6 @@ namespace MySqlCdc.Providers.MySql
         /// </summary>
         public static GtidSet Parse(string gtidSet)
         {
-            if (gtidSet == null)
-                throw new ArgumentNullException(nameof(gtidSet));
-
             if (gtidSet == "")
                 return new GtidSet();
 
@@ -64,8 +61,8 @@ namespace MySqlCdc.Providers.MySql
         public bool AddGtid(IGtid value)
         {
             var gtid = (Gtid)value;
-            UuidSet uuidSet;
-            if (!UuidSets.TryGetValue(gtid.SourceId, out uuidSet))
+
+            if (!UuidSets.TryGetValue(gtid.SourceId, out var uuidSet))
             {
                 uuidSet = new UuidSet(gtid.SourceId, new List<Interval>());
                 UuidSets[gtid.SourceId] = uuidSet;
@@ -76,7 +73,7 @@ namespace MySqlCdc.Providers.MySql
         /// <summary>
         /// Compares two values for equality
         /// </summary>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (this == obj)
                 return true;

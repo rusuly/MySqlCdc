@@ -1,4 +1,3 @@
-using System;
 using MySqlCdc.Constants;
 using MySqlCdc.Events;
 
@@ -14,7 +13,7 @@ namespace MySqlCdc
         /// The value is automatically changed on the RotateEvent.
         /// On reconnect the client resumes replication from the current position.
         /// </summary>
-        public string Filename { get; set; }
+        public string Filename { get; set; } = string.Empty;
 
         /// <summary>
         /// Binary log file position.
@@ -28,7 +27,7 @@ namespace MySqlCdc
         /// See <a href="https://dev.mysql.com/doc/refman/8.0/en/replication-gtids-concepts.html">MySQL GTID</a>
         /// See <a href="https://mariadb.com/kb/en/library/gtid/">MariaDB GTID</a>
         /// </summary>
-        public IGtidState GtidState { get; set; }
+        public IGtidState? GtidState { get; set; }
 
         /// <summary>
         /// Gets replication starting strategy.
@@ -78,13 +77,9 @@ namespace MySqlCdc
         /// </summary>
         public static BinlogOptions FromGtid(IGtidState gtidState)
         {
-            if (gtidState == null)
-                throw new ArgumentNullException(nameof(gtidState));
-
             return new BinlogOptions(StartingStrategy.FromGtid)
             {
                 GtidState = gtidState,
-                Filename = string.Empty,
                 Position = EventConstants.FirstEventPosition
             };
         }

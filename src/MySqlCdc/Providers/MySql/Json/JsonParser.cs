@@ -125,14 +125,14 @@ namespace MySqlCdc.Providers.MySql
             int bytesNumber = ReadJsonSize(ref reader, small);
 
             // Key entries
-            int[] keyOffset = isObject ? new int[elementsNumber] : null;
-            int[] keyLength = isObject ? new int[elementsNumber] : null;
+            int[]? keyOffset = isObject ? new int[elementsNumber] : null;
+            int[]? keyLength = isObject ? new int[elementsNumber] : null;
             if (isObject)
             {
                 for (int i = 0; i < elementsNumber; i++)
                 {
-                    keyOffset[i] = ReadJsonSize(ref reader, small);
-                    keyLength[i] = reader.ReadUInt16LittleEndian();
+                    keyOffset![i] = ReadJsonSize(ref reader, small);
+                    keyLength![i] = reader.ReadUInt16LittleEndian();
                 }
             }
 
@@ -174,15 +174,15 @@ namespace MySqlCdc.Providers.MySql
             }
 
             // Key rows
-            string[] keys = null;
+            string[]? keys = null;
             if (isObject)
             {
                 keys = new string[elementsNumber];
                 for (int i = 0; i < elementsNumber; i++)
                 {
                     // 1 - Remove a hole between keys
-                    Advance(ref reader, startIndex, keyOffset[i]);
-                    keys[i] = reader.ReadString(keyLength[i]);
+                    Advance(ref reader, startIndex, keyOffset![i]);
+                    keys[i] = reader.ReadString(keyLength![i]);
                 }
             }
 
@@ -190,7 +190,7 @@ namespace MySqlCdc.Providers.MySql
             if (isObject) _writer.WriteStartObject(); else _writer.WriteStartArray();
             for (int i = 0; i < elementsNumber; i++)
             {
-                if (isObject) _writer.WriteKey(keys[i]);
+                if (isObject) _writer.WriteKey(keys![i]);
 
                 ValueEntry entry = entries[i];
                 if (!entry.Inlined)

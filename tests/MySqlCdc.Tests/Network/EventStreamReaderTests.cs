@@ -14,7 +14,7 @@ namespace MySqlCdc.Tests.Network
         [Fact]
         public void Test_EOFStatus_ReturnsEndOfFilePacket()
         {
-            var reader = new EventStreamReader(null);
+            var reader = new EventStreamReader(new MySqlEventDeserializer());
 
             var payload = new byte[]
             {
@@ -26,14 +26,14 @@ namespace MySqlCdc.Tests.Network
             Assert.IsType<EndOfFilePacket>(packet);
 
             var eofPacket = packet as EndOfFilePacket;
-            Assert.Equal(3, eofPacket.WarningCount);
+            Assert.Equal(3, eofPacket!.WarningCount);
             Assert.Equal(2 | (8 << 8), eofPacket.ServerStatus);
         }
 
         [Fact]
         public void Test_ErrorStatus_ReturnsErrorPacket()
         {
-            var reader = new EventStreamReader(null);
+            var reader = new EventStreamReader(new MySqlEventDeserializer());
 
             var payload = new byte[]
             {
@@ -46,7 +46,7 @@ namespace MySqlCdc.Tests.Network
             Assert.IsType<ErrorPacket>(packet);
 
             var errorPacket = packet as ErrorPacket;
-            Assert.Equal("HY000", errorPacket.SqlState);
+            Assert.Equal("HY000", errorPacket!.SqlState);
             Assert.Equal(1236, errorPacket.ErrorCode);
             Assert.Equal("Could not find first log file name in binary log index file", errorPacket.ErrorMessage);
         }
@@ -69,14 +69,14 @@ namespace MySqlCdc.Tests.Network
             Assert.IsType<RotateEvent>(packet);
 
             var rotateEvent = packet as RotateEvent;
-            Assert.Equal("binlog.000001", rotateEvent.BinlogFilename);
+            Assert.Equal("binlog.000001", rotateEvent!.BinlogFilename);
             Assert.Equal(4, rotateEvent.BinlogPosition);
         }
 
         [Fact]
         public void Test_UnknownStatus_ReturnsExceptionPacket()
         {
-            var reader = new EventStreamReader(null);
+            var reader = new EventStreamReader(new MySqlEventDeserializer());
 
             var payload = new byte[]
             {

@@ -41,7 +41,7 @@ namespace MySqlCdc.Events
         /// <summary>
         /// Gets table metadata for MySQL 5.6+
         /// </summary>
-        public TableMetadata TableMetadata { get; }
+        public TableMetadata? TableMetadata { get; }
 
         /// <summary>
         /// Creates a new <see cref="TableMapEvent"/>.
@@ -54,7 +54,7 @@ namespace MySqlCdc.Events
             byte[] columnTypes,
             int[] columnMetadata,
             bool[] nullBitmap,
-            TableMetadata tableMetadata) : base(header)
+            TableMetadata? tableMetadata) : base(header)
         {
             TableId = tableId;
             DatabaseName = databaseName;

@@ -10,17 +10,11 @@ namespace MySqlCdc.Tests.Providers
         private const string ServerUuid2 = "24bc7850-2c16-11e6-a073-0242ac110002";
 
         [Fact]
-        public void Test_ParseNullString_ThrowsArgumentNullException()
-        {
-            Assert.Throws<ArgumentNullException>(() => GtidSet.Parse(null).ToString());
-        }
-
-        [Fact]
         public void Test_ParseEmptyString_ReturnsEmptyGtidSet()
         {
             var gtidSet = GtidSet.Parse("");
 
-            Assert.Equal(0, gtidSet.UuidSets.Values.Count);
+            Assert.Empty(gtidSet.UuidSets.Values);
             Assert.Equal("", gtidSet.ToString());
         }
 
@@ -65,7 +59,7 @@ namespace MySqlCdc.Tests.Providers
             var gtidSet = GtidSet.Parse($"{ServerUuid1}:1-191");
             var uuidSet = gtidSet.UuidSets[Uuid.Parse(ServerUuid1)];
 
-            Assert.Equal(1, uuidSet.Intervals.Count);
+            Assert.Single(uuidSet.Intervals);
             Assert.Equal(new Interval(1, 191), uuidSet.Intervals[0]);
             Assert.Equal($"{ServerUuid1}:1-191", gtidSet.ToString());
         }
@@ -76,7 +70,7 @@ namespace MySqlCdc.Tests.Providers
             var gtidSet = GtidSet.Parse($"{ServerUuid1}:1-191:192-199");
             var uuidSet = gtidSet.UuidSets[Uuid.Parse(ServerUuid1)];
 
-            Assert.Equal(1, uuidSet.Intervals.Count);
+            Assert.Single(uuidSet.Intervals);
             Assert.Equal(new Interval(1, 199), uuidSet.Intervals[0]);
             Assert.Equal($"{ServerUuid1}:1-199", gtidSet.ToString());
         }

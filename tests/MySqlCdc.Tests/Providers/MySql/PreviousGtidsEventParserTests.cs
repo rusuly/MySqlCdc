@@ -19,11 +19,19 @@ namespace MySqlCdc.Tests.Providers
         [Fact]
         public void Test_ParsePreviousGtidsEvent_ReturnsGtidSet()
         {
+            var eventHeader = CreateEventHeader();
+            
             var reader = new PacketReader(Payload);
             var parser = new PreviousGtidsEventParser();
-            var @event = (PreviousGtidsEvent)parser.ParseEvent(null, ref reader);
+            var @event = (PreviousGtidsEvent)parser.ParseEvent(eventHeader, ref reader);
 
             Assert.Equal(GtidSet, @event.GtidSet.ToString());
+        }
+
+        private EventHeader CreateEventHeader()
+        {
+            var reader = new PacketReader(Payload);
+            return new EventHeader(ref reader);
         }
     }
 }

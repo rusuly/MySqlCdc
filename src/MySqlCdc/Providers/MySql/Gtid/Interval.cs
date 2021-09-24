@@ -29,7 +29,7 @@ namespace MySqlCdc.Providers.MySql
         /// <summary>
         /// Compares two values for equality
         /// </summary>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (this == obj)
                 return true;

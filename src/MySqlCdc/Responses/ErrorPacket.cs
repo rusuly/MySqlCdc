@@ -10,8 +10,8 @@ namespace MySqlCdc.Packets
     internal class ErrorPacket : IPacket
     {
         public int ErrorCode { get; }
-        public string SqlState { get; }
         public string ErrorMessage { get; }
+        public string? SqlState { get; }
 
         public ErrorPacket(ReadOnlySequence<byte> buffer)
         {
@@ -23,8 +23,8 @@ namespace MySqlCdc.Packets
             var message = reader.ReadStringToEndOfFile();
             if (message.StartsWith("#"))
             {
-                SqlState = message.Substring(1, 5);
                 ErrorMessage = message.Substring(6);
+                SqlState = message.Substring(1, 5);
             }
             else
             {

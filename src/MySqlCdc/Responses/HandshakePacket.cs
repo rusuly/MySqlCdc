@@ -1,3 +1,4 @@
+using System;
 using System.Buffers;
 using System.Linq;
 using MySqlCdc.Constants;
@@ -20,7 +21,7 @@ namespace MySqlCdc.Packets
         public int StatusFlags { get; }
         public string Filler { get; }
         public byte AuthPluginLength { get; }
-        public string AuthPluginName { get; }
+        public string AuthPluginName { get; } = String.Empty;
 
         public HandshakePacket(ReadOnlySequence<byte> buffer)
         {

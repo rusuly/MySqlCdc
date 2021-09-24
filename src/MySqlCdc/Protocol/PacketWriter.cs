@@ -68,9 +68,6 @@ namespace MySqlCdc.Protocol
         /// </summary>
         public void WriteString(string value)
         {
-            if (value == null)
-                return;
-
             WriteByteArray(Encoding.UTF8.GetBytes(value));
         }
 

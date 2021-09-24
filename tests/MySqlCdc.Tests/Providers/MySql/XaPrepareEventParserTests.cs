@@ -12,14 +12,22 @@ namespace MySqlCdc.Tests.Providers
         [Fact]
         public void Test_ParseXaPrepareEvent_ReturnsEvent()
         {
+            var eventHeader = CreateEventHeader();
+            
             var reader = new PacketReader(Payload);
             var parser = new XaPrepareEventParser();
-            var @event = (XaPrepareEvent)parser.ParseEvent(null, ref reader);
+            var @event = (XaPrepareEvent)parser.ParseEvent(eventHeader, ref reader);
 
             Assert.False(@event.OnePhase);
             Assert.Equal(123, @event.FormatId);
             Assert.Equal("gtrid", @event.Gtrid);
             Assert.Equal("bqual", @event.Bqual);
+        }
+        
+        private EventHeader CreateEventHeader()
+        {
+            var reader = new PacketReader(Payload);
+            return new EventHeader(ref reader);
         }
     }
 }

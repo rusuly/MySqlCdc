@@ -34,7 +34,7 @@ namespace MySqlCdc.Parsers
 
             var nullBitmap = reader.ReadBitmapLittleEndian(columnsNumber);
 
-            TableMetadata tableMetadata = null;
+            TableMetadata? tableMetadata = null;
             if (!reader.IsEmpty())
             {
                 // Table metadata is supported in MySQL 5.6+ and MariaDB 10.5+.

@@ -15,11 +15,11 @@ namespace MySqlCdc.Providers
         public async Task DumpBinlogAsync(DatabaseConnection channel, ConnectionOptions options, CancellationToken cancellationToken = default)
         {
             long serverId = options.Blocking ? options.ServerId : 0;
-            ICommand command = null;
-
+            
+            ICommand command;
             if (options.Binlog.StartingStrategy == StartingStrategy.FromGtid)
             {
-                var gtidSet = (GtidSet)options.Binlog.GtidState;
+                var gtidSet = (GtidSet)options.Binlog.GtidState!;
                 command = new DumpBinlogGtidCommand(serverId, options.Binlog.Filename, options.Binlog.Position, gtidSet);
             }
             else

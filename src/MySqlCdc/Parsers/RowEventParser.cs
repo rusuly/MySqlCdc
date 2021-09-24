@@ -53,7 +53,7 @@ namespace MySqlCdc.Parsers
         /// </summary>
         protected ColumnData ParseRow(ref PacketReader reader, TableMapEvent tableMap, bool[] columnsPresent, int cellsIncluded)
         {
-            var row = new object[tableMap.ColumnTypes.Length];
+            var row = new object?[tableMap.ColumnTypes.Length];
             var nullBitmap = reader.ReadBitmapLittleEndian(cellsIncluded);
 
             for (int i = 0, skippedColumns = 0; i < tableMap.ColumnTypes.Length; i++)
@@ -81,7 +81,7 @@ namespace MySqlCdc.Parsers
             return new ColumnData(row);
         }
 
-        private object ParseCell(ref PacketReader reader, int columnType, int metadata)
+        private object? ParseCell(ref PacketReader reader, int columnType, int metadata)
         {
             return (ColumnType)columnType switch
             {
@@ -146,11 +146,13 @@ namespace MySqlCdc.Parsers
             return value;
         }
 
+        /// <summary>
+        /// Parses actual string type
+        /// See: https://bugs.mysql.com/bug.php?id=37426
+        /// See: https://github.com/mysql/mysql-server/blob/9c3a49ec84b521cb0b35383f119099b2eb25d4ff/sql/log_event.cc#L1988
+        /// </summary>
         public static void GetActualStringType(ref int columnType, ref int metadata)
         {
-            // See: https://bugs.mysql.com/bug.php?id=37426
-            // See: https://github.com/mysql/mysql-server/blob/9c3a49ec84b521cb0b35383f119099b2eb25d4ff/sql/log_event.cc#L1988
-
             // CHAR column type
             if (metadata < 256)
                 return;

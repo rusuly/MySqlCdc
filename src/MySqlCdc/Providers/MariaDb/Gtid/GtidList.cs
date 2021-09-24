@@ -20,9 +20,6 @@ namespace MySqlCdc.Providers.MariaDb
         /// </summary>
         public static GtidList Parse(string gtidList)
         {
-            if (gtidList == null)
-                throw new ArgumentNullException(nameof(gtidList));
-
             if (gtidList == "")
                 return new GtidList();
 
