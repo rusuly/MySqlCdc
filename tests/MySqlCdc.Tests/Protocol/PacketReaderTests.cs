@@ -216,7 +216,7 @@ namespace MySqlCdc.Tests.Protocol
             var payload = new byte[] { 123 };
             var reader = new PacketReader(payload);
 
-            Assert.Equal("", reader.ReadString(0));
+            Assert.Equal(string.Empty, reader.ReadString(0));
             Assert.Equal(0, reader.Consumed);
         }
 

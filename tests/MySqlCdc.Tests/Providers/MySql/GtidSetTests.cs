@@ -12,10 +12,10 @@ namespace MySqlCdc.Tests.Providers
         [Fact]
         public void Test_ParseEmptyString_ReturnsEmptyGtidSet()
         {
-            var gtidSet = GtidSet.Parse("");
+            var gtidSet = GtidSet.Parse(string.Empty);
 
             Assert.Empty(gtidSet.UuidSets.Values);
-            Assert.Equal("", gtidSet.ToString());
+            Assert.Equal(string.Empty, gtidSet.ToString());
         }
 
         [Fact]
@@ -45,7 +45,7 @@ namespace MySqlCdc.Tests.Providers
         [Fact]
         public void Test_RawGtidSets_EqualsCorrectly()
         {
-            Assert.Equal(GtidSet.Parse(""), GtidSet.Parse(""));
+            Assert.Equal(GtidSet.Parse(string.Empty), GtidSet.Parse(string.Empty));
             Assert.Equal(GtidSet.Parse($"{ServerUuid1}:1-191"), GtidSet.Parse($"{ServerUuid1}:1-191"));
             Assert.Equal(GtidSet.Parse($"{ServerUuid1}:1-191:192-199"), GtidSet.Parse($"{ServerUuid1}:1-191:192-199"));
             Assert.Equal(GtidSet.Parse($"{ServerUuid1}:1-191:192-199"), GtidSet.Parse($"{ServerUuid1}:1-199"));

@@ -21,10 +21,10 @@ namespace MySqlCdc.Providers.MySql
         /// </summary>
         public static GtidSet Parse(string gtidSet)
         {
-            if (gtidSet == "")
+            if (gtidSet == string.Empty)
                 return new GtidSet();
 
-            var uuidSets = gtidSet.Replace("\n", "")
+            var uuidSets = gtidSet.Replace("\n", string.Empty)
                 .Split(',')
                 .Select(x => x.Trim())
                 .ToArray();

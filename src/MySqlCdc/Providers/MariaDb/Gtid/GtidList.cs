@@ -20,10 +20,10 @@ namespace MySqlCdc.Providers.MariaDb
         /// </summary>
         public static GtidList Parse(string gtidList)
         {
-            if (gtidList == "")
+            if (gtidList == string.Empty)
                 return new GtidList();
 
-            var gtids = gtidList.Replace("\n", "")
+            var gtids = gtidList.Replace("\n", string.Empty)
                 .Split(',')
                 .Select(x => x.Trim())
                 .ToArray();

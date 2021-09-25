@@ -15,10 +15,10 @@ namespace MySqlCdc.Tests.Providers
         [Fact]
         public void Test_ParseEmptyString_ReturnsEmptyGtidList()
         {
-            var gtidList = GtidList.Parse("");
+            var gtidList = GtidList.Parse(string.Empty);
 
             Assert.Empty(gtidList.Gtids);
-            Assert.Equal("", gtidList.ToString());
+            Assert.Equal(string.Empty, gtidList.ToString());
         }
 
         [Fact]

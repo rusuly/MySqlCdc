@@ -151,12 +151,7 @@ namespace MySqlCdc
             ThrowIfErrorPacket(packet, "Requesting caching_sha2_password public key.");
 
             // Extract public key.
-            var publicKeyString = Encoding.UTF8.GetString(new ReadOnlySequence<byte>(packet, 1, packet.Length - 1).ToArray());
-            publicKeyString = publicKeyString
-                .Replace("-----BEGIN PUBLIC KEY-----", "")
-                .Replace("-----END PUBLIC KEY-----", "")
-                .Replace("\n", "");
-            byte[] publicKey = Convert.FromBase64String(publicKeyString);
+            var publicKey = Encoding.UTF8.GetString(new ReadOnlySequence<byte>(packet, 1, packet.Length - 1).ToArray());
 
             // Password must be null terminated. Not documented in MariaDB.
             var password = Encoding.UTF8.GetBytes(_options.Password += '\0');
@@ -164,7 +159,7 @@ namespace MySqlCdc
 
             using (var rsa = RSA.Create())
             {
-                rsa.ImportSubjectPublicKeyInfo(publicKey, out _);
+                rsa.ImportFromPem(publicKey);
                 var encryptedBody = rsa.Encrypt(encryptedPassword, RSAEncryptionPadding.OaepSHA1);
 
                 writer = new PacketWriter(sequenceNumber);

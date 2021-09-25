@@ -38,7 +38,7 @@ namespace MySqlCdc.Providers.MySql
         /// </summary>
         public static Uuid Parse(string value)
         {
-            var hex = value.Replace("-", "");
+            var hex = value.Replace("-", string.Empty);
             var data = Enumerable.Range(0, hex.Length)
                 .Where(x => x % 2 == 0)
                 .Select(x => Convert.ToByte(hex.Substring(x, 2), 16))
