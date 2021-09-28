@@ -1,63 +1,62 @@
 using MySqlCdc.Protocol;
 using MySqlCdc.Providers.MySql;
 
-namespace MySqlCdc.Commands
+namespace MySqlCdc.Commands;
+
+/// <summary>
+/// Requests binlog event stream by GtidSet.
+/// <a href="https://dev.mysql.com/doc/internals/en/com-binlog-dump-gtid.html">See more</a>
+/// </summary>
+internal class DumpBinlogGtidCommand : ICommand
 {
-    /// <summary>
-    /// Requests binlog event stream by GtidSet.
-    /// <a href="https://dev.mysql.com/doc/internals/en/com-binlog-dump-gtid.html">See more</a>
-    /// </summary>
-    internal class DumpBinlogGtidCommand : ICommand
+    public long ServerId { get; }
+    public string BinlogFilename { get; }
+    public long BinlogPosition { get; }
+    public GtidSet GtidSet { get; }
+    public int Flags { get; }
+
+    public DumpBinlogGtidCommand(long serverId, string binlogFilename, long binlogPosition, GtidSet gtidSet, int flags = 0)
     {
-        public long ServerId { get; }
-        public string BinlogFilename { get; }
-        public long BinlogPosition { get; }
-        public GtidSet GtidSet { get; }
-        public int Flags { get; }
+        ServerId = serverId;
+        BinlogFilename = binlogFilename;
+        BinlogPosition = binlogPosition;
+        GtidSet = gtidSet;
+        Flags = flags;
+    }
 
-        public DumpBinlogGtidCommand(long serverId, string binlogFilename, long binlogPosition, GtidSet gtidSet, int flags = 0)
+    public byte[] CreatePacket(byte sequenceNumber)
+    {
+        var writer = new PacketWriter(sequenceNumber);
+
+        writer.WriteByte((byte)CommandType.BINLOG_DUMP_GTID);
+        writer.WriteIntLittleEndian(Flags, 2);
+        writer.WriteLongLittleEndian(ServerId, 4);
+
+        writer.WriteIntLittleEndian(BinlogFilename.Length, 4);
+        writer.WriteString(BinlogFilename);
+        writer.WriteLongLittleEndian(BinlogPosition, 8);
+
+        int dataLength = 8; /* Number of UuidSets */
+        foreach (var uuidSet in GtidSet.UuidSets.Values)
         {
-            ServerId = serverId;
-            BinlogFilename = binlogFilename;
-            BinlogPosition = binlogPosition;
-            GtidSet = gtidSet;
-            Flags = flags;
+            dataLength += 16;   /* SourceId */
+            dataLength += 8;    /* Number of intervals */
+            dataLength += uuidSet.Intervals.Count * (8 + 8) /* Start-End */;
         }
 
-        public byte[] CreatePacket(byte sequenceNumber)
+        writer.WriteIntLittleEndian(dataLength, 4);
+        writer.WriteLongLittleEndian(GtidSet.UuidSets.Count, 8);
+
+        foreach (var uuidSet in GtidSet.UuidSets.Values)
         {
-            var writer = new PacketWriter(sequenceNumber);
-
-            writer.WriteByte((byte)CommandType.BINLOG_DUMP_GTID);
-            writer.WriteIntLittleEndian(Flags, 2);
-            writer.WriteLongLittleEndian(ServerId, 4);
-
-            writer.WriteIntLittleEndian(BinlogFilename.Length, 4);
-            writer.WriteString(BinlogFilename);
-            writer.WriteLongLittleEndian(BinlogPosition, 8);
-
-            int dataLength = 8; /* Number of UuidSets */
-            foreach (var uuidSet in GtidSet.UuidSets.Values)
+            writer.WriteByteArray(uuidSet.SourceId.ToByteArray());
+            writer.WriteLongLittleEndian(uuidSet.Intervals.Count, 8);
+            foreach (var interval in uuidSet.Intervals)
             {
-                dataLength += 16;   /* SourceId */
-                dataLength += 8;    /* Number of intervals */
-                dataLength += uuidSet.Intervals.Count * (8 + 8) /* Start-End */;
+                writer.WriteLongLittleEndian(interval.Start, 8);
+                writer.WriteLongLittleEndian(interval.End + 1, 8);
             }
-
-            writer.WriteIntLittleEndian(dataLength, 4);
-            writer.WriteLongLittleEndian(GtidSet.UuidSets.Count, 8);
-
-            foreach (var uuidSet in GtidSet.UuidSets.Values)
-            {
-                writer.WriteByteArray(uuidSet.SourceId.ToByteArray());
-                writer.WriteLongLittleEndian(uuidSet.Intervals.Count, 8);
-                foreach (var interval in uuidSet.Intervals)
-                {
-                    writer.WriteLongLittleEndian(interval.Start, 8);
-                    writer.WriteLongLittleEndian(interval.End + 1, 8);
-                }
-            }
-            return writer.CreatePacket();
         }
+        return writer.CreatePacket();
     }
 }

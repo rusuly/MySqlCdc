@@ -1,9 +1,8 @@
-namespace MySqlCdc.Protocol
+namespace MySqlCdc.Protocol;
+
+/// <summary>
+/// Base interface for all received packets.
+/// </summary>
+public interface IPacket
 {
-    /// <summary>
-    /// Base interface for all received packets.
-    /// </summary>
-    public interface IPacket
-    {
-    }
 }

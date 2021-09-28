@@ -1,35 +1,34 @@
 using MySqlCdc.Protocol;
 
-namespace MySqlCdc.Commands
+namespace MySqlCdc.Commands;
+
+/// <summary>
+/// Requests binlog event stream.
+/// <a href="https://mariadb.com/kb/en/library/com_binlog_dump/">See more</a>
+/// </summary>
+internal class DumpBinlogCommand : ICommand
 {
-    /// <summary>
-    /// Requests binlog event stream.
-    /// <a href="https://mariadb.com/kb/en/library/com_binlog_dump/">See more</a>
-    /// </summary>
-    internal class DumpBinlogCommand : ICommand
+    public long ServerId { get; }
+    public string BinlogFilename { get; }
+    public long BinlogPosition { get; }
+    public int Flags { get; }
+
+    public DumpBinlogCommand(long serverId, string binlogFilename, long binlogPosition, int flags = 0)
     {
-        public long ServerId { get; }
-        public string BinlogFilename { get; }
-        public long BinlogPosition { get; }
-        public int Flags { get; }
+        ServerId = serverId;
+        BinlogFilename = binlogFilename;
+        BinlogPosition = binlogPosition;
+        Flags = flags;
+    }
 
-        public DumpBinlogCommand(long serverId, string binlogFilename, long binlogPosition, int flags = 0)
-        {
-            ServerId = serverId;
-            BinlogFilename = binlogFilename;
-            BinlogPosition = binlogPosition;
-            Flags = flags;
-        }
-
-        public byte[] CreatePacket(byte sequenceNumber)
-        {
-            var writer = new PacketWriter(sequenceNumber);
-            writer.WriteByte((byte)CommandType.BINLOG_DUMP);
-            writer.WriteLongLittleEndian(BinlogPosition, 4);
-            writer.WriteIntLittleEndian(Flags, 2);
-            writer.WriteLongLittleEndian(ServerId, 4);
-            writer.WriteString(BinlogFilename);
-            return writer.CreatePacket();
-        }
+    public byte[] CreatePacket(byte sequenceNumber)
+    {
+        var writer = new PacketWriter(sequenceNumber);
+        writer.WriteByte((byte)CommandType.BINLOG_DUMP);
+        writer.WriteLongLittleEndian(BinlogPosition, 4);
+        writer.WriteIntLittleEndian(Flags, 2);
+        writer.WriteLongLittleEndian(ServerId, 4);
+        writer.WriteString(BinlogFilename);
+        return writer.CreatePacket();
     }
 }

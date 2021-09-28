@@ -2,171 +2,170 @@ using System;
 using System.Text.Json;
 using MySqlCdc.Constants;
 
-namespace MySqlCdc.Providers.MySql
+namespace MySqlCdc.Providers.MySql;
+
+internal class JsonTypeWriter : IJsonWriter
 {
-    internal class JsonTypeWriter : IJsonWriter
+    private readonly Utf8JsonWriter _writer;
+    private string? _propertyName;
+
+    public JsonTypeWriter(Utf8JsonWriter writer)
     {
-        private readonly Utf8JsonWriter _writer;
-        private string? _propertyName;
+        _writer = writer;
+    }
 
-        public JsonTypeWriter(Utf8JsonWriter writer)
-        {
-            _writer = writer;
-        }
+    public void WriteKey(string name)
+    {
+        _propertyName = name;
+    }
 
-        public void WriteKey(string name)
+    public void WriteStartObject()
+    {
+        if (_propertyName != null)
         {
-            _propertyName = name;
+            _writer.WriteStartObject(_propertyName);
+            _propertyName = null;
         }
+        else _writer.WriteStartObject();
+    }
 
-        public void WriteStartObject()
+    public void WriteStartArray()
+    {
+        if (_propertyName != null)
         {
-            if (_propertyName != null)
-            {
-                _writer.WriteStartObject(_propertyName);
-                _propertyName = null;
-            }
-            else _writer.WriteStartObject();
+            _writer.WriteStartArray(_propertyName);
+            _propertyName = null;
         }
+        else _writer.WriteStartArray();
+    }
 
-        public void WriteStartArray()
-        {
-            if (_propertyName != null)
-            {
-                _writer.WriteStartArray(_propertyName);
-                _propertyName = null;
-            }
-            else _writer.WriteStartArray();
-        }
+    public void WriteEndObject()
+    {
+        _writer.WriteEndObject();
+    }
 
-        public void WriteEndObject()
-        {
-            _writer.WriteEndObject();
-        }
+    public void WriteEndArray()
+    {
+        _writer.WriteEndArray();
+    }
 
-        public void WriteEndArray()
+    public void WriteValue(short value)
+    {
+        if (_propertyName != null)
         {
-            _writer.WriteEndArray();
+            _writer.WriteString(_propertyName, "Int16");
+            _propertyName = null;
         }
+        else _writer.WriteStringValue("Int16");
+    }
 
-        public void WriteValue(short value)
+    public void WriteValue(ushort value)
+    {
+        if (_propertyName != null)
         {
-            if (_propertyName != null)
-            {
-                _writer.WriteString(_propertyName, "Int16");
-                _propertyName = null;
-            }
-            else _writer.WriteStringValue("Int16");
+            _writer.WriteString(_propertyName, "UInt16");
+            _propertyName = null;
         }
+        else _writer.WriteStringValue("UInt16");
+    }
 
-        public void WriteValue(ushort value)
+    public void WriteValue(int value)
+    {
+        if (_propertyName != null)
         {
-            if (_propertyName != null)
-            {
-                _writer.WriteString(_propertyName, "UInt16");
-                _propertyName = null;
-            }
-            else _writer.WriteStringValue("UInt16");
+            _writer.WriteString(_propertyName, "Int32");
+            _propertyName = null;
         }
+        else _writer.WriteStringValue("Int32");
+    }
 
-        public void WriteValue(int value)
+    public void WriteValue(uint value)
+    {
+        if (_propertyName != null)
         {
-            if (_propertyName != null)
-            {
-                _writer.WriteString(_propertyName, "Int32");
-                _propertyName = null;
-            }
-            else _writer.WriteStringValue("Int32");
+            _writer.WriteString(_propertyName, "UInt32");
+            _propertyName = null;
         }
+        else _writer.WriteStringValue("UInt32");
+    }
 
-        public void WriteValue(uint value)
+    public void WriteValue(long value)
+    {
+        if (_propertyName != null)
         {
-            if (_propertyName != null)
-            {
-                _writer.WriteString(_propertyName, "UInt32");
-                _propertyName = null;
-            }
-            else _writer.WriteStringValue("UInt32");
+            _writer.WriteString(_propertyName, "Int64");
+            _propertyName = null;
         }
+        else _writer.WriteStringValue("Int64");
+    }
 
-        public void WriteValue(long value)
+    public void WriteValue(ulong value)
+    {
+        if (_propertyName != null)
         {
-            if (_propertyName != null)
-            {
-                _writer.WriteString(_propertyName, "Int64");
-                _propertyName = null;
-            }
-            else _writer.WriteStringValue("Int64");
+            _writer.WriteString(_propertyName, "UInt64");
+            _propertyName = null;
         }
+        else _writer.WriteStringValue("UInt64");
+    }
 
-        public void WriteValue(ulong value)
+    public void WriteValue(double value)
+    {
+        if (_propertyName != null)
         {
-            if (_propertyName != null)
-            {
-                _writer.WriteString(_propertyName, "UInt64");
-                _propertyName = null;
-            }
-            else _writer.WriteStringValue("UInt64");
+            _writer.WriteString(_propertyName, "double");
+            _propertyName = null;
         }
+        else _writer.WriteStringValue("double");
+    }
 
-        public void WriteValue(double value)
+    public void WriteValue(string value)
+    {
+        if (_propertyName != null)
         {
-            if (_propertyName != null)
-            {
-                _writer.WriteString(_propertyName, "double");
-                _propertyName = null;
-            }
-            else _writer.WriteStringValue("double");
+            _writer.WriteString(_propertyName, "string");
+            _propertyName = null;
         }
+        else _writer.WriteStringValue("string");
+    }
 
-        public void WriteValue(string value)
+    public void WriteValue(bool value)
+    {
+        if (_propertyName != null)
         {
-            if (_propertyName != null)
-            {
-                _writer.WriteString(_propertyName, "string");
-                _propertyName = null;
-            }
-            else _writer.WriteStringValue("string");
+            _writer.WriteString(_propertyName, "bool");
+            _propertyName = null;
         }
+        else _writer.WriteStringValue("bool");
+    }
 
-        public void WriteValue(bool value)
+    public void WriteNull()
+    {
+        if (_propertyName != null)
         {
-            if (_propertyName != null)
-            {
-                _writer.WriteString(_propertyName, "bool");
-                _propertyName = null;
-            }
-            else _writer.WriteStringValue("bool");
+            _writer.WriteString(_propertyName, "null");
+            _propertyName = null;
         }
+        else _writer.WriteStringValue("null");
+    }
 
-        public void WriteNull()
-        {
-            if (_propertyName != null)
-            {
-                _writer.WriteString(_propertyName, "null");
-                _propertyName = null;
-            }
-            else _writer.WriteStringValue("null");
-        }
+    public void WriteDate(DateTime value)
+    {
+        throw new NotImplementedException();
+    }
 
-        public void WriteDate(DateTime value)
-        {
-            throw new NotImplementedException();
-        }
+    public void WriteTime(TimeSpan value)
+    {
+        throw new NotImplementedException();
+    }
 
-        public void WriteTime(TimeSpan value)
-        {
-            throw new NotImplementedException();
-        }
+    public void WriteDateTime(DateTime value)
+    {
+        throw new NotImplementedException();
+    }
 
-        public void WriteDateTime(DateTime value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void WriteOpaque(ColumnType columnType, byte[] value)
-        {
-            throw new NotImplementedException();
-        }
+    public void WriteOpaque(ColumnType columnType, byte[] value)
+    {
+        throw new NotImplementedException();
     }
 }

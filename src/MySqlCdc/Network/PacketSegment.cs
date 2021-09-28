@@ -1,23 +1,22 @@
 using System;
 using System.Buffers;
 
-namespace MySqlCdc.Network
-{
-    internal class PacketSegment : ReadOnlySequenceSegment<byte>
-    {
-        public PacketSegment(ReadOnlyMemory<byte> memory)
-        {
-            Memory = memory;
-        }
+namespace MySqlCdc.Network;
 
-        public PacketSegment Add(ReadOnlyMemory<byte> memory)
+internal class PacketSegment : ReadOnlySequenceSegment<byte>
+{
+    public PacketSegment(ReadOnlyMemory<byte> memory)
+    {
+        Memory = memory;
+    }
+
+    public PacketSegment Add(ReadOnlyMemory<byte> memory)
+    {
+        var segment = new PacketSegment(memory)
         {
-            var segment = new PacketSegment(memory)
-            {
-                RunningIndex = this.RunningIndex + this.Memory.Length
-            };
-            Next = segment;
-            return segment;
-        }
+            RunningIndex = this.RunningIndex + this.Memory.Length
+        };
+        Next = segment;
+        return segment;
     }
 }

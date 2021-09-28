@@ -3,12 +3,11 @@ using System.Threading.Tasks;
 using MySqlCdc.Events;
 using MySqlCdc.Network;
 
-namespace MySqlCdc.Providers
-{
-    internal interface IDatabaseProvider
-    {
-        Task DumpBinlogAsync(DatabaseConnection channel, ConnectionOptions options, CancellationToken cancellationToken = default);
+namespace MySqlCdc.Providers;
 
-        EventDeserializer Deserializer { get; }
-    }
+internal interface IDatabaseProvider
+{
+    Task DumpBinlogAsync(DatabaseConnection channel, ConnectionOptions options, CancellationToken cancellationToken = default);
+
+    EventDeserializer Deserializer { get; }
 }

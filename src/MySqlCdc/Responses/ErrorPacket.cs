@@ -1,40 +1,39 @@
 using System.Buffers;
 using MySqlCdc.Protocol;
 
-namespace MySqlCdc.Packets
+namespace MySqlCdc.Packets;
+
+/// <summary>
+/// ERR_Packet indicates that an error occured.
+/// <a href="https://mariadb.com/kb/en/library/err_packet/">See more</a>
+/// </summary>
+internal class ErrorPacket : IPacket
 {
-    /// <summary>
-    /// ERR_Packet indicates that an error occured.
-    /// <a href="https://mariadb.com/kb/en/library/err_packet/">See more</a>
-    /// </summary>
-    internal class ErrorPacket : IPacket
+    public int ErrorCode { get; }
+    public string ErrorMessage { get; }
+    public string? SqlState { get; }
+
+    public ErrorPacket(ReadOnlySequence<byte> buffer)
     {
-        public int ErrorCode { get; }
-        public string ErrorMessage { get; }
-        public string? SqlState { get; }
+        using var memoryOwner = new MemoryOwner(buffer);
+        var reader = new PacketReader(memoryOwner.Memory.Span);
 
-        public ErrorPacket(ReadOnlySequence<byte> buffer)
+        ErrorCode = reader.ReadUInt16LittleEndian();
+
+        var message = reader.ReadStringToEndOfFile();
+        if (message.StartsWith("#"))
         {
-            using var memoryOwner = new MemoryOwner(buffer);
-            var reader = new PacketReader(memoryOwner.Memory.Span);
-
-            ErrorCode = reader.ReadUInt16LittleEndian();
-
-            var message = reader.ReadStringToEndOfFile();
-            if (message.StartsWith("#"))
-            {
-                ErrorMessage = message.Substring(6);
-                SqlState = message.Substring(1, 5);
-            }
-            else
-            {
-                ErrorMessage = message;
-            }
+            ErrorMessage = message.Substring(6);
+            SqlState = message.Substring(1, 5);
         }
-
-        public override string ToString()
+        else
         {
-            return $"ErrorCode: {ErrorCode}, ErrorMessage: {ErrorMessage}, SqlState:{SqlState}";
+            ErrorMessage = message;
         }
+    }
+
+    public override string ToString()
+    {
+        return $"ErrorCode: {ErrorCode}, ErrorMessage: {ErrorMessage}, SqlState:{SqlState}";
     }
 }

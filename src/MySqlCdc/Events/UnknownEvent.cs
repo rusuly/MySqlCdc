@@ -1,15 +1,14 @@
-namespace MySqlCdc.Events
+namespace MySqlCdc.Events;
+
+/// <summary>
+/// Represents other binlog events.
+/// </summary>
+public class UnknownEvent : BinlogEvent
 {
     /// <summary>
-    /// Represents other binlog events.
+    /// Creates a new <see cref="UnknownEvent"/>.
     /// </summary>
-    public class UnknownEvent : BinlogEvent
+    public UnknownEvent(EventHeader header) : base(header)
     {
-        /// <summary>
-        /// Creates a new <see cref="UnknownEvent"/>.
-        /// </summary>
-        public UnknownEvent(EventHeader header) : base(header)
-        {
-        }
     }
 }

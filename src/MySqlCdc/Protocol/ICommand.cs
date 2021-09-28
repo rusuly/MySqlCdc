@@ -1,13 +1,12 @@
-namespace MySqlCdc.Protocol
+namespace MySqlCdc.Protocol;
+
+/// <summary>
+/// Represents MySql command that the client sends to the server.
+/// </summary>
+internal interface ICommand
 {
     /// <summary>
-    /// Represents MySql command that the client sends to the server.
+    /// Serializes client command to MySql packet.
     /// </summary>
-    internal interface ICommand
-    {
-        /// <summary>
-        /// Serializes client command to MySql packet.
-        /// </summary>
-        byte[] CreatePacket(byte sequenceNumber);
-    }
+    byte[] CreatePacket(byte sequenceNumber);
 }

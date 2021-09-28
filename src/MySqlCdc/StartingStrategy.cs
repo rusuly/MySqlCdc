@@ -1,10 +1,9 @@
-namespace MySqlCdc
+namespace MySqlCdc;
+
+internal enum StartingStrategy
 {
-    internal enum StartingStrategy
-    {
-        FromStart,
-        FromEnd,
-        FromPosition,
-        FromGtid
-    }
+    FromStart,
+    FromEnd,
+    FromPosition,
+    FromGtid
 }

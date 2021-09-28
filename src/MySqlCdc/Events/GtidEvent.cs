@@ -1,44 +1,43 @@
-namespace MySqlCdc.Events
+namespace MySqlCdc.Events;
+
+/// <summary>
+/// Represents a Global Transaction Identifier.
+/// </summary>
+public interface IGtid { }
+
+/// <summary>
+/// Represents replication Gtid position.
+/// </summary>
+public interface IGtidState
 {
     /// <summary>
-    /// Represents a Global Transaction Identifier.
+    /// Adds a gtid value to the state.
     /// </summary>
-    public interface IGtid { }
+    bool AddGtid(IGtid gtid);
+}
+
+/// <summary>
+/// Marks start of a new event group(transaction).
+/// <a href="https://mariadb.com/kb/en/gtid_event/">See more</a>
+/// </summary>
+public class GtidEvent : BinlogEvent
+{
+    /// <summary>
+    /// Gets Global Transaction ID of the event group.
+    /// </summary>
+    public IGtid Gtid { get; }
 
     /// <summary>
-    /// Represents replication Gtid position.
+    /// Gets flags.
     /// </summary>
-    public interface IGtidState
-    {
-        /// <summary>
-        /// Adds a gtid value to the state.
-        /// </summary>
-        bool AddGtid(IGtid gtid);
-    }
+    public byte Flags { get; }
 
     /// <summary>
-    /// Marks start of a new event group(transaction).
-    /// <a href="https://mariadb.com/kb/en/gtid_event/">See more</a>
+    /// Creates a new <see cref="GtidEvent"/>.
     /// </summary>
-    public class GtidEvent : BinlogEvent
+    public GtidEvent(EventHeader header, IGtid gtid, byte flags) : base(header)
     {
-        /// <summary>
-        /// Gets Global Transaction ID of the event group.
-        /// </summary>
-        public IGtid Gtid { get; }
-
-        /// <summary>
-        /// Gets flags.
-        /// </summary>
-        public byte Flags { get; }
-
-        /// <summary>
-        /// Creates a new <see cref="GtidEvent"/>.
-        /// </summary>
-        public GtidEvent(EventHeader header, IGtid gtid, byte flags) : base(header)
-        {
-            Gtid = gtid;
-            Flags = flags;
-        }
+        Gtid = gtid;
+        Flags = flags;
     }
 }

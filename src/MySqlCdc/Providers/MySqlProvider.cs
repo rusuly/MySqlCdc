@@ -6,28 +6,27 @@ using MySqlCdc.Network;
 using MySqlCdc.Protocol;
 using MySqlCdc.Providers.MySql;
 
-namespace MySqlCdc.Providers
+namespace MySqlCdc.Providers;
+
+internal class MySqlProvider : IDatabaseProvider
 {
-    internal class MySqlProvider : IDatabaseProvider
+    public EventDeserializer Deserializer { get; } = new MySqlEventDeserializer();
+
+    public async Task DumpBinlogAsync(DatabaseConnection channel, ConnectionOptions options, CancellationToken cancellationToken = default)
     {
-        public EventDeserializer Deserializer { get; } = new MySqlEventDeserializer();
-
-        public async Task DumpBinlogAsync(DatabaseConnection channel, ConnectionOptions options, CancellationToken cancellationToken = default)
-        {
-            long serverId = options.Blocking ? options.ServerId : 0;
+        long serverId = options.Blocking ? options.ServerId : 0;
             
-            ICommand command;
-            if (options.Binlog.StartingStrategy == StartingStrategy.FromGtid)
-            {
-                var gtidSet = (GtidSet)options.Binlog.GtidState!;
-                command = new DumpBinlogGtidCommand(serverId, options.Binlog.Filename, options.Binlog.Position, gtidSet);
-            }
-            else
-            {
-                command = new DumpBinlogCommand(serverId, options.Binlog.Filename, options.Binlog.Position);
-            }
-
-            await channel.WriteCommandAsync(command, 0, cancellationToken);
+        ICommand command;
+        if (options.Binlog.StartingStrategy == StartingStrategy.FromGtid)
+        {
+            var gtidSet = (GtidSet)options.Binlog.GtidState!;
+            command = new DumpBinlogGtidCommand(serverId, options.Binlog.Filename, options.Binlog.Position, gtidSet);
         }
+        else
+        {
+            command = new DumpBinlogCommand(serverId, options.Binlog.Filename, options.Binlog.Position);
+        }
+
+        await channel.WriteCommandAsync(command, 0, cancellationToken);
     }
 }
