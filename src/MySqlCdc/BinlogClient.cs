@@ -112,8 +112,8 @@ public class BinlogClient
         if (!_allowedAuthPlugins.Contains(authSwitchRequest.AuthPluginName))
             throw new InvalidOperationException($"Authentication plugin {authSwitchRequest.AuthPluginName} is not supported.");
 
-        var switchCommand = new AuthPluginSwitchCommand(_options.Password, authSwitchRequest.AuthPluginData, authSwitchRequest.AuthPluginName);
-        await _channel.WriteCommandAsync(switchCommand, sequenceNumber, cancellationToken);
+        var authSwitchCommand = new AuthPluginSwitchCommand(_options.Password, authSwitchRequest.AuthPluginData, authSwitchRequest.AuthPluginName);
+        await _channel.WriteCommandAsync(authSwitchCommand, sequenceNumber, cancellationToken);
         var packet = await _channel.ReadPacketSlowAsync(cancellationToken);
         sequenceNumber += 2;
         ThrowIfErrorPacket(packet, "Authentication switch error.");
