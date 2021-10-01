@@ -98,8 +98,8 @@ public class BinlogClient
         if (packet[0] == (byte)ResponseType.AuthPluginSwitch)
         {
             var body = new ReadOnlySequence<byte>(packet, 1, packet.Length - 1);
-            var switchRequest = new AuthPluginSwitchPacket(body);
-            await HandleAuthPluginSwitch(switchRequest, sequenceNumber, useSsl, cancellationToken);
+            var authSwitchRequest = new AuthPluginSwitchPacket(body);
+            await HandleAuthPluginSwitch(authSwitchRequest, sequenceNumber, useSsl, cancellationToken);
         }
         else
         {
@@ -107,20 +107,20 @@ public class BinlogClient
         }
     }
 
-    private async Task HandleAuthPluginSwitch(AuthPluginSwitchPacket switchRequest, byte sequenceNumber, bool useSsl, CancellationToken cancellationToken = default)
+    private async Task HandleAuthPluginSwitch(AuthPluginSwitchPacket authSwitchRequest, byte sequenceNumber, bool useSsl, CancellationToken cancellationToken = default)
     {
-        if (!_allowedAuthPlugins.Contains(switchRequest.AuthPluginName))
-            throw new InvalidOperationException($"Authentication plugin {switchRequest.AuthPluginName} is not supported.");
+        if (!_allowedAuthPlugins.Contains(authSwitchRequest.AuthPluginName))
+            throw new InvalidOperationException($"Authentication plugin {authSwitchRequest.AuthPluginName} is not supported.");
 
-        var switchCommand = new AuthPluginSwitchCommand(_options.Password, switchRequest.AuthPluginData, switchRequest.AuthPluginName);
+        var switchCommand = new AuthPluginSwitchCommand(_options.Password, authSwitchRequest.AuthPluginData, authSwitchRequest.AuthPluginName);
         await _channel.WriteCommandAsync(switchCommand, sequenceNumber, cancellationToken);
         var packet = await _channel.ReadPacketSlowAsync(cancellationToken);
         sequenceNumber += 2;
         ThrowIfErrorPacket(packet, "Authentication switch error.");
 
-        if (switchRequest.AuthPluginName == AuthPluginNames.CachingSha2Password)
+        if (authSwitchRequest.AuthPluginName == AuthPluginNames.CachingSha2Password)
         {
-            await AuthenticateSha256Async(packet, switchRequest.AuthPluginData, sequenceNumber, useSsl, cancellationToken);
+            await AuthenticateSha256Async(packet, authSwitchRequest.AuthPluginData, sequenceNumber, useSsl, cancellationToken);
         }
     }
 
