@@ -1,5 +1,4 @@
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
@@ -55,7 +54,7 @@ public class BinlogClient
 
         var packet = await _channel.ReadPacketSlowAsync(cancellationToken);
         ThrowIfErrorPacket(packet, "Initial handshake error.");
-        var handshake = new HandshakePacket(new ReadOnlySequence<byte>(packet));
+        var handshake = new HandshakePacket(packet);
 
         if (!_allowedAuthPlugins.Contains(handshake.AuthPluginName))
             throw new InvalidOperationException($"Authentication plugin {handshake.AuthPluginName} is not supported.");
@@ -97,8 +96,7 @@ public class BinlogClient
 
         if (packet[0] == (byte)ResponseType.AuthPluginSwitch)
         {
-            var body = new ReadOnlySequence<byte>(packet, 1, packet.Length - 1);
-            var authSwitchRequest = new AuthPluginSwitchPacket(body);
+            var authSwitchRequest = new AuthPluginSwitchPacket(packet[1..]);
             await HandleAuthPluginSwitch(authSwitchRequest, sequenceNumber, useSsl, cancellationToken);
         }
         else
@@ -151,7 +149,7 @@ public class BinlogClient
         ThrowIfErrorPacket(packet, "Requesting caching_sha2_password public key.");
 
         // Extract public key.
-        var publicKey = Encoding.UTF8.GetString(new ReadOnlySequence<byte>(packet, 1, packet.Length - 1).ToArray());
+        var publicKey = Encoding.UTF8.GetString(packet[1..]);
 
         // Password must be null terminated. Not documented in MariaDB.
         var password = Encoding.UTF8.GetBytes(_options.Password += '\0');
@@ -350,7 +348,7 @@ public class BinlogClient
             if (packet[0] == (byte)ResponseType.EndOfFile)
                 break;
 
-            resultSet.Add(new ResultSetRowPacket(new ReadOnlySequence<byte>(packet)));
+            resultSet.Add(new ResultSetRowPacket(packet));
         }
         return resultSet;
     }
@@ -359,8 +357,8 @@ public class BinlogClient
     {
         if (packet[0] == (byte)ResponseType.Error)
         {
-            var error = new ErrorPacket(new ReadOnlySequence<byte>(packet, 1, packet.Length - 1));
-            throw new InvalidOperationException($"{message} {error.ToString()}");
+            var error = new ErrorPacket(packet[1..]);
+            throw new InvalidOperationException($"{message} {error}");
         }
     }
 }

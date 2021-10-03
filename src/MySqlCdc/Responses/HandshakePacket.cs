@@ -1,5 +1,4 @@
 using System;
-using System.Buffers;
 using System.Linq;
 using MySqlCdc.Constants;
 using MySqlCdc.Protocol;
@@ -23,10 +22,9 @@ internal class HandshakePacket : IPacket
     public byte AuthPluginLength { get; }
     public string AuthPluginName { get; } = String.Empty;
 
-    public HandshakePacket(ReadOnlySequence<byte> buffer)
+    public HandshakePacket(ReadOnlySpan<byte> span)
     {
-        using var memoryOwner = new MemoryOwner(buffer);
-        var reader = new PacketReader(memoryOwner.Memory.Span);
+        var reader = new PacketReader(span);
 
         ProtocolVersion = reader.ReadByte();
         ServerVersion = reader.ReadNullTerminatedString();

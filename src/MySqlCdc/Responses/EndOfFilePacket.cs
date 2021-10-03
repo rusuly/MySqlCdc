@@ -1,4 +1,4 @@
-using System.Buffers;
+using System;
 using MySqlCdc.Protocol;
 
 namespace MySqlCdc.Packets;
@@ -12,10 +12,9 @@ internal class EndOfFilePacket : IPacket
     public int WarningCount { get; }
     public int ServerStatus { get; }
 
-    public EndOfFilePacket(ReadOnlySequence<byte> buffer)
+    public EndOfFilePacket(ReadOnlySpan<byte> span)
     {
-        using var memoryOwner = new MemoryOwner(buffer);
-        var reader = new PacketReader(memoryOwner.Memory.Span);
+        var reader = new PacketReader(span);
 
         WarningCount = reader.ReadUInt16LittleEndian();
         ServerStatus = reader.ReadUInt16LittleEndian();

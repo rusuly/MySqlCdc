@@ -1,4 +1,4 @@
-using System.Buffers;
+using System;
 using MySqlCdc.Protocol;
 
 namespace MySqlCdc.Packets;
@@ -12,10 +12,9 @@ internal class AuthPluginSwitchPacket : IPacket
     public string AuthPluginName { get; }
     public string AuthPluginData { get; }
 
-    public AuthPluginSwitchPacket(ReadOnlySequence<byte> buffer)
+    public AuthPluginSwitchPacket(ReadOnlySpan<byte> span)
     {
-        using var memoryOwner = new MemoryOwner(buffer);
-        var reader = new PacketReader(memoryOwner.Memory.Span);
+        var reader = new PacketReader(span);
 
         AuthPluginName = reader.ReadNullTerminatedString();
         AuthPluginData = reader.ReadNullTerminatedString();

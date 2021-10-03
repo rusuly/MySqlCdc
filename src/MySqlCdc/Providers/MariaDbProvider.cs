@@ -1,5 +1,4 @@
 using System;
-using System.Buffers;
 using System.Threading;
 using System.Threading.Tasks;
 using MySqlCdc.Commands;
@@ -55,7 +54,7 @@ internal class MariaDbProvider : IDatabaseProvider
     {
         if (packet[0] == (byte)ResponseType.Error)
         {
-            var error = new ErrorPacket(new ReadOnlySequence<byte>(packet, 1, packet.Length - 1));
+            var error = new ErrorPacket(packet[1..]);
             throw new InvalidOperationException($"{message} {error.ToString()}");
         }
     }

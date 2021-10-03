@@ -1,4 +1,4 @@
-using System.Buffers;
+using System;
 using MySqlCdc.Protocol;
 
 namespace MySqlCdc.Packets;
@@ -13,10 +13,9 @@ internal class ErrorPacket : IPacket
     public string ErrorMessage { get; }
     public string? SqlState { get; }
 
-    public ErrorPacket(ReadOnlySequence<byte> buffer)
+    public ErrorPacket(ReadOnlySpan<byte> span)
     {
-        using var memoryOwner = new MemoryOwner(buffer);
-        var reader = new PacketReader(memoryOwner.Memory.Span);
+        var reader = new PacketReader(span);
 
         ErrorCode = reader.ReadUInt16LittleEndian();
 

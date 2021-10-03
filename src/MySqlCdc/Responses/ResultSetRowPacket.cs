@@ -1,4 +1,4 @@
-using System.Buffers;
+using System;
 using System.Collections.Generic;
 using MySqlCdc.Protocol;
 
@@ -12,10 +12,9 @@ internal class ResultSetRowPacket : IPacket
 {
     public IReadOnlyList<string> Cells { get; }
 
-    public ResultSetRowPacket(ReadOnlySequence<byte> buffer)
+    public ResultSetRowPacket(ReadOnlySpan<byte> span)
     {
-        using var memoryOwner = new MemoryOwner(buffer);
-        var reader = new PacketReader(memoryOwner.Memory.Span);
+        var reader = new PacketReader(span);
 
         var values = new List<string>();
         while (!reader.IsEmpty())

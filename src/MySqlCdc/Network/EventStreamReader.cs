@@ -30,8 +30,8 @@ internal class EventStreamReader : IEventStreamReader
         return status switch
         {
             ResponseType.Ok => _eventDeserializer.DeserializeEvent(ref reader),
-            ResponseType.Error => new ErrorPacket(buffer.Slice(1)),
-            ResponseType.EndOfFile => new EndOfFilePacket(buffer.Slice(1)),
+            ResponseType.Error => new ErrorPacket(buffer.Slice(1).ToArray()),
+            ResponseType.EndOfFile => new EndOfFilePacket(buffer.Slice(1).ToArray()),
             _ => throw new Exception("Unknown network stream status"),
         };
     }
