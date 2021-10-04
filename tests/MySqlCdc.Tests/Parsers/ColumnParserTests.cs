@@ -256,7 +256,7 @@ public class ColumnParserTests
         byte[] payload = new byte[] { 87, 131, 15 };
         var reader = new PacketReader(payload);
 
-        Assert.Equal(new DateTime(1985, 10, 23), _columnParser.ParseDate(ref reader, 0));
+        Assert.Equal(new DateOnly(1985, 10, 23), _columnParser.ParseDate(ref reader, 0));
         Assert.Equal(3, reader.Consumed);
     }
 

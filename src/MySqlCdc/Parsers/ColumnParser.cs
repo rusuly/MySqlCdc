@@ -152,7 +152,7 @@ internal class ColumnParser
         return 1900 + (int)reader.ReadByte();
     }
 
-    public DateTime? ParseDate(ref PacketReader reader, int metadata)
+    public DateOnly? ParseDate(ref PacketReader reader, int metadata)
     {
         int value = reader.ReadIntLittleEndian(3);
 
@@ -164,7 +164,7 @@ internal class ColumnParser
         if (year == 0 || month == 0 || day == 0)
             return null;
 
-        return new DateTime(year, month, day);
+        return new DateOnly(year, month, day);
     }
 
     public TimeSpan ParseTime(ref PacketReader reader, int metadata)

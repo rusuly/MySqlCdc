@@ -189,12 +189,12 @@ using (Stream stream = File.OpenRead("mysql-bin.000001"))
   | ENUM               | int                  |
   | SET                | long                 |
   | YEAR               | int                  |
-  | DATE               | Nullable&lt;DateTime&gt; |
+  | DATE               | Nullable&lt;DateOnly&gt; |
   | DATETIME           | Nullable&lt;DateTime&gt; |
   | TIME               | TimeSpan             |
   | TIMESTAMP          | DateTimeOffset       |
 
-- Invalid DATE, DATETIME values(0000-00-00) are parsed as DateTime null.
+- Invalid DATE, DATETIME values(0000-00-00) are parsed as DateOnly and DateTime `null` respectively.
 - TIME, DATETIME, TIMESTAMP (MySQL 5.6.4+) will lose microseconds when converted to .NET types as MySQL types have bigger fractional part than corresponding .NET types can store.
 - Signedness of numeric columns cannot be determined in MariaDB/MySQL 5.5. The library stores all numeric columns as CLS-compliant types from the table above. The client has the information and should manually cast to `sbyte`, `ushort`, `uint` or `ulong` if necessary. The only exception is 3-byte `unsigned mediumint` which must be casted this way:
 
