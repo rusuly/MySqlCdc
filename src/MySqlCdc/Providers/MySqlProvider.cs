@@ -27,6 +27,6 @@ internal class MySqlProvider : IDatabaseProvider
             command = new DumpBinlogCommand(serverId, options.Binlog.Filename, options.Binlog.Position);
         }
 
-        await channel.WriteCommandAsync(command, 0, cancellationToken);
+        await channel.WritePacketAsync(command.Serialize(), 0, cancellationToken);
     }
 }

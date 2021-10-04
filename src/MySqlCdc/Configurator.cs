@@ -34,7 +34,7 @@ internal class Configurator
             return;
 
         var command = new QueryCommand("show master status");
-        await _connection.WriteCommandAsync(command, 0, cancellationToken);
+        await _connection.WritePacketAsync(command.Serialize(), 0, cancellationToken);
 
         var resultSet = await ReadResultSet(cancellationToken);
         if (resultSet.Count != 1)
@@ -49,7 +49,7 @@ internal class Configurator
         long milliseconds = (long)_options.HeartbeatInterval.TotalMilliseconds;
         long nanoseconds = milliseconds * 1000 * 1000;
         var command = new QueryCommand($"set @master_heartbeat_period={nanoseconds}");
-        await _connection.WriteCommandAsync(command, 0, cancellationToken);
+        await _connection.WritePacketAsync(command.Serialize(), 0, cancellationToken);
         var (packet, _) = await _connection.ReadPacketAsync(cancellationToken);
         Extensions.ThrowIfErrorPacket(packet, "Setting master_binlog_checksum error.");
     }
@@ -57,12 +57,12 @@ internal class Configurator
     public async Task SetMasterBinlogChecksum(CancellationToken cancellationToken = default)
     {
         var command = new QueryCommand("SET @master_binlog_checksum= @@global.binlog_checksum");
-        await _connection.WriteCommandAsync(command, 0, cancellationToken);
+        await _connection.WritePacketAsync(command.Serialize(), 0, cancellationToken);
         var (packet, _) = await _connection.ReadPacketAsync(cancellationToken);
         Extensions.ThrowIfErrorPacket(packet, "Setting master_binlog_checksum error.");
 
         command = new QueryCommand($"SELECT @master_binlog_checksum");
-        await _connection.WriteCommandAsync(command, 0, cancellationToken);
+        await _connection.WritePacketAsync(command.Serialize(), 0, cancellationToken);
         var resultSet = await ReadResultSet(cancellationToken);
 
         // When replication is started fake RotateEvent comes before FormatDescriptionEvent.

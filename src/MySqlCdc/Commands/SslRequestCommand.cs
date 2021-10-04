@@ -25,9 +25,9 @@ internal class SslRequestCommand : ICommand
                              | (int)CapabilityFlags.PLUGIN_AUTH;
     }
 
-    public byte[] CreatePacket(byte sequenceNumber)
+    public byte[] Serialize()
     {
-        var writer = new PacketWriter(sequenceNumber);
+        var writer = new PacketWriter();
         writer.WriteIntLittleEndian(ClientCapabilities, 4);
         writer.WriteIntLittleEndian(MaxPacketSize, 4);
         writer.WriteIntLittleEndian(ClientCollation, 1);

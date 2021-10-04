@@ -15,9 +15,9 @@ internal class AuthPluginSwitchCommand : ICommand
         AuthPluginName = authPluginName;
     }
 
-    public byte[] CreatePacket(byte sequenceNumber)
+    public byte[] Serialize()
     {
-        var writer = new PacketWriter(sequenceNumber);
+        var writer = new PacketWriter();
         writer.WriteByteArray(Extensions.GetEncryptedPassword(Password, Scramble, AuthPluginName));
         return writer.CreatePacket();
     }

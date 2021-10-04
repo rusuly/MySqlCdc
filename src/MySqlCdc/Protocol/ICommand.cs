@@ -8,5 +8,5 @@ internal interface ICommand
     /// <summary>
     /// Serializes client command to MySql packet.
     /// </summary>
-    byte[] CreatePacket(byte sequenceNumber);
+    byte[] Serialize();
 }

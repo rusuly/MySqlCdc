@@ -15,9 +15,9 @@ internal class QueryCommand : ICommand
         Sql = sql;
     }
 
-    public byte[] CreatePacket(byte sequenceNumber)
+    public byte[] Serialize()
     {
-        var writer = new PacketWriter(sequenceNumber);
+        var writer = new PacketWriter();
         writer.WriteByte((byte)CommandType.QUERY);
         writer.WriteString(Sql);
         return writer.CreatePacket();

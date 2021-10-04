@@ -11,16 +11,10 @@ namespace MySqlCdc.Protocol;
 internal class PacketWriter : IDisposable
 {
     private readonly MemoryStream _stream;
-    private readonly byte _sequenceNumber;
 
-    public PacketWriter(byte sequenceNumber)
+    public PacketWriter()
     {
         _stream = new MemoryStream();
-        _sequenceNumber = sequenceNumber;
-
-        // Reserve space for packet header
-        for (int i = 0; i < PacketConstants.HeaderSize; i++)
-            _stream.WriteByte(0);
     }
 
     /// <summary>
@@ -82,15 +76,6 @@ internal class PacketWriter : IDisposable
 
     public byte[] CreatePacket()
     {
-        //After body size is known we can fill packet header
-        _stream.Position = 0;
-
-        // Write header size
-        WriteIntLittleEndian((int)_stream.Length - PacketConstants.HeaderSize, 3);
-
-        // Write sequence number
-        _stream.WriteByte(_sequenceNumber);
-
         return _stream.ToArray();
     }
 

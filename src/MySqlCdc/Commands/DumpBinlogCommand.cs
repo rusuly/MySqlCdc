@@ -21,9 +21,9 @@ internal class DumpBinlogCommand : ICommand
         Flags = flags;
     }
 
-    public byte[] CreatePacket(byte sequenceNumber)
+    public byte[] Serialize()
     {
-        var writer = new PacketWriter(sequenceNumber);
+        var writer = new PacketWriter();
         writer.WriteByte((byte)CommandType.BINLOG_DUMP);
         writer.WriteLongLittleEndian(BinlogPosition, 4);
         writer.WriteIntLittleEndian(Flags, 2);

@@ -39,14 +39,20 @@ internal class Connection
             throw ex ?? new InvalidOperationException("Could not connect to the server");
     }
 
-    public async Task WriteBytesAsync(byte[] array, CancellationToken cancellationToken = default)
+    public async Task WritePacketAsync(byte[] array, byte seqNum, CancellationToken cancellationToken = default)
     {
-        await Stream.WriteAsync(array, 0, array.Length, cancellationToken);
-    }
-
-    public async Task WriteCommandAsync(ICommand command, byte sequenceNumber, CancellationToken cancellationToken = default)
-    {
-        var array = command.CreatePacket(sequenceNumber);
+        var header = new byte[PacketConstants.HeaderSize];
+        
+        // Write header size
+        for (int i = 0; i < PacketConstants.HeaderSize - 1; i++)
+        {
+            header[i] = (byte)(0xFF & ((uint)array.Length >> (i << 3)));
+        }
+        
+        // Write sequence number
+        header[3] = seqNum;
+        
+        await Stream.WriteAsync(header, 0, header.Length, cancellationToken);
         await Stream.WriteAsync(array, 0, array.Length, cancellationToken);
     }
 
