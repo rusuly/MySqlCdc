@@ -7,7 +7,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using MySqlCdc.Constants;
-using MySqlCdc.Protocol;
 
 namespace MySqlCdc.Network;
 

@@ -30,7 +30,7 @@ internal class Configurator
             return;
 
         // Ignore if position was read before in case of reconnect.
-        if (!string.IsNullOrWhiteSpace(_options.Binlog.Filename))
+        if (_options.Binlog.Filename != string.Empty)
             return;
 
         var command = new QueryCommand("show master status");
