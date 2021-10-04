@@ -18,13 +18,18 @@ public class TableMapEventParser : IEventParser
     {
         var tableId = reader.ReadLongLittleEndian(6);
 
-        // Reserved bytes and database name length 
-        reader.Advance(3);
-        var databaseName = reader.ReadNullTerminatedString();
-
-        // Table name length
+        // Reserved bytes
+        reader.Advance(2);
+        
+        // DatabaseName is null terminated
+        var databaseNameLength = reader.ReadByte();
+        var databaseName = reader.ReadString(databaseNameLength);
         reader.Advance(1);
-        var tableName = reader.ReadNullTerminatedString();
+
+        // TableName is null terminated
+        var tableNameLength = reader.ReadByte();
+        var tableName = reader.ReadString(tableNameLength);
+        reader.Advance(1);
 
         var columnsNumber = (int)reader.ReadLengthEncodedNumber();
         var columnTypes = reader.ReadByteArraySlow(columnsNumber);

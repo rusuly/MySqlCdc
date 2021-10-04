@@ -17,15 +17,18 @@ public class QueryEventParser : IEventParser
         long threadId = reader.ReadUInt32LittleEndian();
         long duration = reader.ReadUInt32LittleEndian();
 
-        // DatabaseName length is null terminated
-        reader.Advance(1);
+        // DatabaseName length
+        var databaseNameLength = reader.ReadByte();
 
         int errorCode = reader.ReadUInt16LittleEndian();
         int statusVariableLength = reader.ReadUInt16LittleEndian();
         var statusVariables = reader.ReadByteArraySlow(statusVariableLength);
-        var databaseName = reader.ReadNullTerminatedString();
+        
+        // DatabaseName is null terminated
+        var databaseName = reader.ReadString(databaseNameLength);
+        reader.Advance(1);
+        
         var sqlStatement = reader.ReadStringToEndOfFile();
-
         return new QueryEvent(header, threadId, duration, errorCode, statusVariables, databaseName, sqlStatement);
     }
 }

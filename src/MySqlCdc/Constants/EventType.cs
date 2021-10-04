@@ -13,53 +13,47 @@ public enum EventType
     /// <summary>
     /// Identifies <see cref="QueryEvent"/>.
     /// </summary>
-    QUERY_EVENT = 0x02,
+    QUERY_EVENT = 2,
 
     /// <summary>
     /// Identifies StopEvent.
     /// </summary>
-    STOP_EVENT = 0x03,
+    STOP_EVENT = 3,
 
     /// <summary>
     /// Identifies <see cref="RotateEvent"/>.
     /// </summary>
-    ROTATE_EVENT = 0x04,
-
-    /// <summary>
-    /// Identifies <see cref="XidEvent"/>.
-    /// </summary>
-    XID_EVENT = 0x10,
-
-    /// <summary>
-    /// Identifies RandEvent.
-    /// </summary>
-    RAND_EVENT = 0x0d,
-
-    /// <summary>
-    /// Identifies UserVarEvent.
-    /// </summary>
-    USER_VAR_EVENT = 0x0e,
-
-    /// <summary>
-    /// Identifies <see cref="FormatDescriptionEvent"/>.
-    /// </summary>
-    FORMAT_DESCRIPTION_EVENT = 0x0f,
-
-    /// <summary>
-    /// Identifies <see cref="TableMapEvent"/>.
-    /// </summary>
-    TABLE_MAP_EVENT = 0x13,
-
-    /// <summary>
-    /// Identifies <see cref="HeartbeatEvent"/>.
-    /// </summary>
-    HEARTBEAT_EVENT = 0x1b,
+    ROTATE_EVENT = 4,
 
     /// <summary>
     /// Identifies <see cref="IntVarEvent"/>.
     /// </summary>
-    INTVAR_EVENT = 0x05,
+    INTVAR_EVENT = 5,
 
+    /// <summary>
+    /// Identifies RandEvent.
+    /// </summary>
+    RAND_EVENT = 13,
+
+    /// <summary>
+    /// Identifies UserVarEvent.
+    /// </summary>
+    USER_VAR_EVENT = 14,
+
+    /// <summary>
+    /// Identifies <see cref="FormatDescriptionEvent"/>.
+    /// </summary>
+    FORMAT_DESCRIPTION_EVENT = 15,
+
+    /// <summary>
+    /// Identifies <see cref="XidEvent"/>.
+    /// </summary>
+    XID_EVENT = 16,
+
+    /// <summary>
+    /// Identifies <see cref="TableMapEvent"/>.
+    /// </summary>
+    TABLE_MAP_EVENT = 19,
 
     /// <summary>
     /// Identifies <see cref="WriteRowsEvent"/> in MariaDB and MySQL from 5.1.15 to 5.6. 
@@ -76,6 +70,10 @@ public enum EventType
     /// </summary>
     DELETE_ROWS_EVENT_V1 = 25,
 
+    /// <summary>
+    /// Identifies <see cref="HeartbeatEvent"/>.
+    /// </summary>
+    HEARTBEAT_EVENT = 27,
 
     /// <summary>
     /// Identifies <see cref="RowsQueryEvent"/> in MySQL from 5.6 to 8.0. 
