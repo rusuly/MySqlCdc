@@ -1,18 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MySqlCdc.Checksum;
-using MySqlCdc.Commands;
 using MySqlCdc.Constants;
 using MySqlCdc.Events;
 using MySqlCdc.Network;
 using MySqlCdc.Packets;
-using MySqlCdc.Protocol;
-using MySqlCdc.Providers;
 
 namespace MySqlCdc;
 
@@ -21,15 +15,7 @@ namespace MySqlCdc;
 /// </summary>
 public class BinlogClient
 {
-    private readonly List<string> _allowedAuthPlugins = new()
-    {
-        AuthPluginNames.MySqlNativePassword,
-        AuthPluginNames.CachingSha2Password
-    };
-
     private readonly ConnectionOptions _options = new();
-    private IDatabaseProvider _databaseProvider = default!;
-    private DatabaseConnection _channel = default!;
 
     private IGtid? _gtid;
     private bool _transaction;
@@ -41,6 +27,9 @@ public class BinlogClient
     public BinlogClient(Action<ConnectionOptions> configureOptions)
     {
         configureOptions(_options);
+        
+        if (_options.SslMode == SslMode.REQUIRE_VERIFY_CA || _options.SslMode == SslMode.REQUIRE_VERIFY_FULL)
+            throw new NotSupportedException($"{nameof(SslMode.REQUIRE_VERIFY_CA)} and {nameof(SslMode.REQUIRE_VERIFY_FULL)} ssl modes are not supported");
     }
 
     /// <summary>
@@ -48,152 +37,32 @@ public class BinlogClient
     /// </summary>
     public BinlogOptions State => _options.Binlog;
 
-    private async Task ConnectAsync(CancellationToken cancellationToken = default)
-    {
-        _channel = new DatabaseConnection(_options);
-
-        var packet = await _channel.ReadPacketSlowAsync(cancellationToken);
-        ThrowIfErrorPacket(packet, "Initial handshake error.");
-        var handshake = new HandshakePacket(packet);
-
-        if (!_allowedAuthPlugins.Contains(handshake.AuthPluginName))
-            throw new InvalidOperationException($"Authentication plugin {handshake.AuthPluginName} is not supported.");
-
-        _databaseProvider = handshake.ServerVersion.Contains("MariaDB") ? new MariaDbProvider() : new MySqlProvider();
-        await AuthenticateAsync(handshake, cancellationToken);
-    }
-
-    private async Task AuthenticateAsync(HandshakePacket handshake, CancellationToken cancellationToken = default)
-    {
-        byte sequenceNumber = 1;
-
-        bool useSsl = false;
-        if (_options.SslMode != SslMode.DISABLED)
-        {
-            bool sslAvailable = (handshake.ServerCapabilities & (long)CapabilityFlags.SSL) != 0;
-
-            if (!sslAvailable && _options.SslMode >= SslMode.REQUIRE)
-                throw new InvalidOperationException("The server doesn't support SSL encryption");
-
-            if (sslAvailable)
-            {
-                var command = new SslRequestCommand(PacketConstants.Utf8Mb4GeneralCi);
-                await _channel.WriteCommandAsync(command, sequenceNumber++, cancellationToken);
-                _channel.UpgradeToSsl();
-                useSsl = true;
-            }
-        }
-
-        var authenticateCommand = new AuthenticateCommand(_options, PacketConstants.Utf8Mb4GeneralCi, handshake.Scramble, handshake.AuthPluginName);
-        await _channel.WriteCommandAsync(authenticateCommand, sequenceNumber, cancellationToken);
-        var packet = await _channel.ReadPacketSlowAsync(cancellationToken);
-        sequenceNumber += 2;
-
-        ThrowIfErrorPacket(packet, "Authentication error.");
-
-        if (packet[0] == (byte)ResponseType.Ok)
-            return;
-
-        if (packet[0] == (byte)ResponseType.AuthPluginSwitch)
-        {
-            var authSwitchRequest = new AuthPluginSwitchPacket(packet[1..]);
-            await HandleAuthPluginSwitch(authSwitchRequest, sequenceNumber, useSsl, cancellationToken);
-        }
-        else
-        {
-            await AuthenticateSha256Async(packet, handshake.Scramble, sequenceNumber, useSsl, cancellationToken);
-        }
-    }
-
-    private async Task HandleAuthPluginSwitch(AuthPluginSwitchPacket authSwitchRequest, byte sequenceNumber, bool useSsl, CancellationToken cancellationToken = default)
-    {
-        if (!_allowedAuthPlugins.Contains(authSwitchRequest.AuthPluginName))
-            throw new InvalidOperationException($"Authentication plugin {authSwitchRequest.AuthPluginName} is not supported.");
-
-        var authSwitchCommand = new AuthPluginSwitchCommand(_options.Password, authSwitchRequest.AuthPluginData, authSwitchRequest.AuthPluginName);
-        await _channel.WriteCommandAsync(authSwitchCommand, sequenceNumber, cancellationToken);
-        var packet = await _channel.ReadPacketSlowAsync(cancellationToken);
-        sequenceNumber += 2;
-        ThrowIfErrorPacket(packet, "Authentication switch error.");
-
-        if (authSwitchRequest.AuthPluginName == AuthPluginNames.CachingSha2Password)
-        {
-            await AuthenticateSha256Async(packet, authSwitchRequest.AuthPluginData, sequenceNumber, useSsl, cancellationToken);
-        }
-    }
-
-    private async Task AuthenticateSha256Async(byte[] packet, string scramble, byte sequenceNumber, bool useSsl, CancellationToken cancellationToken = default)
-    {
-        // See https://mariadb.com/kb/en/caching_sha2_password-authentication-plugin/
-        // Success authentication.
-        if (packet[0] == 0x01 && packet[1] == 0x03)
-            return;
-
-        // Send clear password if ssl is used.
-        var writer = new PacketWriter(sequenceNumber);
-        if (useSsl)
-        {
-            writer.WriteNullTerminatedString(_options.Password);
-            await _channel.WriteBytesAsync(writer.CreatePacket(), cancellationToken);
-            packet = await _channel.ReadPacketSlowAsync(cancellationToken);
-            ThrowIfErrorPacket(packet, "Sending caching_sha2_password clear password error.");
-            return;
-        }
-
-        // Request public key.
-        writer = new PacketWriter(sequenceNumber);
-        writer.WriteByte(0x02);
-        await _channel.WriteBytesAsync(writer.CreatePacket(), cancellationToken);
-        packet = await _channel.ReadPacketSlowAsync(cancellationToken);
-        sequenceNumber += 2;
-        ThrowIfErrorPacket(packet, "Requesting caching_sha2_password public key.");
-
-        // Extract public key.
-        var publicKey = Encoding.UTF8.GetString(packet[1..]);
-
-        // Password must be null terminated. Not documented in MariaDB.
-        var password = Encoding.UTF8.GetBytes(_options.Password += '\0');
-        var encryptedPassword = AuthenticateCommand.Xor(password, Encoding.UTF8.GetBytes(scramble));
-
-        using (var rsa = RSA.Create())
-        {
-            rsa.ImportFromPem(publicKey);
-            var encryptedBody = rsa.Encrypt(encryptedPassword, RSAEncryptionPadding.OaepSHA1);
-
-            writer = new PacketWriter(sequenceNumber);
-            writer.WriteByteArray(encryptedBody);
-            await _channel.WriteBytesAsync(writer.CreatePacket(), cancellationToken);
-            packet = await _channel.ReadPacketSlowAsync(cancellationToken);
-            ThrowIfErrorPacket(packet, "Authentication error.");
-        }
-    }
-
     /// <summary>
     /// Replicates binlog events from the server
     /// </summary>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Task completed when last event is read in non-blocking mode</returns>
-    public async IAsyncEnumerable<IBinlogEvent> Replicate([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<IBinlogEvent> Replicate(
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        if (_options.SslMode == SslMode.REQUIRE_VERIFY_CA || _options.SslMode == SslMode.REQUIRE_VERIFY_FULL)
-            throw new NotSupportedException($"{nameof(SslMode.REQUIRE_VERIFY_CA)} and {nameof(SslMode.REQUIRE_VERIFY_FULL)} ssl modes are not supported");
-
-        await ConnectAsync(cancellationToken);
+        var (connection, databaseProvider) = await new Connector(_options).ConnectAsync(cancellationToken);
 
         // Clear on reconnect
         _gtid = null;
         _transaction = false;
 
-        await AdjustStartingPosition(cancellationToken);
-        await SetMasterHeartbeat(cancellationToken);
-        await SetMasterBinlogChecksum(cancellationToken);
-        await _databaseProvider.DumpBinlogAsync(_channel, _options, cancellationToken);
+        var configurator = new Configurator(_options, connection, databaseProvider);
+        await configurator.AdjustStartingPosition(cancellationToken);
+        await configurator.SetMasterHeartbeat(cancellationToken);
+        await configurator.SetMasterBinlogChecksum(cancellationToken);
+        await databaseProvider.DumpBinlogAsync(connection, _options, cancellationToken);
 
-        var eventStreamReader = new EventStreamReader(_databaseProvider.Deserializer);
-        var channel = new EventStreamChannel(eventStreamReader, _channel.Stream);
+        var eventStreamReader = new EventStreamReader(databaseProvider.Deserializer);
+        var channel = new EventStreamChannel(eventStreamReader, connection.Stream);
         var timeout = _options.HeartbeatInterval.Add(TimeSpan.FromMilliseconds(TimeoutConstants.Delta));
 
-        await foreach (var packet in channel.ReadPacketAsync(timeout, cancellationToken).WithCancellation(cancellationToken))
+        await foreach (var packet in channel.ReadPacketAsync(timeout, cancellationToken)
+            .WithCancellation(cancellationToken))
         {
             if (packet is IBinlogEvent binlogEvent)
             {
@@ -271,94 +140,6 @@ public class BinlogClient
         else if (binlogEvent.Header.NextEventPosition > 0)
         {
             _options.Binlog.Position = binlogEvent.Header.NextEventPosition;
-        }
-    }
-
-    private async Task AdjustStartingPosition(CancellationToken cancellationToken = default)
-    {
-        if (_options.Binlog.StartingStrategy != StartingStrategy.FromEnd)
-            return;
-
-        // Ignore if position was read before in case of reconnect.
-        if (!string.IsNullOrWhiteSpace(_options.Binlog.Filename))
-            return;
-
-        var command = new QueryCommand("show master status");
-        await _channel.WriteCommandAsync(command, 0, cancellationToken);
-
-        var resultSet = await ReadResultSet(cancellationToken);
-        if (resultSet.Count != 1)
-            throw new InvalidOperationException("Could not read master binlog position.");
-
-        _options.Binlog.Filename = resultSet[0].Cells[0];
-        _options.Binlog.Position = long.Parse(resultSet[0].Cells[1]);
-    }
-
-    private async Task SetMasterHeartbeat(CancellationToken cancellationToken = default)
-    {
-        long milliseconds = (long)_options.HeartbeatInterval.TotalMilliseconds;
-        long nanoseconds = milliseconds * 1000 * 1000;
-        var command = new QueryCommand($"set @master_heartbeat_period={nanoseconds}");
-        await _channel.WriteCommandAsync(command, 0, cancellationToken);
-        var packet = await _channel.ReadPacketSlowAsync(cancellationToken);
-        ThrowIfErrorPacket(packet, "Setting master_binlog_checksum error.");
-    }
-
-    private async Task SetMasterBinlogChecksum(CancellationToken cancellationToken = default)
-    {
-        var command = new QueryCommand("SET @master_binlog_checksum= @@global.binlog_checksum");
-        await _channel.WriteCommandAsync(command, 0, cancellationToken);
-        var packet = await _channel.ReadPacketSlowAsync(cancellationToken);
-        ThrowIfErrorPacket(packet, "Setting master_binlog_checksum error.");
-
-        command = new QueryCommand($"SELECT @master_binlog_checksum");
-        await _channel.WriteCommandAsync(command, 0, cancellationToken);
-        var resultSet = await ReadResultSet(cancellationToken);
-
-        // When replication is started fake RotateEvent comes before FormatDescriptionEvent.
-        // In order to deserialize the event we have to obtain checksum type length in advance.
-        var checksumType = (ChecksumType)Enum.Parse(typeof(ChecksumType), resultSet[0].Cells[0]);
-        _databaseProvider.Deserializer.ChecksumStrategy = checksumType switch
-        {
-            ChecksumType.NONE => new NoneChecksum(),
-            ChecksumType.CRC32 => new Crc32Checksum(),
-            _ => throw new InvalidOperationException("The master checksum type is not supported.")
-        };
-    }
-
-    private async Task<List<ResultSetRowPacket>> ReadResultSet(CancellationToken cancellationToken = default)
-    {
-        var packet = await _channel.ReadPacketSlowAsync(cancellationToken);
-        ThrowIfErrorPacket(packet, "Reading result set error.");
-
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            // Skip through metadata
-            packet = await _channel.ReadPacketSlowAsync(cancellationToken);
-            if (packet[0] == (byte)ResponseType.EndOfFile)
-                break;
-        }
-
-        var resultSet = new List<ResultSetRowPacket>();
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            packet = await _channel.ReadPacketSlowAsync(cancellationToken);
-            ThrowIfErrorPacket(packet, "Query result set error.");
-
-            if (packet[0] == (byte)ResponseType.EndOfFile)
-                break;
-
-            resultSet.Add(new ResultSetRowPacket(packet));
-        }
-        return resultSet;
-    }
-
-    private void ThrowIfErrorPacket(byte[] packet, string message)
-    {
-        if (packet[0] == (byte)ResponseType.Error)
-        {
-            var error = new ErrorPacket(packet[1..]);
-            throw new InvalidOperationException($"{message} {error}");
         }
     }
 }

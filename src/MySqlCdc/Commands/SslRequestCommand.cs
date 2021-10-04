@@ -13,10 +13,10 @@ internal class SslRequestCommand : ICommand
     public int ClientCollation { get; }
     public int MaxPacketSize { get; }
 
-    public SslRequestCommand(int clientCollation, int maxPacketSize = 0)
+    public SslRequestCommand(int clientCollation)
     {
         ClientCollation = clientCollation;
-        MaxPacketSize = maxPacketSize;
+        MaxPacketSize = 0;
 
         ClientCapabilities = (int)CapabilityFlags.LONG_FLAG
                              | (int)CapabilityFlags.PROTOCOL_41

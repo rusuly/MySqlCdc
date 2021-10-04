@@ -1,8 +1,5 @@
-using System;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using MySqlCdc.Constants;
+using MySqlCdc.Packets;
 using MySqlCdc.Protocol;
 
 namespace MySqlCdc.Commands;
@@ -22,23 +19,23 @@ internal class AuthenticateCommand : ICommand
     public string? Database { get; }
     public string AuthPluginName { get; }
 
-    public AuthenticateCommand(ConnectionOptions options, int clientCollation, string scramble, string authPluginName, int maxPacketSize = 0)
+    public AuthenticateCommand(ConnectionOptions options, HandshakePacket handshake, int clientCollation)
     {
         ClientCollation = clientCollation;
-        MaxPacketSize = maxPacketSize;
-        Scramble = scramble;
+        MaxPacketSize = 0;
+        Scramble = handshake.Scramble;
         Username = options.Username;
         Password = options.Password;
         Database = options.Database;
-        AuthPluginName = authPluginName;
+        AuthPluginName = handshake.AuthPluginName;
 
-        ClientCapabilities = (int)CapabilityFlags.LONG_FLAG
-                             | (int)CapabilityFlags.PROTOCOL_41
-                             | (int)CapabilityFlags.SECURE_CONNECTION
-                             | (int)CapabilityFlags.PLUGIN_AUTH;
+        ClientCapabilities = (int) CapabilityFlags.LONG_FLAG
+                             | (int) CapabilityFlags.PROTOCOL_41
+                             | (int) CapabilityFlags.SECURE_CONNECTION
+                             | (int) CapabilityFlags.PLUGIN_AUTH;
 
         if (Database != null)
-            ClientCapabilities |= (int)CapabilityFlags.CONNECT_WITH_DB;
+            ClientCapabilities |= (int) CapabilityFlags.CONNECT_WITH_DB;
     }
 
     public byte[] CreatePacket(byte sequenceNumber)
@@ -53,8 +50,8 @@ internal class AuthenticateCommand : ICommand
             writer.WriteByte(0);
 
         writer.WriteNullTerminatedString(Username);
-        byte[] encryptedPassword = GetEncryptedPassword(Password, Scramble, AuthPluginName);
-        writer.WriteByte((byte)encryptedPassword.Length);
+        byte[] encryptedPassword = Extensions.GetEncryptedPassword(Password, Scramble, AuthPluginName);
+        writer.WriteByte((byte) encryptedPassword.Length);
         writer.WriteByteArray(encryptedPassword);
 
         if (Database != null)
@@ -62,27 +59,5 @@ internal class AuthenticateCommand : ICommand
 
         writer.WriteNullTerminatedString(AuthPluginName);
         return writer.CreatePacket();
-    }
-
-    public static byte[] GetEncryptedPassword(string password, string scramble, string authPluginName)
-    {
-        HashAlgorithm sha = authPluginName switch
-        {
-            AuthPluginNames.MySqlNativePassword => SHA1.Create(),
-            AuthPluginNames.CachingSha2Password => SHA256.Create(),
-            _ => throw new NotSupportedException()
-        };
-
-        var passwordHash = sha.ComputeHash(Encoding.UTF8.GetBytes(password));
-        var concatHash = Encoding.UTF8.GetBytes(scramble).Concat(sha.ComputeHash(passwordHash)).ToArray();
-        return Xor(passwordHash, sha.ComputeHash(concatHash));
-    }
-
-    public static byte[] Xor(byte[] array1, byte[] array2)
-    {
-        byte[] result = new byte[array1.Length];
-        for (int i = 0; i < result.Length; i++)
-            result[i] = (byte)(array1[i] ^ (array2[i % array2.Length]));
-        return result;
     }
 }

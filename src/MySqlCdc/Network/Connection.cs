@@ -11,12 +11,12 @@ using MySqlCdc.Protocol;
 
 namespace MySqlCdc.Network;
 
-internal class DatabaseConnection
+internal class Connection
 {
     private readonly ConnectionOptions _options;
     public Stream Stream { get; private set; }
 
-    public DatabaseConnection(ConnectionOptions options)
+    public Connection(ConnectionOptions options)
     {
         _options = options;
         Exception? ex = null;
@@ -54,7 +54,7 @@ internal class DatabaseConnection
     /// In sequential mode packet type is determined by calling client code.
     /// We don't use System.IO.Pipelines as it cannot determine packet type.
     /// </summary>
-    public async Task<byte[]> ReadPacketSlowAsync(CancellationToken cancellationToken = default)
+    public async Task<(byte[], byte)> ReadPacketAsync(CancellationToken cancellationToken = default)
     {
         byte[] header = new byte[PacketConstants.HeaderSize];
         await Stream.ReadAsync(header, 0, header.Length, cancellationToken);
@@ -64,7 +64,7 @@ internal class DatabaseConnection
         byte[] body = new byte[bodySize];
         await Stream.ReadAsync(body, 0, body.Length, cancellationToken);
 
-        return body;
+        return (body, header[3]);
     }
 
     public void UpgradeToSsl()

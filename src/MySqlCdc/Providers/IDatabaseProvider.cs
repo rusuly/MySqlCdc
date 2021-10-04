@@ -7,7 +7,7 @@ namespace MySqlCdc.Providers;
 
 internal interface IDatabaseProvider
 {
-    Task DumpBinlogAsync(DatabaseConnection channel, ConnectionOptions options, CancellationToken cancellationToken = default);
+    Task DumpBinlogAsync(Connection channel, ConnectionOptions options, CancellationToken cancellationToken = default);
 
     EventDeserializer Deserializer { get; }
 }

@@ -12,7 +12,7 @@ internal class MySqlProvider : IDatabaseProvider
 {
     public EventDeserializer Deserializer { get; } = new MySqlEventDeserializer();
 
-    public async Task DumpBinlogAsync(DatabaseConnection channel, ConnectionOptions options, CancellationToken cancellationToken = default)
+    public async Task DumpBinlogAsync(Connection channel, ConnectionOptions options, CancellationToken cancellationToken = default)
     {
         long serverId = options.Blocking ? options.ServerId : 0;
             
