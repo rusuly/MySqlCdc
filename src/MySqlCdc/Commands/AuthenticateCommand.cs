@@ -19,7 +19,7 @@ internal class AuthenticateCommand : ICommand
     public string? Database { get; }
     public string AuthPluginName { get; }
 
-    public AuthenticateCommand(ConnectionOptions options, HandshakePacket handshake, int clientCollation)
+    public AuthenticateCommand(ReplicaOptions options, HandshakePacket handshake, int clientCollation)
     {
         ClientCollation = clientCollation;
         MaxPacketSize = 0;
@@ -29,13 +29,13 @@ internal class AuthenticateCommand : ICommand
         Database = options.Database;
         AuthPluginName = handshake.AuthPluginName;
 
-        ClientCapabilities = (int) CapabilityFlags.LONG_FLAG
-                             | (int) CapabilityFlags.PROTOCOL_41
-                             | (int) CapabilityFlags.SECURE_CONNECTION
-                             | (int) CapabilityFlags.PLUGIN_AUTH;
+        ClientCapabilities = (int) CapabilityFlags.LongFlag
+                             | (int) CapabilityFlags.Protocol41
+                             | (int) CapabilityFlags.SecureConnection
+                             | (int) CapabilityFlags.PluginAuth;
 
         if (Database != null)
-            ClientCapabilities |= (int) CapabilityFlags.CONNECT_WITH_DB;
+            ClientCapabilities |= (int) CapabilityFlags.ConnectWithDb;
     }
 
     public byte[] Serialize()

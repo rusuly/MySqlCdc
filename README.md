@@ -91,7 +91,7 @@ var client = new BinlogClient(options =>
     options.Port = 3306;
     options.Username = "root";
     options.Password = "Qwertyu1";
-    options.SslMode = SslMode.DISABLED;
+    options.SslMode = SslMode.Disabled;
     options.HeartbeatInterval = TimeSpan.FromSeconds(30);
     options.Blocking = true;
 

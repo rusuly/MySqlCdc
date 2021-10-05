@@ -14,7 +14,7 @@ namespace MySqlCdc;
 
 internal class Connector
 {
-    private readonly ConnectionOptions _options;
+    private readonly ReplicaOptions _options;
     private readonly Connection _connection;
     
     private readonly List<string> _allowedAuthPlugins = new()
@@ -23,7 +23,7 @@ internal class Connector
         AuthPluginNames.CachingSha2Password
     };
 
-    public Connector(ConnectionOptions options)
+    public Connector(ReplicaOptions options)
     {
         _options = options;
         _connection = new Connection(_options);
@@ -45,11 +45,11 @@ internal class Connector
     private async Task AuthenticateAsync(HandshakePacket handshake, byte seqNum, CancellationToken cancellationToken = default)
     {
         bool useSsl = false;
-        if (_options.SslMode != SslMode.DISABLED)
+        if (_options.SslMode != SslMode.Disabled)
         {
-            bool sslAvailable = (handshake.ServerCapabilities & (long)CapabilityFlags.SSL) != 0;
+            bool sslAvailable = (handshake.ServerCapabilities & (long)CapabilityFlags.Ssl) != 0;
 
-            if (!sslAvailable && _options.SslMode >= SslMode.REQUIRE)
+            if (!sslAvailable && _options.SslMode >= SslMode.Require)
                 throw new InvalidOperationException("The server doesn't support SSL encryption");
 
             if (sslAvailable)

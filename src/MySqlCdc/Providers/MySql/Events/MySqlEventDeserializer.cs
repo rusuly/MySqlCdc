@@ -13,9 +13,9 @@ public class MySqlEventDeserializer : EventDeserializer
     /// </summary>
     public MySqlEventDeserializer()
     {
-        EventParsers[EventType.MYSQL_GTID_EVENT] = new GtidEventParser();
-        EventParsers[EventType.MYSQL_ROWS_QUERY_EVENT] = new RowsQueryEventParser();
-        EventParsers[EventType.MYSQL_PREVIOUS_GTIDS_EVENT] = new PreviousGtidsEventParser();
-        EventParsers[EventType.MYSQL_XA_PREPARE] = new XaPrepareEventParser();
+        EventParsers[EventType.MySqlGtidEvent] = new GtidEventParser();
+        EventParsers[EventType.MySqlRowsQueryEvent] = new RowsQueryEventParser();
+        EventParsers[EventType.MySqlPreviousGtidsEvent] = new PreviousGtidsEventParser();
+        EventParsers[EventType.MySqlXaPrepareEvent] = new XaPrepareEventParser();
     }
 }

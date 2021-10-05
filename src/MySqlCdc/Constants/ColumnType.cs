@@ -10,155 +10,155 @@ public enum ColumnType
     /// <summary>
     /// DECIMAL
     /// </summary>
-    DECIMAL = 0,
+    Decimal = 0,
         
     /// <summary>
     /// TINY
     /// </summary>
-    TINY,
+    Tiny = 1,
         
     /// <summary>
     /// SHORT
     /// </summary>
-    SHORT,
+    Short = 2,
         
     /// <summary>
     /// LONG
     /// </summary>
-    LONG,
+    Long = 3,
         
     /// <summary>
     /// FLOAT
     /// </summary>
-    FLOAT,
+    Float = 4,
         
     /// <summary>
     /// DOUBLE
     /// </summary>
-    DOUBLE,
+    Double = 5,
         
     /// <summary>
     /// NULL
     /// </summary>
-    NULL,
+    Null = 6,
         
     /// <summary>
     /// TIMESTAMP
     /// </summary>
-    TIMESTAMP,
+    Timestamp = 7,
         
     /// <summary>
     /// LONGLONG
     /// </summary>
-    LONGLONG,
+    LongLong = 8,
         
     /// <summary>
     /// INT24
     /// </summary>
-    INT24,
+    Int24 = 9,
         
     /// <summary>
     /// DATE
     /// </summary>
-    DATE,
+    Date = 10,
         
     /// <summary>
     /// TIME
     /// </summary>
-    TIME,
+    Time = 11,
         
     /// <summary>
     /// DATETIME
     /// </summary>
-    DATETIME,
+    DateTime = 12,
         
     /// <summary>
     /// YEAR
     /// </summary>
-    YEAR,
+    Year = 13,
         
     /// <summary>
     /// NEWDATE
     /// </summary>
-    NEWDATE,
+    NewDate = 14,
         
     /// <summary>
     /// VARCHAR
     /// </summary>
-    VARCHAR,
+    VarChar = 15,
         
     /// <summary>
     /// BIT
     /// </summary>
-    BIT,
+    Bit = 16,
         
     /// <summary>
     /// TIMESTAMP2
     /// </summary>
-    TIMESTAMP2,
+    TimeStamp2 = 17,
         
     /// <summary>
     /// DATETIME2
     /// </summary>
-    DATETIME2,
+    DateTime2 = 18,
         
     /// <summary>
     /// TIME2
     /// </summary>
-    TIME2,
+    Time2 = 19,
 
     /// <summary>
     /// JSON is MySQL 5.7.8+ type. Not supported in MariaDB.
     /// </summary>
-    JSON = 245,
+    Json = 245,
         
     /// <summary>
     /// NEWDECIMAL
     /// </summary>
-    NEWDECIMAL,
+    NewDecimal = 246,
         
     /// <summary>
     /// ENUM
     /// </summary>
-    ENUM,
+    Enum = 247,
         
     /// <summary>
     /// SET
     /// </summary>
-    SET,
+    Set = 248,
         
     /// <summary>
     /// TINY_BLOB
     /// </summary>
-    TINY_BLOB,
+    TinyBlob = 249,
         
     /// <summary>
     /// MEDIUM_BLOB
     /// </summary>
-    MEDIUM_BLOB,
+    MediumBlob = 250,
         
     /// <summary>
     /// LONG_BLOB
     /// </summary>
-    LONG_BLOB,
+    LongBlob = 251,
         
     /// <summary>
     /// BLOB
     /// </summary>
-    BLOB,
+    Blob = 252,
         
     /// <summary>
     /// VAR_STRING
     /// </summary>
-    VAR_STRING,
+    VarString = 253,
         
     /// <summary>
     /// STRING
     /// </summary>
-    STRING,
+    String = 254,
         
     /// <summary>
     /// GEOMETRY
     /// </summary>
-    GEOMETRY
+    Geometry = 255
 }

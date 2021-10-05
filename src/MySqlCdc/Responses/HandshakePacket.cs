@@ -46,11 +46,11 @@ internal class HandshakePacket : IPacket
         }
 
         // Handle specific conditions
-        if ((ServerCapabilities & (int)CapabilityFlags.SECURE_CONNECTION) > 0)
+        if ((ServerCapabilities & (int)CapabilityFlags.SecureConnection) > 0)
         {
             Scramble += reader.ReadNullTerminatedString();
         }
-        if ((ServerCapabilities & (int)CapabilityFlags.PLUGIN_AUTH) > 0)
+        if ((ServerCapabilities & (int)CapabilityFlags.PluginAuth) > 0)
         {
             AuthPluginName = reader.ReadNullTerminatedString();
         }

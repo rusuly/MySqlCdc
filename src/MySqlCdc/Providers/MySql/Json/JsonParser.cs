@@ -247,23 +247,23 @@ public sealed class JsonParser
         // DATETIME2 dates have ColumnType.DATETIME marker which is confusing
         switch (customType)
         {
-            case ColumnType.DECIMAL:
-            case ColumnType.NEWDECIMAL:
+            case ColumnType.Decimal:
+            case ColumnType.NewDecimal:
                 int metadata = reader.ReadUInt16LittleEndian();
                 var number = ColumnParser.ParseNewDecimal(ref reader, metadata);
                 _writer.WriteValue((string)number);
                 break;
-            case ColumnType.DATE:
+            case ColumnType.Date:
                 _writer.WriteDate(ReadDateTime(ref reader));
                 break;
-            case ColumnType.TIME:
-            case ColumnType.TIME2:
+            case ColumnType.Time:
+            case ColumnType.Time2:
                 _writer.WriteTime(ReadTime(ref reader));
                 break;
-            case ColumnType.DATETIME:
-            case ColumnType.DATETIME2:
-            case ColumnType.TIMESTAMP:
-            case ColumnType.TIMESTAMP2:
+            case ColumnType.DateTime:
+            case ColumnType.DateTime2:
+            case ColumnType.Timestamp:
+            case ColumnType.TimeStamp2:
                 _writer.WriteDateTime(ReadDateTime(ref reader));
                 break;
             default:

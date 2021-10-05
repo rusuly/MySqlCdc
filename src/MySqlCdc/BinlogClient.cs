@@ -15,7 +15,7 @@ namespace MySqlCdc;
 /// </summary>
 public class BinlogClient
 {
-    private readonly ConnectionOptions _options = new();
+    private readonly ReplicaOptions _options = new();
 
     private IGtid? _gtid;
     private bool _transaction;
@@ -24,12 +24,12 @@ public class BinlogClient
     /// Creates a new <see cref="BinlogClient"/>.
     /// </summary>
     /// <param name="configureOptions">The configure callback</param>
-    public BinlogClient(Action<ConnectionOptions> configureOptions)
+    public BinlogClient(Action<ReplicaOptions> configureOptions)
     {
         configureOptions(_options);
         
-        if (_options.SslMode == SslMode.REQUIRE_VERIFY_CA || _options.SslMode == SslMode.REQUIRE_VERIFY_FULL)
-            throw new NotSupportedException($"{nameof(SslMode.REQUIRE_VERIFY_CA)} and {nameof(SslMode.REQUIRE_VERIFY_FULL)} ssl modes are not supported");
+        if (_options.SslMode == SslMode.RequireVerifyCa || _options.SslMode == SslMode.RequireVerifyFull)
+            throw new NotSupportedException($"{nameof(SslMode.RequireVerifyCa)} and {nameof(SslMode.RequireVerifyFull)} ssl modes are not supported");
     }
 
     /// <summary>

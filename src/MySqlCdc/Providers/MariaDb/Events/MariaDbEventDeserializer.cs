@@ -13,8 +13,8 @@ public class MariaDbEventDeserializer : EventDeserializer
     /// </summary>
     public MariaDbEventDeserializer()
     {
-        EventParsers[EventType.MARIADB_GTID_EVENT] = new GtidEventParser();
-        EventParsers[EventType.MARIADB_GTID_LIST_EVENT] = new GtidListEventParser();
-        EventParsers[EventType.MARIADB_ANNOTATE_ROWS_EVENT] = new AnnotateRowsEventParser();
+        EventParsers[EventType.MariaDbGtidEvent] = new GtidEventParser();
+        EventParsers[EventType.MariaDbGtidListEvent] = new GtidListEventParser();
+        EventParsers[EventType.MariaDbAnnotateRowsEvent] = new AnnotateRowsEventParser();
     }
 }

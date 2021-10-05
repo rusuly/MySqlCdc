@@ -13,11 +13,11 @@ namespace MySqlCdc;
 
 internal class Configurator
 {
-    private readonly ConnectionOptions _options;
+    private readonly ReplicaOptions _options;
     private readonly Connection _connection;
     private readonly IDatabaseProvider _databaseProvider;
     
-    public Configurator(ConnectionOptions options, Connection connection, IDatabaseProvider databaseProvider)
+    public Configurator(ReplicaOptions options, Connection connection, IDatabaseProvider databaseProvider)
     {
         _options = options;
         _connection = connection;
@@ -67,11 +67,11 @@ internal class Configurator
 
         // When replication is started fake RotateEvent comes before FormatDescriptionEvent.
         // In order to deserialize the event we have to obtain checksum type length in advance.
-        var checksumType = (ChecksumType)Enum.Parse(typeof(ChecksumType), resultSet[0].Cells[0]);
+        var checksumType = resultSet[0].Cells[0];
         _databaseProvider.Deserializer.ChecksumStrategy = checksumType switch
         {
-            ChecksumType.NONE => new NoneChecksum(),
-            ChecksumType.CRC32 => new Crc32Checksum(),
+            "NONE" => new NoneChecksum(),
+            "CRC32" => new Crc32Checksum(),
             _ => throw new InvalidOperationException("The master checksum type is not supported.")
         };
     }

@@ -8,10 +8,10 @@ public enum ChecksumType
     /// <summary>
     /// Checksum is disabled.
     /// </summary>
-    NONE = 0,
+    None = 0,
 
     /// <summary>
     /// CRC32 checksum.
     /// </summary>
-    CRC32 = 1
+    Crc32 = 1
 }

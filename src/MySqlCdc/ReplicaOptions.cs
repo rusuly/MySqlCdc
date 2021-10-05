@@ -6,7 +6,7 @@ namespace MySqlCdc;
 /// <summary>
 /// Settings used to connect to MySql server.
 /// </summary>
-public class ConnectionOptions
+public class ReplicaOptions
 {
     /// <summary>
     /// MySQL/MariaDB port number to connect to. Defaults to 3306.
@@ -21,7 +21,7 @@ public class ConnectionOptions
     /// <summary>
     /// Defines whether SSL/TLS must be used. Defaults to SslMode.DISABLED.
     /// </summary>
-    public SslMode SslMode { get; set; } = SslMode.DISABLED;
+    public SslMode SslMode { get; set; } = SslMode.Disabled;
 
     /// <summary>
     /// A database user which is used to register as a database slave.

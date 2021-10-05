@@ -18,11 +18,11 @@ internal class SslRequestCommand : ICommand
         ClientCollation = clientCollation;
         MaxPacketSize = 0;
 
-        ClientCapabilities = (int)CapabilityFlags.LONG_FLAG
-                             | (int)CapabilityFlags.PROTOCOL_41
-                             | (int)CapabilityFlags.SECURE_CONNECTION
-                             | (int)CapabilityFlags.SSL
-                             | (int)CapabilityFlags.PLUGIN_AUTH;
+        ClientCapabilities = (int)CapabilityFlags.LongFlag
+                             | (int)CapabilityFlags.Protocol41
+                             | (int)CapabilityFlags.SecureConnection
+                             | (int)CapabilityFlags.Ssl
+                             | (int)CapabilityFlags.PluginAuth;
     }
 
     public byte[] Serialize()

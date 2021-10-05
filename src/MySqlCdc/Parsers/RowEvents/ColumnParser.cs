@@ -38,7 +38,7 @@ internal class ColumnParser
 
         if (negative)
         {
-            result.Append("-");
+            result.Append('-');
             for (int i = 0; i < value.Length; i++)
                 value[i] ^= 0xFF;
         }
@@ -73,12 +73,12 @@ internal class ColumnParser
         }
         if (!started) // There has to be at least 0
         {
-            result.Append(0);
+            result.Append('0');
         }
 
         if (scale > 0)
         {
-            result.Append(".");
+            result.Append('.');
         }
 
         size = CompressedBytes[compressedFractional];
@@ -149,7 +149,7 @@ internal class ColumnParser
 
     public int ParseYear(ref PacketReader reader, int metadata)
     {
-        return 1900 + (int)reader.ReadByte();
+        return 1900 + reader.ReadByte();
     }
 
     public DateOnly? ParseDate(ref PacketReader reader, int metadata)

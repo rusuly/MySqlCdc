@@ -12,7 +12,7 @@ internal class MariaDbProvider : IDatabaseProvider
 {
     public EventDeserializer Deserializer { get; } = new MariaDbEventDeserializer();
 
-    public async Task DumpBinlogAsync(Connection channel, ConnectionOptions options, CancellationToken cancellationToken = default)
+    public async Task DumpBinlogAsync(Connection channel, ReplicaOptions options, CancellationToken cancellationToken = default)
     {
         ICommand command = new QueryCommand("SET @mariadb_slave_capability=4");
         await channel.WritePacketAsync(command.Serialize(), 0, cancellationToken);
@@ -29,7 +29,7 @@ internal class MariaDbProvider : IDatabaseProvider
         await channel.WritePacketAsync(command.Serialize(), 0, cancellationToken);
     }
 
-    private async Task RegisterGtidSlave(Connection channel, ConnectionOptions options, CancellationToken cancellationToken = default)
+    private async Task RegisterGtidSlave(Connection channel, ReplicaOptions options, CancellationToken cancellationToken = default)
     {
         var gtidList = (GtidList)options.Binlog.GtidState!;
         ICommand command = new QueryCommand($"SET @slave_connect_state='{gtidList.ToString()}'");

@@ -24,13 +24,13 @@ public class FormatDescriptionEventParser : IEventParser
         reader.Advance(5);
 
         // Get size of the event payload to determine beginning of the checksum part
-        reader.Advance((int)EventType.FORMAT_DESCRIPTION_EVENT - 1);
+        reader.Advance((int)EventType.FormatDescriptionEvent - 1);
         var eventPayloadLength = reader.ReadByte();
 
-        var checksumType = ChecksumType.NONE;
+        var checksumType = ChecksumType.None;
         if (eventPayloadLength != header.EventLength - EventConstants.HeaderSize)
         {
-            reader.Advance(eventPayloadLength - (EventTypesOffset + (int)EventType.FORMAT_DESCRIPTION_EVENT));
+            reader.Advance(eventPayloadLength - (EventTypesOffset + (int)EventType.FormatDescriptionEvent));
             checksumType = (ChecksumType)reader.ReadByte();
         }
 

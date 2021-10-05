@@ -11,127 +11,127 @@ namespace MySqlCdc.Constants;
 public enum EventType
 {
     /// <summary>
-    /// Identifies <see cref="QueryEvent"/>.
+    /// Identifies <see cref="Events.QueryEvent"/>.
     /// </summary>
-    QUERY_EVENT = 2,
+    QueryEvent = 2,
 
     /// <summary>
     /// Identifies StopEvent.
     /// </summary>
-    STOP_EVENT = 3,
+    StopEvent = 3,
 
     /// <summary>
-    /// Identifies <see cref="RotateEvent"/>.
+    /// Identifies <see cref="Events.RotateEvent"/>.
     /// </summary>
-    ROTATE_EVENT = 4,
+    RotateEvent = 4,
 
     /// <summary>
     /// Identifies <see cref="IntVarEvent"/>.
     /// </summary>
-    INTVAR_EVENT = 5,
+    IntvarEvent = 5,
 
     /// <summary>
     /// Identifies RandEvent.
     /// </summary>
-    RAND_EVENT = 13,
+    RandEvent = 13,
 
     /// <summary>
     /// Identifies UserVarEvent.
     /// </summary>
-    USER_VAR_EVENT = 14,
+    UserVarEvent = 14,
 
     /// <summary>
-    /// Identifies <see cref="FormatDescriptionEvent"/>.
+    /// Identifies <see cref="Events.FormatDescriptionEvent"/>.
     /// </summary>
-    FORMAT_DESCRIPTION_EVENT = 15,
+    FormatDescriptionEvent = 15,
 
     /// <summary>
-    /// Identifies <see cref="XidEvent"/>.
+    /// Identifies <see cref="Events.XidEvent"/>.
     /// </summary>
-    XID_EVENT = 16,
+    XidEvent = 16,
 
     /// <summary>
-    /// Identifies <see cref="TableMapEvent"/>.
+    /// Identifies <see cref="Events.TableMapEvent"/>.
     /// </summary>
-    TABLE_MAP_EVENT = 19,
+    TableMapEvent = 19,
 
     /// <summary>
     /// Identifies <see cref="WriteRowsEvent"/> in MariaDB and MySQL from 5.1.15 to 5.6. 
     /// </summary>
-    WRITE_ROWS_EVENT_V1 = 23,
+    WriteRowsEventV1 = 23,
 
     /// <summary>
     /// Identifies <see cref="UpdateRowsEvent"/> in MariaDB and MySQL from 5.1.15 to 5.6. 
     /// </summary>
-    UPDATE_ROWS_EVENT_V1 = 24,
+    UpdateRowsEventV1 = 24,
 
     /// <summary>
     /// Identifies <see cref="DeleteRowsEvent"/> in MariaDB and MySQL from 5.1.15 to 5.6. 
     /// </summary>
-    DELETE_ROWS_EVENT_V1 = 25,
+    DeleteRowsEventV1 = 25,
 
     /// <summary>
-    /// Identifies <see cref="HeartbeatEvent"/>.
+    /// Identifies <see cref="Events.HeartbeatEvent"/>.
     /// </summary>
-    HEARTBEAT_EVENT = 27,
+    HeartbeatEvent = 27,
 
     /// <summary>
     /// Identifies <see cref="RowsQueryEvent"/> in MySQL from 5.6 to 8.0. 
     /// </summary>
-    MYSQL_ROWS_QUERY_EVENT = 29,
+    MySqlRowsQueryEvent = 29,
 
     /// <summary>
     /// Identifies <see cref="WriteRowsEvent"/> in MySQL from 5.6 to 8.0. 
     /// </summary>
-    MYSQL_WRITE_ROWS_EVENT_V2 = 30,
+    MySqlWriteRowsEventV2 = 30,
 
     /// <summary>
     /// Identifies <see cref="UpdateRowsEvent"/> in MySQL from 5.6 to 8.0. 
     /// </summary>
-    MYSQL_UPDATE_ROWS_EVENT_V2 = 31,
+    MySqlUpdateRowsEventV2 = 31,
 
     /// <summary>
     /// Identifies <see cref="DeleteRowsEvent"/> in MySQL from 5.6 to 8.0. 
     /// </summary>
-    MYSQL_DELETE_ROWS_EVENT_V2 = 32,
+    MySqlDeleteRowsEventV2 = 32,
 
     /// <summary>
     /// Identifies <see cref="GtidEvent"/> in MySQL from 5.6 to 8.0. 
     /// </summary>
-    MYSQL_GTID_EVENT = 33,
+    MySqlGtidEvent = 33,
 
     /// <summary>
     /// Identifies <see cref="PreviousGtidsEvent"/> in MySQL from 5.6 to 8.0. 
     /// </summary>
-    MYSQL_PREVIOUS_GTIDS_EVENT = 35,
+    MySqlPreviousGtidsEvent = 35,
 
     /// <summary>
     /// Identifies <see cref="XaPrepareEvent"/> in MySQL from 5.6 to 8.0. 
     /// </summary>
-    MYSQL_XA_PREPARE = 38,
+    MySqlXaPrepareEvent = 38,
 
     /// <summary>
     /// Identifies <see cref="RowsQueryEvent"/> in MariaDB. 
     /// </summary>
-    MARIADB_ANNOTATE_ROWS_EVENT = 160,
+    MariaDbAnnotateRowsEvent = 160,
 
     /// <summary>
     /// Identifies binlog checkpoint event in MariaDB. 
     /// </summary>
-    MARIADB_BINLOG_CHECKPOINT_EVENT = 161,
+    MariaDbBinlogCheckpointEvent = 161,
 
     /// <summary>
     /// Identifies <see cref="GtidEvent"/> in MariaDB. 
     /// </summary>
-    MARIADB_GTID_EVENT = 162,
+    MariaDbGtidEvent = 162,
 
     /// <summary>
     /// Identifies <see cref="GtidListEvent"/> in MariaDB. 
     /// </summary>
-    MARIADB_GTID_LIST_EVENT = 163,
+    MariaDbGtidListEvent = 163,
 
     /// <summary>
     /// Identifies encryption start event in MariaDB. 
     /// </summary>
-    MARIADB_START_ENCRYPTION_EVENT = 164
+    MariaDbStartEncryptionEvent = 164
 }

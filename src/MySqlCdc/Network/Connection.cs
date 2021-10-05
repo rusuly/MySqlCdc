@@ -12,10 +12,10 @@ namespace MySqlCdc.Network;
 
 internal class Connection
 {
-    private readonly ConnectionOptions _options;
+    private readonly ReplicaOptions _options;
     public Stream Stream { get; private set; }
 
-    public Connection(ConnectionOptions options)
+    public Connection(ReplicaOptions options)
     {
         _options = options;
         Exception? ex = null;
@@ -81,7 +81,7 @@ internal class Connection
 
     private bool ValidateServerCertificate(object sender, X509Certificate? certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors)
     {
-        if (_options.SslMode == SslMode.IF_AVAILABLE || _options.SslMode == SslMode.REQUIRE)
+        if (_options.SslMode == SslMode.IfAvailable || _options.SslMode == SslMode.Require)
             return true;
 
         if (sslPolicyErrors == SslPolicyErrors.None)

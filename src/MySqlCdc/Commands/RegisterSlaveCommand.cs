@@ -20,7 +20,7 @@ internal class RegisterSlaveCommand : ICommand
     {
         var writer = new PacketWriter();
 
-        writer.WriteByte((byte)CommandType.REGISTER_SLAVE);
+        writer.WriteByte((byte)CommandType.RegisterSlave);
         writer.WriteLongLittleEndian(ServerId, 4);
 
         //Empty host, user, password, port, rank, masterid

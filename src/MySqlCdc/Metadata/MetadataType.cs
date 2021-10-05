@@ -2,16 +2,16 @@ namespace MySqlCdc.Metadata;
 
 internal enum MetadataType
 {
-    SIGNEDNESS = 1,
-    DEFAULT_CHARSET,
-    COLUMN_CHARSET,
-    COLUMN_NAME,
-    SET_STR_VALUE,
-    ENUM_STR_VALUE,
-    GEOMETRY_TYPE,
-    SIMPLE_PRIMARY_KEY,
-    PRIMARY_KEY_WITH_PREFIX,
-    ENUM_AND_SET_DEFAULT_CHARSET,
-    ENUM_AND_SET_COLUMN_CHARSET,
-    COLUMN_VISIBILITY
+    Signedness = 1,
+    DefaultCharset = 2,
+    ColumnCharset = 3,
+    ColumnName = 4,
+    SetStrValue = 5,
+    EnumStrValue = 6,
+    GeometryType = 7,
+    SimplePrimaryKey = 8,
+    PrimaryKeyWithPrefix = 9,
+    EnumAndSetDefaultCharset = 10,
+    EnumAndSetColumnCharset = 11,
+    ColumnVisibility = 12
 }

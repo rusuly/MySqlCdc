@@ -28,7 +28,7 @@ internal class DumpBinlogGtidCommand : ICommand
     {
         var writer = new PacketWriter();
 
-        writer.WriteByte((byte)CommandType.BINLOG_DUMP_GTID);
+        writer.WriteByte((byte)CommandType.BinlogDumpGtid);
         writer.WriteIntLittleEndian(Flags, 2);
         writer.WriteLongLittleEndian(ServerId, 4);
 

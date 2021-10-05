@@ -80,7 +80,7 @@ public class TableMetadata
         while (!reader.IsEmpty())
         {
             var metadataType = (MetadataType)reader.ReadByte();
-            int metadataLength = (int)reader.ReadLengthEncodedNumber();
+            int metadataLength = reader.ReadLengthEncodedNumber();
 
             var metadata = reader.ReadByteArraySlow(metadataLength);
 
@@ -89,40 +89,40 @@ public class TableMetadata
 
             switch (metadataType)
             {
-                case MetadataType.SIGNEDNESS:
+                case MetadataType.Signedness:
                     Signedness = ReadSignednessBitmap(ref buffer, GetNumericColumnCount(columnTypes));
                     break;
-                case MetadataType.DEFAULT_CHARSET:
+                case MetadataType.DefaultCharset:
                     DefaultCharset = ParseDefaultCharset(ref buffer);
                     break;
-                case MetadataType.COLUMN_CHARSET:
+                case MetadataType.ColumnCharset:
                     ColumnCharsets = ParseIntArray(ref buffer);
                     break;
-                case MetadataType.COLUMN_NAME:
+                case MetadataType.ColumnName:
                     ColumnNames = ParseStringArray(ref buffer);
                     break;
-                case MetadataType.SET_STR_VALUE:
+                case MetadataType.SetStrValue:
                     SetStringValues = ParseTypeValues(ref buffer);
                     break;
-                case MetadataType.ENUM_STR_VALUE:
+                case MetadataType.EnumStrValue:
                     EnumStringValues = ParseTypeValues(ref buffer);
                     break;
-                case MetadataType.GEOMETRY_TYPE:
+                case MetadataType.GeometryType:
                     GeometryTypes = ParseIntArray(ref buffer);
                     break;
-                case MetadataType.SIMPLE_PRIMARY_KEY:
+                case MetadataType.SimplePrimaryKey:
                     SimplePrimaryKeys = ParseIntArray(ref buffer);
                     break;
-                case MetadataType.PRIMARY_KEY_WITH_PREFIX:
+                case MetadataType.PrimaryKeyWithPrefix:
                     PrimaryKeysWithPrefix = ParseIntMap(ref buffer);
                     break;
-                case MetadataType.ENUM_AND_SET_DEFAULT_CHARSET:
+                case MetadataType.EnumAndSetDefaultCharset:
                     EnumAndSetDefaultCharset = ParseDefaultCharset(ref buffer);
                     break;
-                case MetadataType.ENUM_AND_SET_COLUMN_CHARSET:
+                case MetadataType.EnumAndSetColumnCharset:
                     EnumAndSetColumnCharsets = ParseIntArray(ref buffer);
                     break;
-                case MetadataType.COLUMN_VISIBILITY:
+                case MetadataType.ColumnVisibility:
                     ColumnVisibility = ReadSignednessBitmap(ref buffer, columnTypes.Length);
                     break;
                 default:
@@ -215,17 +215,15 @@ public class TableMetadata
         {
             switch ((ColumnType)columnTypes[i])
             {
-                case ColumnType.TINY:
-                case ColumnType.SHORT:
-                case ColumnType.INT24:
-                case ColumnType.LONG:
-                case ColumnType.LONGLONG:
-                case ColumnType.FLOAT:
-                case ColumnType.DOUBLE:
-                case ColumnType.NEWDECIMAL:
+                case ColumnType.Tiny:
+                case ColumnType.Short:
+                case ColumnType.Int24:
+                case ColumnType.Long:
+                case ColumnType.LongLong:
+                case ColumnType.Float:
+                case ColumnType.Double:
+                case ColumnType.NewDecimal:
                     count++;
-                    break;
-                default:
                     break;
             }
         }

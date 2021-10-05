@@ -31,10 +31,10 @@ public class TableMapEventParser : IEventParser
         var tableName = reader.ReadString(tableNameLength);
         reader.Advance(1);
 
-        var columnsNumber = (int)reader.ReadLengthEncodedNumber();
+        var columnsNumber = reader.ReadLengthEncodedNumber();
         var columnTypes = reader.ReadByteArraySlow(columnsNumber);
 
-        var metadataLength = (int)reader.ReadLengthEncodedNumber();
+        var metadataLength = reader.ReadLengthEncodedNumber();
         var metadata = ParseMetadata(ref reader, columnTypes);
 
         var nullBitmap = reader.ReadBitmapLittleEndian(columnsNumber);
@@ -57,30 +57,30 @@ public class TableMapEventParser : IEventParser
             // See https://mariadb.com/kb/en/library/rows_event_v1/#column-data-formats
             switch ((ColumnType)columnTypes[i])
             {
-                case ColumnType.GEOMETRY:
-                case ColumnType.JSON:
-                case ColumnType.TINY_BLOB:
-                case ColumnType.MEDIUM_BLOB:
-                case ColumnType.LONG_BLOB:
-                case ColumnType.BLOB:
-                case ColumnType.FLOAT:
-                case ColumnType.DOUBLE:
-                case ColumnType.TIMESTAMP2:
-                case ColumnType.DATETIME2:
-                case ColumnType.TIME2:
+                case ColumnType.Geometry:
+                case ColumnType.Json:
+                case ColumnType.TinyBlob:
+                case ColumnType.MediumBlob:
+                case ColumnType.LongBlob:
+                case ColumnType.Blob:
+                case ColumnType.Float:
+                case ColumnType.Double:
+                case ColumnType.TimeStamp2:
+                case ColumnType.DateTime2:
+                case ColumnType.Time2:
                     metadata[i] = reader.ReadByte();
                     break;
 
-                case ColumnType.BIT:
-                case ColumnType.VARCHAR:
-                case ColumnType.VAR_STRING:
-                case ColumnType.NEWDECIMAL:
+                case ColumnType.Bit:
+                case ColumnType.VarChar:
+                case ColumnType.VarString:
+                case ColumnType.NewDecimal:
                     metadata[i] = reader.ReadUInt16LittleEndian();
                     break;
 
-                case ColumnType.ENUM:
-                case ColumnType.SET:
-                case ColumnType.STRING:
+                case ColumnType.Enum:
+                case ColumnType.Set:
+                case ColumnType.String:
                     metadata[i] = reader.ReadUInt16BigEndian();
                     break;
 
