@@ -5,7 +5,7 @@ namespace MySqlCdc.Events;
 /// <summary>
 /// Represents an inserted or deleted row in row based replication.
 /// </summary>
-public class ColumnData
+public class RowData
 {
     /// <summary>
     /// Column values of the changed row.
@@ -13,9 +13,9 @@ public class ColumnData
     public IReadOnlyList<object?> Cells { get; }
 
     /// <summary>
-    /// Creates a new <see cref="ColumnData"/>.
+    /// Creates a new <see cref="RowData"/>.
     /// </summary>
-    public ColumnData(IReadOnlyList<object?> cells)
+    public RowData(IReadOnlyList<object?> cells)
     {
         Cells = cells;
     }
@@ -24,22 +24,22 @@ public class ColumnData
 /// <summary>
 /// Represents an updated row in row based replication.
 /// </summary>
-public class UpdateColumnData
+public class UpdateRowData
 {
     /// <summary>
     /// Row state before it was updated.
     /// </summary>
-    public ColumnData BeforeUpdate { get; }
+    public RowData BeforeUpdate { get; }
 
     /// <summary>
     /// Actual row state after update.
     /// </summary>
-    public ColumnData AfterUpdate { get; }
+    public RowData AfterUpdate { get; }
 
     /// <summary>
-    /// Creates a new <see cref="UpdateColumnData"/>.
+    /// Creates a new <see cref="UpdateRowData"/>.
     /// </summary>
-    public UpdateColumnData(ColumnData beforeUpdate, ColumnData afterUpdate)
+    public UpdateRowData(RowData beforeUpdate, RowData afterUpdate)
     {
         BeforeUpdate = beforeUpdate;
         AfterUpdate = afterUpdate;

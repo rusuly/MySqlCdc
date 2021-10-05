@@ -36,13 +36,13 @@ public class DeleteRowsEventParser : RowEventParser, IEventParser
         return new DeleteRowsEvent(header, shared.tableId, shared.flags, shared.columnsNumber, columnsPresent, rows);
     }
 
-    private IReadOnlyList<ColumnData> ParseDeleteRows(ref PacketReader reader, long tableId, bool[] columnsPresent)
+    private IReadOnlyList<RowData> ParseDeleteRows(ref PacketReader reader, long tableId, bool[] columnsPresent)
     {
         var cellsIncluded = GetBitsNumber(columnsPresent);
         if (!_tableMapCache.TryGetValue(tableId, out var tableMap))
             throw new InvalidOperationException(EventConstants.TableMapNotFound);
 
-        var rows = new List<ColumnData>();
+        var rows = new List<RowData>();
         while (!reader.IsEmpty())
         {
             rows.Add(ParseRow(ref reader, tableMap, columnsPresent, cellsIncluded));

@@ -37,7 +37,7 @@ public class UpdateRowsEvent : BinlogEvent
     /// <summary>
     /// Gets updated rows
     /// </summary>
-    public IReadOnlyList<UpdateColumnData> Rows { get; }
+    public IReadOnlyList<UpdateRowData> Rows { get; }
 
     /// <summary>
     /// Creates a new <see cref="UpdateRowsEvent"/>.
@@ -49,7 +49,7 @@ public class UpdateRowsEvent : BinlogEvent
         int columnsNumber,
         bool[] columnsPresentBeforeUpdate,
         bool[] columnsPresentAfterUpdate,
-        IReadOnlyList<UpdateColumnData> rows)
+        IReadOnlyList<UpdateRowData> rows)
         : base(header)
     {
         TableId = tableId;

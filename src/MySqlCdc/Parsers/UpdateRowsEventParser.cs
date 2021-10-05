@@ -37,7 +37,7 @@ public class UpdateRowsEventParser : RowEventParser, IEventParser
         return new UpdateRowsEvent(header, shared.tableId, shared.flags, shared.columnsNumber, columnsBeforeUpdate, columnsAfterUpdate, rows);
     }
 
-    private IReadOnlyList<UpdateColumnData> ParseUpdateRows(
+    private IReadOnlyList<UpdateRowData> ParseUpdateRows(
         ref PacketReader reader,
         long tableId,
         bool[] columnsBeforeUpdate,
@@ -48,13 +48,13 @@ public class UpdateRowsEventParser : RowEventParser, IEventParser
         if (!_tableMapCache.TryGetValue(tableId, out var tableMap))
             throw new InvalidOperationException(EventConstants.TableMapNotFound);
 
-        var rows = new List<UpdateColumnData>();
+        var rows = new List<UpdateRowData>();
         while (!reader.IsEmpty())
         {
             var rowBeforeUpdate = ParseRow(ref reader, tableMap, columnsBeforeUpdate, cellsIncludedBeforeUpdate);
             var rowAfterUpdate = ParseRow(ref reader, tableMap, columnsAfterUpdate, cellsIncludedAfterUpdate);
 
-            rows.Add(new UpdateColumnData(rowBeforeUpdate, rowAfterUpdate));
+            rows.Add(new UpdateRowData(rowBeforeUpdate, rowAfterUpdate));
         }
         return rows;
     }

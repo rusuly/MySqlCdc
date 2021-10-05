@@ -31,7 +31,7 @@ public class DeleteRowsEvent : BinlogEvent
     /// <summary>
     /// Gets deleted rows
     /// </summary>
-    public IReadOnlyList<ColumnData> Rows { get; }
+    public IReadOnlyList<RowData> Rows { get; }
 
     /// <summary>
     /// Creates a new <see cref="DeleteRowsEvent"/>.
@@ -42,7 +42,7 @@ public class DeleteRowsEvent : BinlogEvent
         int flags,
         int columnsNumber,
         bool[] columnsPresent,
-        IReadOnlyList<ColumnData> rows)
+        IReadOnlyList<RowData> rows)
         : base(header)
     {
         TableId = tableId;

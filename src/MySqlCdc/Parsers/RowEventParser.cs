@@ -51,7 +51,7 @@ public abstract class RowEventParser
     /// <summary>
     /// Parses a row in a rows event.
     /// </summary>
-    protected ColumnData ParseRow(ref PacketReader reader, TableMapEvent tableMap, bool[] columnsPresent, int cellsIncluded)
+    protected RowData ParseRow(ref PacketReader reader, TableMapEvent tableMap, bool[] columnsPresent, int cellsIncluded)
     {
         var row = new object?[tableMap.ColumnTypes.Length];
         var nullBitmap = reader.ReadBitmapLittleEndian(cellsIncluded);
@@ -78,7 +78,7 @@ public abstract class RowEventParser
                 row[i] = ParseCell(ref reader, columnType, metadata);
             }
         }
-        return new ColumnData(row);
+        return new RowData(row);
     }
 
     private object? ParseCell(ref PacketReader reader, int columnType, int metadata)
