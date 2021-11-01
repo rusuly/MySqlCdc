@@ -1,11 +1,13 @@
 # MySqlCdc
+
+[![nuget](https://img.shields.io/nuget/v/MySqlCdc.svg)](https://www.nuget.org/packages/MySqlCdc)
+[![build](https://github.com/rusuly/MySqlCdc/actions/workflows/dotnetcore.yml/badge.svg)](https://github.com/rusuly/MySqlCdc/actions)
+
 MySQL/MariaDB binlog change data capture (CDC) connector for .NET
 
-Acts as a replication client streaming binary log events in real-time.
+Implements MySQL replication protocol to stream binary log events in real-time.
 
 **Kafka event streaming may be [more suitable](https://scaling.dev/replication/cdc) for your architecture.**
-
-NuGet feed: [MySqlCdc](https://www.nuget.org/packages/MySqlCdc)
 
 ## Use cases
 Transaction log events are immutable and appended in strictly sequential order. This simplifies your concurrency model and allows you to avoid distributed locks that handle race conditions from parallel database requests.
