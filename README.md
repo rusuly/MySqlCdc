@@ -1,7 +1,7 @@
 # MySqlCdc
 
 [![nuget](https://img.shields.io/nuget/v/MySqlCdc.svg)](https://www.nuget.org/packages/MySqlCdc)
-[![build](https://github.com/rusuly/MySqlCdc/actions/workflows/dotnetcore.yml/badge.svg)](https://github.com/rusuly/MySqlCdc/actions)
+[![build](https://github.com/rusuly/MySqlCdc/actions/workflows/dotnet.yml/badge.svg)](https://github.com/rusuly/MySqlCdc/actions)
 
 MySQL/MariaDB binlog change data capture (CDC) connector for .NET
 

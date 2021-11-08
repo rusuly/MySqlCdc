@@ -5,20 +5,27 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Nullable>enable</Nullable>
     <PackageId>MySqlCdc</PackageId>
-    <Version>3.0.0-rc.2</Version>
+    <Version>3.0.0</Version>
     <Authors>Ruslan Ulianets</Authors>
     <PackageTags>MySQL;MariaDB;Binlog;CDC;Change Data Capture;Replication;Streaming</PackageTags>
     <Description>MySQL/MariaDB binlog change data capture (CDC) connector for .NET</Description>
     <PackageProjectUrl>https://github.com/rusuly/MySqlCdc</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReleaseNotes>
-This version targets net6.0
+This version includes following changes:
+1)Targets net6.0.
+2)Code refactoring.
+3)Uses file-scoped namespaces.
+4)Enables nullable reference types.
+5)DATE columns are parsed as DateOnly type.
+6)Unsafe blocks removed.
+7)CertificateImporter replaced with ImportFromPem.
     </PackageReleaseNotes>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.IO.Pipelines" Version="6.0.0-rc.2.21480.5" />
-    <PackageReference Include="System.Text.Json" Version="6.0.0-rc.2.21480.5" />
+    <PackageReference Include="System.IO.Pipelines" Version="6.0.0" />
+    <PackageReference Include="System.Text.Json" Version="6.0.0" />
   </ItemGroup>
 </Project>
