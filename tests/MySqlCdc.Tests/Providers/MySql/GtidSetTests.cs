@@ -65,7 +65,7 @@ public class GtidSetTests
     }
 
     [Fact]
-    public void Test_СontinuousIntervals_Collapsed()
+    public void Test_ContinuousIntervals_Collapsed()
     {
         var gtidSet = GtidSet.Parse($"{ServerUuid1}:1-191:192-199");
         var uuidSet = gtidSet.UuidSets[Uuid.Parse(ServerUuid1)];
@@ -76,7 +76,7 @@ public class GtidSetTests
     }
 
     [Fact]
-    public void Test_NonСontinuousIntervals_NotCollapsed()
+    public void Test_NonContinuousIntervals_NotCollapsed()
     {
         var gtidSet = GtidSet.Parse($"{ServerUuid1}:1-191:193-199");
         var uuidSet = gtidSet.UuidSets[Uuid.Parse(ServerUuid1)];
