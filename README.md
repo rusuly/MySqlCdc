@@ -7,8 +7,6 @@ MySQL/MariaDB binlog change data capture (CDC) connector for .NET
 
 Implements MySQL replication protocol to stream binary log events in real-time.
 
-**Kafka event streaming may be [more suitable](https://scaling.dev/replication/cdc) for your architecture.**
-
 ## Use cases
 Transaction log events are immutable and appended in strictly sequential order. This simplifies your concurrency model and allows you to avoid distributed locks that handle race conditions from parallel database requests.
 - Event sourcing.
@@ -223,6 +221,7 @@ using (Stream stream = File.OpenRead("mysql-bin.000001"))
 
 ## Similar projects
 The project is based on [mysql-binlog-connector-java](https://github.com/shyiko/mysql-binlog-connector-java) library, [MariaDB](https://mariadb.com/kb/en/replication-protocol/) and MySQL documentation.
+- Rust: https://github.com/rusuly/mysql_cdc
 - Java: https://github.com/shyiko/mysql-binlog-connector-java
 - PHP: https://github.com/krowinski/php-mysql-replication
 - Python: https://github.com/noplay/python-mysql-replication
