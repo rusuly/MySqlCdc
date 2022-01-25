@@ -92,5 +92,11 @@ public class GtidSet : IGtidState
     /// <summary>
     /// Returns string representation of the GtidSet.
     /// </summary>
-    public override string ToString() => string.Join(",", UuidSets.Values);
+    public override string ToString()
+    {
+        var uuids = UuidSets.Values
+            .OrderBy(x => x.SourceId.ToString())
+            .ToList();
+        return string.Join(",", uuids);
+    }
 }
