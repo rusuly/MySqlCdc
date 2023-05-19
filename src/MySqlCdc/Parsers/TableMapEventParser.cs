@@ -42,7 +42,7 @@ public class TableMapEventParser : IEventParser
         TableMetadata? tableMetadata = null;
         if (!reader.IsEmpty())
         {
-            // Table metadata is supported in MySQL 5.6+ and MariaDB 10.5+.
+            // Table metadata is supported in MySQL 8.0.1+ and MariaDB 10.5+.
             tableMetadata = new TableMetadata(ref reader, columnTypes);
         }
 

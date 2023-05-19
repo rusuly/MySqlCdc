@@ -42,7 +42,7 @@ Please make sure the following requirements are met:
     server-id = 1
     ```
 
-3. Optionally in MySQL 5.6+ / MariaDB 10.5+ you can enable logging table metadata(column names, types, see `TableMetadata` class).
+3. Optionally in MySQL 8.0.1+ / MariaDB 10.5+ you can enable logging table metadata(column names, types, see `TableMetadata` class).
 
     ```conf
     binlog_row_metadata = full

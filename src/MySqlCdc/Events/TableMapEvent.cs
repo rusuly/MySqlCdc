@@ -39,7 +39,7 @@ public class TableMapEvent : BinlogEvent
     public bool[] NullBitmap { get; }
 
     /// <summary>
-    /// Gets table metadata for MySQL 5.6+
+    /// Gets table metadata for MySQL 8.0.1+
     /// </summary>
     public TableMetadata? TableMetadata { get; }
 
