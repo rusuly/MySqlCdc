@@ -38,6 +38,7 @@ public abstract class EventDeserializer
         EventParsers[EventType.RotateEvent] = new RotateEventParser();
 
         EventParsers[EventType.IntvarEvent] = new IntVarEventParser();
+        EventParsers[EventType.UserVarEvent] = new UserVarEventParser();
         EventParsers[EventType.QueryEvent] = new QueryEventParser();
         EventParsers[EventType.XidEvent] = new XidEventParser();
 
