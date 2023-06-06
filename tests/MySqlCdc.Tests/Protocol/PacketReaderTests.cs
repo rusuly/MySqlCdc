@@ -1,5 +1,3 @@
-using System;
-using System.Linq;
 using MySqlCdc.Constants;
 using MySqlCdc.Protocol;
 using Xunit;

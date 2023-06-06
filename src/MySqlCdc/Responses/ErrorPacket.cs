@@ -1,4 +1,3 @@
-using System;
 using MySqlCdc.Protocol;
 
 namespace MySqlCdc.Packets;

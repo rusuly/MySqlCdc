@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using MySqlCdc.Checksum;
 using MySqlCdc.Commands;
 using MySqlCdc.Constants;

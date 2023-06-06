@@ -1,5 +1,3 @@
-using System.Threading;
-using System.Threading.Tasks;
 using MySqlCdc.Commands;
 using MySqlCdc.Events;
 using MySqlCdc.Network;

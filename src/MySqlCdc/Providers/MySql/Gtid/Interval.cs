@@ -1,5 +1,3 @@
-using System;
-
 namespace MySqlCdc.Providers.MySql;
 
 /// <summary>

@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace MySqlCdc.Sample;
+﻿namespace MySqlCdc.Sample;
 
 class Program
 {

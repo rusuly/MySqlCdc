@@ -1,5 +1,3 @@
-using System;
-using System.Linq;
 using MySqlCdc.Columns;
 using MySqlCdc.Protocol;
 using MySqlCdc.Providers.MySql;

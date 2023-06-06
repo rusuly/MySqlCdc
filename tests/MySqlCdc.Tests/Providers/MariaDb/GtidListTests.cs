@@ -1,4 +1,3 @@
-using System;
 using MySqlCdc.Providers.MariaDb;
 using Xunit;
 

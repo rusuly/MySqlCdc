@@ -1,4 +1,3 @@
-using System;
 using System.Buffers;
 using MySqlCdc.Checksum;
 using MySqlCdc.Events;

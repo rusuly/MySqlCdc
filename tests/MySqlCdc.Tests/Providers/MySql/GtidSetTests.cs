@@ -1,4 +1,3 @@
-using System;
 using MySqlCdc.Providers.MySql;
 using Xunit;
 

@@ -1,9 +1,5 @@
-using System;
-using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using MySqlCdc.Commands;
 using MySqlCdc.Constants;
 using MySqlCdc.Network;

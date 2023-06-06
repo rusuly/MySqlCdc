@@ -4,6 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
     <PackageId>MySqlCdc</PackageId>
     <Version>3.0.2</Version>
     <Authors>Ruslan Ulianets</Authors>

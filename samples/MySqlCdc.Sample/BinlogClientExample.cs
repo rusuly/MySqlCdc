@@ -1,6 +1,3 @@
-using System;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 using MySqlCdc.Constants;
 using MySqlCdc.Events;
 using MySqlCdc.Providers.MariaDb;

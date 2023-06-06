@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using MySqlCdc.Events;
 using MySqlCdc.Protocol;
 

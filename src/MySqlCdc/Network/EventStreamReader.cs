@@ -1,4 +1,3 @@
-using System;
 using System.Buffers;
 using MySqlCdc.Constants;
 using MySqlCdc.Events;

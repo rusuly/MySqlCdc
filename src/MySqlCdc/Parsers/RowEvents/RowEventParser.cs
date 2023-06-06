@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using MySqlCdc.Columns;
 using MySqlCdc.Constants;
 using MySqlCdc.Events;

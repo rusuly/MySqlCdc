@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using MySqlCdc.Checksum;
 using MySqlCdc.Constants;
 using MySqlCdc.Parsers;
