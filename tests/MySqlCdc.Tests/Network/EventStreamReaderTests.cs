@@ -65,9 +65,10 @@ public class EventStreamReaderTests
         };
         var packet = reader.ReadPacket(new ReadOnlySequence<byte>(payload));
 
-        Assert.IsType<RotateEvent>(packet);
+        Assert.IsType<HeaderWithEvent>(packet);
+        var headerWithEvent = packet as HeaderWithEvent;
 
-        var rotateEvent = packet as RotateEvent;
+        var rotateEvent = headerWithEvent!.Event as RotateEvent;
         Assert.Equal("binlog.000001", rotateEvent!.BinlogFilename);
         Assert.Equal(4, rotateEvent.BinlogPosition);
     }

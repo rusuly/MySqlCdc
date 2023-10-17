@@ -21,6 +21,6 @@ public class XaPrepareEventParser : IEventParser
         string gtrid = reader.ReadString(gtridLength);
         string bqual = reader.ReadString(bqualLength);
 
-        return new XaPrepareEvent(header, onePhase, formatId, gtrid, bqual);
+        return new XaPrepareEvent(onePhase, formatId, gtrid, bqual);
     }
 }

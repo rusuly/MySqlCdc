@@ -19,7 +19,7 @@ public class UserVarEventParser : IEventParser
 
         bool isNull = reader.ReadByte() != 0; // 0 indicates there is a value
         if (isNull)
-            return new UserVarEvent(header, name, null);
+            return new UserVarEvent(name, null);
 
         byte variableType = reader.ReadByte();
         int collationNumber = (int)reader.ReadUInt32LittleEndian();
@@ -29,6 +29,6 @@ public class UserVarEventParser : IEventParser
 
         byte flags = reader.ReadByte();
 
-        return new UserVarEvent(header, name, new VariableValue(variableType, collationNumber, value, flags));
+        return new UserVarEvent(name, new VariableValue(variableType, collationNumber, value, flags));
     }
 }

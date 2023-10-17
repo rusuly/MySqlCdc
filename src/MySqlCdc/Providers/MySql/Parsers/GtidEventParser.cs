@@ -19,6 +19,6 @@ public class GtidEventParser : IEventParser
         var transactionId = reader.ReadInt64LittleEndian();
         var gtid = new Gtid(sourceId, transactionId);
 
-        return new GtidEvent(header, gtid, flags);
+        return new GtidEvent(gtid, flags);
     }
 }

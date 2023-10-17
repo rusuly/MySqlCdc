@@ -29,6 +29,6 @@ public class QueryEventParser : IEventParser
         reader.Advance(1);
         
         var sqlStatement = reader.ReadStringToEndOfFile();
-        return new QueryEvent(header, threadId, duration, errorCode, statusVariables, databaseName, sqlStatement);
+        return new QueryEvent(threadId, duration, errorCode, statusVariables, databaseName, sqlStatement);
     }
 }

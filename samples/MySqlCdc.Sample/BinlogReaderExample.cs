@@ -18,7 +18,7 @@ class BinlogReaderExample
 
             var reader = new BinlogReader(deserializer, stream);
 
-            await foreach (var binlogEvent in reader.ReadEvents())
+            await foreach (var (header, binlogEvent) in reader.ReadEvents())
             {
                 await PrintEventAsync(binlogEvent);
             }

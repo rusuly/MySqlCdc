@@ -16,6 +16,6 @@ public class HeartbeatEventParser : IEventParser
     {
         var binlogFilename = reader.ReadStringToEndOfFile();
 
-        return new HeartbeatEvent(header, binlogFilename);
+        return new HeartbeatEvent(binlogFilename);
     }
 }

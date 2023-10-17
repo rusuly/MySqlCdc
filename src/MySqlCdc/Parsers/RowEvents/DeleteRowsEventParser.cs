@@ -27,6 +27,6 @@ public class DeleteRowsEventParser : RowEventParser, IEventParser
         var columnsPresent = reader.ReadBitmapLittleEndian(shared.columnsNumber);
         var rows = ParseRowDataList(ref reader, shared.tableId, columnsPresent);
 
-        return new DeleteRowsEvent(header, shared.tableId, shared.flags, shared.columnsNumber, columnsPresent, rows);
+        return new DeleteRowsEvent(shared.tableId, shared.flags, shared.columnsNumber, columnsPresent, rows);
     }
 }

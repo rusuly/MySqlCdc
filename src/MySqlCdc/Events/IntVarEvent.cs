@@ -4,7 +4,7 @@ namespace MySqlCdc.Events;
 /// Generated when an auto increment column or LAST_INSERT_ID() function are used.
 /// <a href="https://mariadb.com/kb/en/library/intvar_event/">See more</a>
 /// </summary>
-public class IntVarEvent : BinlogEvent
+public class IntVarEvent : IBinlogEvent
 {
     /// <summary>
     /// Gets type.
@@ -22,7 +22,7 @@ public class IntVarEvent : BinlogEvent
     /// <summary>
     /// Creates a new <see cref="IntVarEvent"/>.
     /// </summary>
-    public IntVarEvent(EventHeader header, byte type, long value) : base(header)
+    public IntVarEvent(byte type, long value)
     {
         Type = type;
         Value = value;

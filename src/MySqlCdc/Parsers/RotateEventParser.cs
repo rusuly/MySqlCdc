@@ -17,6 +17,6 @@ public class RotateEventParser : IEventParser
         var binlogPosition = reader.ReadInt64LittleEndian();
         var binlogFilename = reader.ReadStringToEndOfFile();
 
-        return new RotateEvent(header, binlogFilename, binlogPosition);
+        return new RotateEvent(binlogFilename, binlogPosition);
     }
 }

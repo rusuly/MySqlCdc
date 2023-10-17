@@ -5,7 +5,7 @@ namespace MySqlCdc.Events;
 /// Includes versions before and after update.
 /// <a href="https://mariadb.com/kb/en/library/rows_event_v1/">See more</a>
 /// </summary>
-public class UpdateRowsEvent : BinlogEvent
+public class UpdateRowsEvent : IBinlogEvent
 {
     /// <summary>
     /// Gets id of the table where rows were updated
@@ -41,14 +41,12 @@ public class UpdateRowsEvent : BinlogEvent
     /// Creates a new <see cref="UpdateRowsEvent"/>.
     /// </summary>
     public UpdateRowsEvent(
-        EventHeader header,
         long tableId,
         int flags,
         int columnsNumber,
         bool[] columnsPresentBeforeUpdate,
         bool[] columnsPresentAfterUpdate,
         IReadOnlyList<UpdateRowData> rows)
-        : base(header)
     {
         TableId = tableId;
         Flags = flags;

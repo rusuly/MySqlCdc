@@ -17,6 +17,6 @@ public class IntVarEventParser : IEventParser
         byte type = reader.ReadByte();
         long value = reader.ReadInt64LittleEndian();
 
-        return new IntVarEvent(header, type, value);
+        return new IntVarEvent(type, value);
     }
 }

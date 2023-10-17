@@ -16,6 +16,6 @@ public class XidEventParser : IEventParser
     {
         var xid = reader.ReadInt64LittleEndian();
 
-        return new XidEvent(header, xid);
+        return new XidEvent(xid);
     }
 }

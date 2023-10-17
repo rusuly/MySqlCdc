@@ -39,7 +39,7 @@ class BinlogClientExample
             options.Binlog = BinlogOptions.FromStart();
         });
 
-        await foreach (var binlogEvent in client.Replicate())
+        await foreach (var (header, binlogEvent) in client.Replicate())
         {
             var state = client.State;
 

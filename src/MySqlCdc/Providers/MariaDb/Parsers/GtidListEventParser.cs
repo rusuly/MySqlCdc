@@ -26,6 +26,6 @@ public class GtidListEventParser : IEventParser
             gtidList.Gtids.Add(new Gtid(domainId, serverId, sequence));
         }
 
-        return new GtidListEvent(header, gtidList);
+        return new GtidListEvent(gtidList);
     }
 }

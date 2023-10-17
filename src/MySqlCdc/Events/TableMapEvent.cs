@@ -6,7 +6,7 @@ namespace MySqlCdc.Events;
 /// The event has table defition for row events.
 /// <a href="https://mariadb.com/kb/en/library/table_map_event/">See more</a>
 /// </summary>
-public class TableMapEvent : BinlogEvent
+public class TableMapEvent : IBinlogEvent
 {
     /// <summary>
     /// Gets id of the changed table
@@ -47,14 +47,13 @@ public class TableMapEvent : BinlogEvent
     /// Creates a new <see cref="TableMapEvent"/>.
     /// </summary>
     public TableMapEvent(
-        EventHeader header,
         long tableId,
         string databaseName,
         string tableName,
         byte[] columnTypes,
         int[] columnMetadata,
         bool[] nullBitmap,
-        TableMetadata? tableMetadata) : base(header)
+        TableMetadata? tableMetadata)
     {
         TableId = tableId;
         DatabaseName = databaseName;

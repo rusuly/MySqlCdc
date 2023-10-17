@@ -8,7 +8,7 @@ namespace MySqlCdc.Events;
 /// See <a href="https://dev.mysql.com/doc/internals/en/format-description-event.html">MySQL docs</a>
 /// See <a href="https://mariadb.com/kb/en/library/5-slave-registration/#events-transmission-after-com_binlog_dump">start events flow</a>
 /// </summary>
-public class FormatDescriptionEvent : BinlogEvent
+public class FormatDescriptionEvent : IBinlogEvent
 {
     /// <summary>
     /// Gets binary log format version. This should always be 4.
@@ -29,10 +29,9 @@ public class FormatDescriptionEvent : BinlogEvent
     /// Creates a new <see cref="FormatDescriptionEvent"/>.
     /// </summary>
     public FormatDescriptionEvent(
-        EventHeader header,
         int binlogVersion,
         string serverVersion,
-        ChecksumType checksumType) : base(header)
+        ChecksumType checksumType)
     {
         BinlogVersion = binlogVersion;
         ServerVersion = serverVersion;

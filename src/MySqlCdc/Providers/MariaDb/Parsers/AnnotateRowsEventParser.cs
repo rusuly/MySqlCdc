@@ -15,6 +15,6 @@ public class AnnotateRowsEventParser : IEventParser
     public IBinlogEvent ParseEvent(EventHeader header, ref PacketReader reader)
     {
         var query = reader.ReadStringToEndOfFile();
-        return new RowsQueryEvent(header, query);
+        return new RowsQueryEvent(query);
     }
 }

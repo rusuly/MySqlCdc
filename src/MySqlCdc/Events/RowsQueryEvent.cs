@@ -5,7 +5,7 @@ namespace MySqlCdc.Events;
 /// See <a href="https://dev.mysql.com/doc/internals/en/rows-query-event.html">MySQL docs</a>
 /// See <a href="https://mariadb.com/kb/en/annotate_rows_event/">MariaDB docs</a>
 /// </summary>
-public class RowsQueryEvent : BinlogEvent
+public class RowsQueryEvent : IBinlogEvent
 {
     /// <summary>
     /// Gets SQL statement
@@ -15,7 +15,7 @@ public class RowsQueryEvent : BinlogEvent
     /// <summary>
     /// Creates a new <see cref="RowsQueryEvent"/>.
     /// </summary>
-    public RowsQueryEvent(EventHeader header, string query) : base(header)
+    public RowsQueryEvent(string query)
     {
         Query = query;
     }

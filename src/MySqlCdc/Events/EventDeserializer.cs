@@ -51,10 +51,7 @@ public abstract class EventDeserializer
         EventParsers[EventType.MySqlDeleteRowsEventV2] = new DeleteRowsEventParser(TableMapCache, 2);
     }
 
-    /// <summary>
-    /// Constructs a <see cref="IBinlogEvent"/> from packet buffer.
-    /// </summary>
-    public virtual IBinlogEvent DeserializeEvent(ref PacketReader reader)
+    internal virtual HeaderWithEvent DeserializeEvent(ref PacketReader reader)
     {
         var eventHeader = new EventHeader(ref reader);
 
@@ -62,9 +59,9 @@ public abstract class EventDeserializer
         // ChecksumType.Verify(eventBuffer, checksumBuffer);
         reader.SliceFromEnd(ChecksumStrategy.Length);
 
-        IBinlogEvent binlogEvent = EventParsers.TryGetValue(eventHeader.EventType, out var eventParser) 
-            ? eventParser.ParseEvent(eventHeader, ref reader) 
-            : new UnknownEvent(eventHeader);
+        IBinlogEvent binlogEvent = EventParsers.TryGetValue(eventHeader.EventType, out var eventParser)
+            ? eventParser.ParseEvent(eventHeader, ref reader)
+            : new UnknownEvent();
 
         if (binlogEvent is FormatDescriptionEvent formatEvent)
         {
@@ -80,6 +77,6 @@ public abstract class EventDeserializer
             TableMapCache[tableMapEvent.TableId] = tableMapEvent;
         }
 
-        return binlogEvent;
+        return new HeaderWithEvent(eventHeader, binlogEvent);
     }
 }

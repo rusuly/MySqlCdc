@@ -28,6 +28,6 @@ public class UpdateRowsEventParser : RowEventParser, IEventParser
         var columnsAfterUpdate = reader.ReadBitmapLittleEndian(shared.columnsNumber);
 
         var rows = ParseUpdatedRows(ref reader, shared.tableId, columnsBeforeUpdate, columnsAfterUpdate);
-        return new UpdateRowsEvent(header, shared.tableId, shared.flags, shared.columnsNumber, columnsBeforeUpdate, columnsAfterUpdate, rows);
+        return new UpdateRowsEvent(shared.tableId, shared.flags, shared.columnsNumber, columnsBeforeUpdate, columnsAfterUpdate, rows);
     }
 }

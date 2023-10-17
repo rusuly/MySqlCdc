@@ -23,7 +23,7 @@ public class BinlogClient
     public BinlogClient(Action<ReplicaOptions> configureOptions)
     {
         configureOptions(_options);
-        
+
         if (_options.SslMode == SslMode.RequireVerifyCa || _options.SslMode == SslMode.RequireVerifyFull)
             throw new NotSupportedException($"{nameof(SslMode.RequireVerifyCa)} and {nameof(SslMode.RequireVerifyFull)} ssl modes are not supported");
     }
@@ -38,7 +38,7 @@ public class BinlogClient
     /// </summary>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Task completed when last event is read in non-blocking mode</returns>
-    public async IAsyncEnumerable<IBinlogEvent> Replicate(
+    public async IAsyncEnumerable<(EventHeader, IBinlogEvent)> Replicate(
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var (connection, databaseProvider) = await new Connector(_options).ConnectAsync(cancellationToken);
@@ -60,15 +60,15 @@ public class BinlogClient
         await foreach (var packet in channel.ReadPacketAsync(timeout, cancellationToken)
             .WithCancellation(cancellationToken))
         {
-            if (packet is IBinlogEvent binlogEvent)
+            if (packet is HeaderWithEvent binlogEvent)
             {
                 // We stop replication if client code throws an exception
                 // As a derived database may end up in an inconsistent state.
-                yield return binlogEvent;
+                yield return (binlogEvent.Header, binlogEvent.Event);
 
                 // Commit replication state if there is no exception.
-                UpdateGtidPosition(binlogEvent);
-                UpdateBinlogPosition(binlogEvent);
+                UpdateGtidPosition(binlogEvent.Event);
+                UpdateBinlogPosition(binlogEvent.Header, binlogEvent.Event);
             }
             else if (packet is EndOfFilePacket && !_options.Blocking)
                 yield break;
@@ -120,7 +120,7 @@ public class BinlogClient
             _options.Binlog.GtidState!.AddGtid(_gtid);
     }
 
-    private void UpdateBinlogPosition(IBinlogEvent binlogEvent)
+    private void UpdateBinlogPosition(EventHeader header, IBinlogEvent binlogEvent)
     {
         // Rows event depends on preceding TableMapEvent & we change the position
         // after we read them atomically to prevent missing mapping on reconnect.
@@ -133,9 +133,9 @@ public class BinlogClient
             _options.Binlog.Filename = rotateEvent.BinlogFilename;
             _options.Binlog.Position = rotateEvent.BinlogPosition;
         }
-        else if (binlogEvent.Header.NextEventPosition > 0)
+        else if (header.NextEventPosition > 0)
         {
-            _options.Binlog.Position = binlogEvent.Header.NextEventPosition;
+            _options.Binlog.Position = header.NextEventPosition;
         }
     }
 }

@@ -34,6 +34,6 @@ public class FormatDescriptionEventParser : IEventParser
             checksumType = (ChecksumType)reader.ReadByte();
         }
 
-        return new FormatDescriptionEvent(header, binlogVersion, serverVersion, checksumType);
+        return new FormatDescriptionEvent(binlogVersion, serverVersion, checksumType);
     }
 }

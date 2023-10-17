@@ -19,6 +19,6 @@ public class GtidEventParser : IEventParser
         var gtid = new Gtid(domainId, header.ServerId, sequence);
 
         byte flags = reader.ReadByte();
-        return new GtidEvent(header, gtid, flags);
+        return new GtidEvent(gtid, flags);
     }
 }

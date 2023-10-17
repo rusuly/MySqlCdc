@@ -32,6 +32,6 @@ public class PreviousGtidsEventParser : IEventParser
             gtidSet.UuidSets[sourceId] = uuidSet;
         }
 
-        return new PreviousGtidsEvent(header, gtidSet);
+        return new PreviousGtidsEvent(gtidSet);
     }
 }

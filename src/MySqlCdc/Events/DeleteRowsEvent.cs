@@ -4,7 +4,7 @@ namespace MySqlCdc.Events;
 /// Represents one or many deleted rows in row based replication.
 /// <a href="https://mariadb.com/kb/en/library/rows_event_v1/">See more</a>
 /// </summary>
-public class DeleteRowsEvent : BinlogEvent
+public class DeleteRowsEvent : IBinlogEvent
 {
     /// <summary>
     /// Gets id of the table where rows were deleted
@@ -35,13 +35,11 @@ public class DeleteRowsEvent : BinlogEvent
     /// Creates a new <see cref="DeleteRowsEvent"/>.
     /// </summary>
     public DeleteRowsEvent(
-        EventHeader header,
         long tableId,
         int flags,
         int columnsNumber,
         bool[] columnsPresent,
         IReadOnlyList<RowData> rows)
-        : base(header)
     {
         TableId = tableId;
         Flags = flags;

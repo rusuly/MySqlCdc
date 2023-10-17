@@ -5,7 +5,7 @@ namespace MySqlCdc.Events;
 /// <summary>
 /// Used to record the gtid_executed of previous binlog files.
 /// </summary>
-public class PreviousGtidsEvent : BinlogEvent
+public class PreviousGtidsEvent : IBinlogEvent
 {
     /// <summary>
     /// Gets GtidSet of previous files.
@@ -15,7 +15,7 @@ public class PreviousGtidsEvent : BinlogEvent
     /// <summary>
     /// Creates a new <see cref="PreviousGtidsEvent"/>.
     /// </summary>
-    public PreviousGtidsEvent(EventHeader header, GtidSet gtidSet) : base(header)
+    public PreviousGtidsEvent(GtidSet gtidSet)
     {
         GtidSet = gtidSet;
     }

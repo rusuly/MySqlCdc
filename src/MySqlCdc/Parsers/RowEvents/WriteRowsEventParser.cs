@@ -27,6 +27,6 @@ public class WriteRowsEventParser : RowEventParser, IEventParser
         var columnsPresent = reader.ReadBitmapLittleEndian(shared.columnsNumber);
         var rows = ParseRowDataList(ref reader, shared.tableId, columnsPresent);
 
-        return new WriteRowsEvent(header, shared.tableId, shared.flags, shared.columnsNumber, columnsPresent, rows);
+        return new WriteRowsEvent(shared.tableId, shared.flags, shared.columnsNumber, columnsPresent, rows);
     }
 }

@@ -5,7 +5,7 @@ namespace MySqlCdc.Events;
 /// Fake version is also returned when replication is started.
 /// <a href="https://mariadb.com/kb/en/library/rotate_event/">See more</a>
 /// </summary>
-public class RotateEvent : BinlogEvent
+public class RotateEvent : IBinlogEvent
 {
     /// <summary>
     /// Gets next binlog filename
@@ -20,8 +20,7 @@ public class RotateEvent : BinlogEvent
     /// <summary>
     /// Creates a new <see cref="RotateEvent"/>.
     /// </summary>
-    public RotateEvent(EventHeader header, string binlogFilename, long binlogPosition)
-        : base(header)
+    public RotateEvent(string binlogFilename, long binlogPosition)
     {
         BinlogFilename = binlogFilename;
         BinlogPosition = binlogPosition;

@@ -17,6 +17,6 @@ public class RowsQueryEventParser : IEventParser
         reader.Advance(1);
         var query = reader.ReadStringToEndOfFile();
 
-        return new RowsQueryEvent(header, query);
+        return new RowsQueryEvent(query);
     }
 }

@@ -38,7 +38,7 @@ public class BinlogReader
     /// </summary>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Binlog event instance</returns>
-    public async IAsyncEnumerable<IBinlogEvent> ReadEvents([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<(EventHeader, IBinlogEvent)> ReadEvents([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         while (!cancellationToken.IsCancellationRequested)
         {
@@ -58,7 +58,8 @@ public class BinlogReader
 
                 // Process event and repeat in case there are more event in the buffer
                 var packet = buffer.Slice(0, eventHeader.EventLength);
-                yield return Deserialize(packet);
+                var binlogEvent = Deserialize(packet);
+                yield return (binlogEvent.Header, binlogEvent.Event);
 
                 buffer = buffer.Slice(buffer.GetPosition(eventHeader.EventLength));
             }
@@ -79,7 +80,7 @@ public class BinlogReader
         return new EventHeader(ref reader);
     }
 
-    private IBinlogEvent Deserialize(ReadOnlySequence<byte> packet)
+    private HeaderWithEvent Deserialize(ReadOnlySequence<byte> packet)
     {
         using var memoryOwner = new MemoryOwner(packet);
         var reader = new PacketReader(memoryOwner.Memory.Span);

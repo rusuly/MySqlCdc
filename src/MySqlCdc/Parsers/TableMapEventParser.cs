@@ -46,7 +46,7 @@ public class TableMapEventParser : IEventParser
             tableMetadata = new TableMetadata(ref reader, columnTypes);
         }
 
-        return new TableMapEvent(header, tableId, databaseName, tableName, columnTypes, metadata, nullBitmap, tableMetadata);
+        return new TableMapEvent(tableId, databaseName, tableName, columnTypes, metadata, nullBitmap, tableMetadata);
     }
 
     private int[] ParseMetadata(ref PacketReader reader, byte[] columnTypes)

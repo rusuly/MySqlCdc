@@ -4,7 +4,7 @@ namespace MySqlCdc.Events;
 /// A USER_VAR_EVENT is written every time a statement uses a user defined variable.
 /// <a href="https://mariadb.com/kb/en/user_var_event/">See more</a>
 /// </summary>
-public class UserVarEvent : BinlogEvent
+public class UserVarEvent : IBinlogEvent
 {
     /// <summary>
     /// User variable name
@@ -19,7 +19,7 @@ public class UserVarEvent : BinlogEvent
     /// <summary>
     /// Creates a new <see cref="UserVarEvent"/>.
     /// </summary>
-    public UserVarEvent(EventHeader header, string name, VariableValue? value) : base(header)
+    public UserVarEvent(string name, VariableValue? value)
     {
         Name = name;
         Value = value;

@@ -4,7 +4,7 @@ namespace MySqlCdc.Events;
 /// Represents sql statement in binary log.
 /// <a href="https://mariadb.com/kb/en/library/query_event/">See more</a>
 /// </summary>
-public class QueryEvent : BinlogEvent
+public class QueryEvent : IBinlogEvent
 {
     /// <summary>
     /// Gets id of the thread that issued the statement.
@@ -40,13 +40,12 @@ public class QueryEvent : BinlogEvent
     /// Creates a new <see cref="QueryEvent"/>.
     /// </summary>
     public QueryEvent(
-        EventHeader header,
         long threadId,
         long duration,
         int errorCode,
         byte[] statusVariables,
         string databaseName,
-        string sqlStatement) : base(header)
+        string sqlStatement)
     {
         ThreadId = threadId;
         Duration = duration;

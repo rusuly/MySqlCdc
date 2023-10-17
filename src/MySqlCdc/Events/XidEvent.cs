@@ -4,7 +4,7 @@ namespace MySqlCdc.Events;
 /// Represents a transaction commit event.
 /// <a href="https://mariadb.com/kb/en/library/xid_event/">See more</a>
 /// </summary>
-public class XidEvent : BinlogEvent
+public class XidEvent : IBinlogEvent
 {
     /// <summary>
     /// Gets the XID transaction number
@@ -14,7 +14,7 @@ public class XidEvent : BinlogEvent
     /// <summary>
     /// Creates a new <see cref="XidEvent"/>.
     /// </summary>
-    public XidEvent(EventHeader header, long xid) : base(header)
+    public XidEvent(long xid)
     {
         Xid = xid;
     }
