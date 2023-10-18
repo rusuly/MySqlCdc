@@ -4,54 +4,44 @@ namespace MySqlCdc.Events;
 /// Represents sql statement in binary log.
 /// <a href="https://mariadb.com/kb/en/library/query_event/">See more</a>
 /// </summary>
-public class QueryEvent : IBinlogEvent
+/// <remarks>
+/// Creates a new <see cref="QueryEvent"/>.
+/// </remarks>
+public record QueryEvent(
+    long ThreadId,
+    long Duration,
+    int ErrorCode,
+    byte[] StatusVariables,
+    string DatabaseName,
+    string SqlStatement) : IBinlogEvent
 {
     /// <summary>
     /// Gets id of the thread that issued the statement.
     /// </summary>
-    public long ThreadId { get; }
+    public long ThreadId { get; } = ThreadId;
 
     /// <summary>
     /// Gets the execution time of the statement in seconds.
     /// </summary>
-    public long Duration { get; }
+    public long Duration { get; } = Duration;
 
     /// <summary>
     /// Gets the error code of the executed statement.
     /// </summary>
-    public int ErrorCode { get; }
+    public int ErrorCode { get; } = ErrorCode;
 
     /// <summary>
     /// Gets status variables.
     /// </summary>
-    public byte[] StatusVariables { get; }
+    public byte[] StatusVariables { get; } = StatusVariables;
 
     /// <summary>
     /// Gets the default database name.
     /// </summary>
-    public string DatabaseName { get; }
+    public string DatabaseName { get; } = DatabaseName;
 
     /// <summary>
     /// Gets the SQL statement.
     /// </summary>
-    public string SqlStatement { get; }
-
-    /// <summary>
-    /// Creates a new <see cref="QueryEvent"/>.
-    /// </summary>
-    public QueryEvent(
-        long threadId,
-        long duration,
-        int errorCode,
-        byte[] statusVariables,
-        string databaseName,
-        string sqlStatement)
-    {
-        ThreadId = threadId;
-        Duration = duration;
-        ErrorCode = errorCode;
-        StatusVariables = statusVariables;
-        DatabaseName = databaseName;
-        SqlStatement = sqlStatement;
-    }
+    public string SqlStatement { get; } = SqlStatement;
 }

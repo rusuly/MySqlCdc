@@ -4,61 +4,47 @@ namespace MySqlCdc.Events;
 /// A USER_VAR_EVENT is written every time a statement uses a user defined variable.
 /// <a href="https://mariadb.com/kb/en/user_var_event/">See more</a>
 /// </summary>
-public class UserVarEvent : IBinlogEvent
+/// <remarks>
+/// Creates a new <see cref="UserVarEvent"/>.
+/// </remarks>
+public record UserVarEvent(string Name, VariableValue? Value) : IBinlogEvent
 {
     /// <summary>
     /// User variable name
     /// </summary>
-    public string Name { get; }
+    public string Name { get; } = Name;
 
     /// <summary>
     /// User variable value
     /// </summary>
-    public VariableValue? Value { get; }
-
-    /// <summary>
-    /// Creates a new <see cref="UserVarEvent"/>.
-    /// </summary>
-    public UserVarEvent(string name, VariableValue? value)
-    {
-        Name = name;
-        Value = value;
-    }
+    public VariableValue? Value { get; } = Value;
 }
 
 /// <summary>
 /// User variable value
 /// </summary>
-public class VariableValue
+/// <remarks>
+/// Creates a new <see cref="VariableValue"/>.
+/// </remarks>
+public record VariableValue(byte VariableType, int CollationNumber, string Value, byte Flags)
 {
     /// <summary>
     /// Variable type
     /// </summary>
-    public byte VariableType { get; }
+    public byte VariableType { get; } = VariableType;
 
     /// <summary>
     /// Collation number
     /// </summary>
-    public int CollationNumber { get; }
+    public int CollationNumber { get; } = CollationNumber;
 
     /// <summary>
     /// User variable value
     /// </summary>
-    public string Value { get; }
+    public string Value { get; } = Value;
 
     /// <summary>
     /// flags
     /// </summary>
-    public byte Flags { get; }
-
-    /// <summary>
-    /// Creates a new <see cref="VariableValue"/>.
-    /// </summary>
-    public VariableValue(byte variableType, int collationNumber, string value, byte flags)
-    {
-        VariableType = variableType;
-        CollationNumber = collationNumber;
-        Value = value;
-        Flags = flags;
-    }
+    public byte Flags { get; } = Flags;
 }

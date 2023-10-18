@@ -77,7 +77,7 @@ public class BinlogReader
     {
         using var memoryOwner = new MemoryOwner(buffer.Slice(0, EventConstants.HeaderSize));
         var reader = new PacketReader(memoryOwner.Memory.Span);
-        return new EventHeader(ref reader);
+        return EventHeader.Read(ref reader);
     }
 
     private HeaderWithEvent Deserialize(ReadOnlySequence<byte> packet)

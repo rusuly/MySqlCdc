@@ -17,7 +17,7 @@ public class UserVarEventParserTests
     public void Test_UserVarEvent_ReturnsEvent()
     {
         var reader = new PacketReader(Payload);
-        var eventHeader = new EventHeader(ref reader);
+        var eventHeader = EventHeader.Read(ref reader);
 
         var parser = new UserVarEventParser();
         var @event = (UserVarEvent)parser.ParseEvent(eventHeader, ref reader);

@@ -53,7 +53,7 @@ public abstract class EventDeserializer
 
     internal virtual HeaderWithEvent DeserializeEvent(ref PacketReader reader)
     {
-        var eventHeader = new EventHeader(ref reader);
+        var eventHeader = EventHeader.Read(ref reader);
 
         // Consider verifying checksum
         // ChecksumType.Verify(eventBuffer, checksumBuffer);

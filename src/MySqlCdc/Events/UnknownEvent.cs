@@ -3,12 +3,7 @@ namespace MySqlCdc.Events;
 /// <summary>
 /// Represents other binlog events.
 /// </summary>
-public class UnknownEvent : IBinlogEvent
-{
-    /// <summary>
-    /// Creates a new <see cref="UnknownEvent"/>.
-    /// </summary>
-    public UnknownEvent()
-    {
-    }
-}
+/// <remarks>
+/// Creates a new <see cref="UnknownEvent"/>.
+/// </remarks>
+public record UnknownEvent : IBinlogEvent;

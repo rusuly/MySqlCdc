@@ -20,24 +20,18 @@ public interface IGtidState
 /// Marks start of a new event group(transaction).
 /// <a href="https://mariadb.com/kb/en/gtid_event/">See more</a>
 /// </summary>
-public class GtidEvent : IBinlogEvent
+/// <remarks>
+/// Creates a new <see cref="GtidEvent"/>.
+/// </remarks>
+public record GtidEvent(IGtid Gtid, byte Flags) : IBinlogEvent
 {
     /// <summary>
     /// Gets Global Transaction ID of the event group.
     /// </summary>
-    public IGtid Gtid { get; }
+    public IGtid Gtid { get; } = Gtid;
 
     /// <summary>
     /// Gets flags.
     /// </summary>
-    public byte Flags { get; }
-
-    /// <summary>
-    /// Creates a new <see cref="GtidEvent"/>.
-    /// </summary>
-    public GtidEvent(IGtid gtid, byte flags)
-    {
-        Gtid = gtid;
-        Flags = flags;
-    }
+    public byte Flags { get; } = Flags;
 }

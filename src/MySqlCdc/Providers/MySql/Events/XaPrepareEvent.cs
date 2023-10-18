@@ -3,36 +3,28 @@ namespace MySqlCdc.Events;
 /// <summary>
 /// Represents the commit event of a prepared XA transaction.
 /// </summary>
-public class XaPrepareEvent : IBinlogEvent
+/// <remarks>
+/// Creates a new <see cref="XaPrepareEvent"/>.
+/// </remarks>
+public record XaPrepareEvent(bool OnePhase, int FormatId, string Gtrid, string Bqual) : IBinlogEvent
 {
     /// <summary>
     /// XA transaction commit type. False => XA PREPARE. True => XA COMMIT ... ONE PHASE
     /// </summary>
-    public bool OnePhase { get; }
+    public bool OnePhase { get; } = OnePhase;
 
     /// <summary>
     /// The formatID part of the transaction xid.
     /// </summary>
-    public int FormatId { get; }
+    public int FormatId { get; } = FormatId;
 
     /// <summary>
     /// A global transaction identifier.
     /// </summary>  
-    public string Gtrid { get; }
+    public string Gtrid { get; } = Gtrid;
 
     /// <summary>
     /// A branch qualifier.
     /// </summary>  
-    public string Bqual { get; }
-
-    /// <summary>
-    /// Creates a new <see cref="XaPrepareEvent"/>.
-    /// </summary>
-    public XaPrepareEvent(bool onePhase, int formatId, string gtrid, string bqual)
-    {
-        OnePhase = onePhase;
-        FormatId = formatId;
-        Gtrid = gtrid;
-        Bqual = bqual;
-    }
+    public string Bqual { get; } = Bqual;
 }

@@ -8,48 +8,56 @@ namespace MySqlCdc.Events;
 /// See <a href="https://mariadb.com/kb/en/library/2-binlog-event-header/">MariaDB docs</a>
 /// See <a href="https://dev.mysql.com/doc/internals/en/binlog-version.html">MySQL docs</a>
 /// </summary>
-public class EventHeader
+public record EventHeader(
+    long Timestamp,
+    EventType EventType,
+    long ServerId,
+    long EventLength,
+    long NextEventPosition,
+    int EventFlags)
 {
     /// <summary>
     /// Provides creation time in seconds from Unix.
     /// </summary>
-    public long Timestamp { get; }
+    public long Timestamp { get; } = Timestamp;
 
     /// <summary>
     /// Gets type of the binlog event.
     /// </summary>
-    public EventType EventType { get; }
+    public EventType EventType { get; } = EventType;
 
     /// <summary>
     /// Gets id of the server that created the event.
     /// </summary>
-    public long ServerId { get; }
+    public long ServerId { get; } = ServerId;
 
     /// <summary>
     /// Gets event length (header + event + checksum).
     /// </summary>
-    public long EventLength { get; }
+    public long EventLength { get; } = EventLength;
 
     /// <summary>
     /// Gets file position of next event.
     /// </summary>
-    public long NextEventPosition { get; }
+    public long NextEventPosition { get; } = NextEventPosition;
 
     /// <summary>
     /// Gets event flags. See <a href="https://mariadb.com/kb/en/2-binlog-event-header/#event-flag">documentation</a>.
     /// </summary>
-    public int EventFlags { get; }
+    public int EventFlags { get; } = EventFlags;
 
     /// <summary>
     /// Creates a new <see cref="EventHeader"/>.
     /// </summary>
-    public EventHeader(ref PacketReader reader)
+    public static EventHeader Read(ref PacketReader reader)
     {
-        Timestamp = reader.ReadUInt32LittleEndian();
-        EventType = (EventType)reader.ReadByte();
-        ServerId = reader.ReadUInt32LittleEndian();
-        EventLength = reader.ReadUInt32LittleEndian();
-        NextEventPosition = reader.ReadUInt32LittleEndian();
-        EventFlags = reader.ReadUInt16LittleEndian();
+        return new EventHeader(
+            reader.ReadUInt32LittleEndian(),
+            (EventType)reader.ReadByte(),
+            reader.ReadUInt32LittleEndian(),
+            reader.ReadUInt32LittleEndian(),
+            reader.ReadUInt32LittleEndian(),
+            reader.ReadUInt16LittleEndian()
+        );
     }
 }

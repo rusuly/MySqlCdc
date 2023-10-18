@@ -4,47 +4,38 @@ namespace MySqlCdc.Events;
 /// Represents one or many deleted rows in row based replication.
 /// <a href="https://mariadb.com/kb/en/library/rows_event_v1/">See more</a>
 /// </summary>
-public class DeleteRowsEvent : IBinlogEvent
+/// <remarks>
+/// Creates a new <see cref="DeleteRowsEvent"/>.
+/// </remarks>
+public record DeleteRowsEvent(
+    long TableId,
+    int Flags,
+    int ColumnsNumber,
+    bool[] ColumnsPresent,
+    IReadOnlyList<RowData> Rows) : IBinlogEvent
 {
     /// <summary>
     /// Gets id of the table where rows were deleted
     /// </summary>
-    public long TableId { get; }
+    public long TableId { get; } = TableId;
 
     /// <summary>
     /// Gets <a href="https://mariadb.com/kb/en/rows_event_v1/#flags">flags</a>
     /// </summary>
-    public int Flags { get; }
+    public int Flags { get; } = Flags;
 
     /// <summary>
     /// Gets number of columns in the table
     /// </summary>
-    public int ColumnsNumber { get; }
+    public int ColumnsNumber { get; } = ColumnsNumber;
 
     /// <summary>
     /// Gets bitmap of columns present in row event. See binlog_row_image parameter.
     /// </summary>
-    public bool[] ColumnsPresent { get; }
+    public bool[] ColumnsPresent { get; } = ColumnsPresent;
 
     /// <summary>
     /// Gets deleted rows
     /// </summary>
-    public IReadOnlyList<RowData> Rows { get; }
-
-    /// <summary>
-    /// Creates a new <see cref="DeleteRowsEvent"/>.
-    /// </summary>
-    public DeleteRowsEvent(
-        long tableId,
-        int flags,
-        int columnsNumber,
-        bool[] columnsPresent,
-        IReadOnlyList<RowData> rows)
-    {
-        TableId = tableId;
-        Flags = flags;
-        ColumnsNumber = columnsNumber;
-        ColumnsPresent = columnsPresent;
-        Rows = rows;
-    }
+    public IReadOnlyList<RowData> Rows { get; } = Rows;
 }

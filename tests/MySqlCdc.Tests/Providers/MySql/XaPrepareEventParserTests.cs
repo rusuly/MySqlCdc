@@ -27,6 +27,6 @@ public class XaPrepareEventParserTests
     private EventHeader CreateEventHeader()
     {
         var reader = new PacketReader(Payload);
-        return new EventHeader(ref reader);
+        return EventHeader.Read(ref reader);
     }
 }

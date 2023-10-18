@@ -4,18 +4,13 @@ namespace MySqlCdc.Events;
 /// The event is sent from master to the client for keep alive feature.
 /// <a href="https://mariadb.com/kb/en/library/heartbeat_log_event/">See more</a>
 /// </summary>
-public class HeartbeatEvent : IBinlogEvent
+/// <remarks>
+/// Creates a new <see cref="HeartbeatEvent"/>.
+/// </remarks>
+public record HeartbeatEvent(string BinlogFilename) : IBinlogEvent
 {
     /// <summary>
     /// Gets current master binlog filename
     /// </summary>
-    public string BinlogFilename { get; }
-
-    /// <summary>
-    /// Creates a new <see cref="HeartbeatEvent"/>.
-    /// </summary>
-    public HeartbeatEvent(string binlogFilename)
-    {
-        BinlogFilename = binlogFilename;
-    }
+    public string BinlogFilename { get; } = BinlogFilename;
 }

@@ -5,26 +5,20 @@ namespace MySqlCdc.Providers.MySql;
 /// <summary>
 /// MySQL 5.6+ representation of Gtid.
 /// </summary>
-public class Gtid : IGtid
+/// <remarks>
+/// Creates a new <see cref="Gtid"/>.
+/// </remarks>
+public record Gtid(Uuid SourceId, long TransactionId) : IGtid
 {
     /// <summary>
     /// Gets identifier of the original server that generated the event.
     /// </summary>
-    public Uuid SourceId { get; }
+    public Uuid SourceId { get; } = SourceId;
 
     /// <summary>
     /// Gets sequence number of the event on the original server.
     /// </summary>
-    public long TransactionId { get; }
-
-    /// <summary>
-    /// Creates a new <see cref="Gtid"/>.
-    /// </summary>
-    public Gtid(Uuid sourceId, long transactionId)
-    {
-        SourceId = sourceId;
-        TransactionId = transactionId;
-    }
+    public long TransactionId { get; } = TransactionId;
 
     /// <summary>
     /// Returns string representation of Gtid in MySQL Server.

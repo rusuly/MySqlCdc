@@ -3,24 +3,18 @@ namespace MySqlCdc.Metadata;
 /// <summary>
 /// Represents charsets of character columns.
 /// </summary>
-public class DefaultCharset
+/// <remarks>
+/// Creates a new <see cref="DefaultCharset"/>.
+/// </remarks>
+public record DefaultCharset(int DefaultCharsetCollation, IReadOnlyDictionary<int, int> CharsetCollations)
 {
     /// <summary>
     /// Gets the most used charset collation.
     /// </summary>
-    public int DefaultCharsetCollation { get; }
+    public int DefaultCharsetCollation { get; } = DefaultCharsetCollation;
 
     /// <summary>
     /// Gets ColumnIndex-Charset map for columns that don't use the default charset.
     /// </summary>
-    public IReadOnlyDictionary<int, int> CharsetCollations { get; }
-
-    /// <summary>
-    /// Creates a new <see cref="DefaultCharset"/>.
-    /// </summary>
-    public DefaultCharset(int defaultCharsetCollation, IReadOnlyDictionary<int, int> charsetCollations)
-    {
-        DefaultCharsetCollation = defaultCharsetCollation;
-        CharsetCollations = charsetCollations;
-    }
+    public IReadOnlyDictionary<int, int> CharsetCollations { get; } = CharsetCollations;
 }

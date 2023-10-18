@@ -5,32 +5,25 @@ namespace MySqlCdc.Providers.MariaDb;
 /// <summary>
 /// MariaDB 10.0.2+ representation of Gtid.
 /// </summary>
-public class Gtid : IGtid
+/// <remarks>
+/// Creates a new <see cref="Gtid"/>.
+/// </remarks>
+public record Gtid(long DomainId, long ServerId, long Sequence) : IGtid
 {
     /// <summary>
     /// Gets domain identifier in multi-master setup.
     /// </summary>
-    public long DomainId { get; }
+    public long DomainId { get; } = DomainId;
 
     /// <summary>
     /// Gets identifier of the server that generated the event.
     /// </summary>
-    public long ServerId { get; }
+    public long ServerId { get; } = ServerId;
 
     /// <summary>
     /// Gets sequence number of the event on the original server.
     /// </summary>
-    public long Sequence { get; }
-
-    /// <summary>
-    /// Creates a new <see cref="Gtid"/>.
-    /// </summary>
-    public Gtid(long domainId, long serverId, long sequence)
-    {
-        DomainId = domainId;
-        ServerId = serverId;
-        Sequence = sequence;
-    }
+    public long Sequence { get; } = Sequence;
 
     /// <summary>
     /// Returns string representation of Gtid in MariaDB.
