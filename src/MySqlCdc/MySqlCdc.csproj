@@ -21,7 +21,7 @@ This version includes following changes:
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.IO.Pipelines" Version="8.0.0-rc.2.23479.6" />
-    <PackageReference Include="System.Text.Json" Version="8.0.0-rc.2.23479.6" />
+    <PackageReference Include="System.IO.Pipelines" Version="8.0.0" />
+    <PackageReference Include="System.Text.Json" Version="8.0.0" />
   </ItemGroup>
 </Project>
