@@ -1,10 +1,4 @@
-﻿namespace MySqlCdc.Sample;
+﻿using MySqlCdc.Sample;
 
-class Program
-{
-    static async Task Main(string[] args)
-    {
-        await BinlogReaderExample.Start(mariadb: false);
-        await BinlogClientExample.Start();
-    }
-}
+await BinlogReaderExample.Start(mariadb: false);
+await BinlogClientExample.Start();
