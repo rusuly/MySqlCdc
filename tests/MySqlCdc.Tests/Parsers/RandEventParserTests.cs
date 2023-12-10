@@ -23,7 +23,7 @@ public class RandEventParserTests
         var parser = new RandEventParser();
         var @event = (RandEvent)parser.ParseEvent(eventHeader, ref reader);
         ;
-        Assert.Equal(763747084, @event.Seed1);
-        Assert.Equal(79468295, @event.Seed2);
+        Assert.Equal(763747084UL, @event.Seed1);
+        Assert.Equal(79468295UL, @event.Seed2);
     }
 }

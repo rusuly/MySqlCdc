@@ -15,8 +15,8 @@ namespace MySqlCdc.Parsers;
         /// </summary>
         public IBinlogEvent ParseEvent(EventHeader header, ref PacketReader reader) 
         {
-            var seed1 = reader.ReadInt64LittleEndian();
-            var seed2 = reader.ReadInt64LittleEndian();
+            var seed1 = reader.ReadUInt64LittleEndian();
+            var seed2 = reader.ReadUInt64LittleEndian();
 
             return new RandEvent(seed1, seed2);
         }

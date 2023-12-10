@@ -7,16 +7,15 @@ namespace MySqlCdc.Events;
     /// <remarks>
     /// Creates a new <see cref="RandEvent"/>.
     /// </remarks>
-    public record RandEvent(long Seed1, long Seed2) : IBinlogEvent
+    public record RandEvent(ulong Seed1, ulong Seed2) : IBinlogEvent
     {
         /// <summary>
         /// Gets the rand_seed1
         /// </summary>
-        public long Seed1 {get; } = Seed1;
+        public ulong Seed1 {get; } = Seed1;
 
         /// <summary>
         /// Gets the rand_seed2
         /// </summary>
-        public long Seed2 {get; } = Seed2;
-        
+        public ulong Seed2 { get; } = Seed2;
     }
