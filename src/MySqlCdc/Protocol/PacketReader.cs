@@ -69,6 +69,16 @@ public ref struct PacketReader
     /// <summary>
     /// Reads 64-bit long written in little-endian format.
     /// </summary>
+    public UInt64 ReadUInt64LittleEndian()
+    {
+        UInt64 result = BinaryPrimitives.ReadUInt64LittleEndian(_span.Slice(_offset));
+        _offset += 8;
+        return result;
+    }
+
+    /// <summary>
+    /// Reads 64-bit long written in little-endian format.
+    /// </summary>
     public long ReadInt64LittleEndian()
     {
         long result = BinaryPrimitives.ReadInt64LittleEndian(_span.Slice(_offset));
