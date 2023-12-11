@@ -216,13 +216,6 @@ using (Stream stream = File.OpenRead("mysql-bin.000001"))
 - GEOMETRY type is read as `byte[]` but there is no parser that constructs .NET objects.
 - DECIMAL type is parsed to string as MySql decimal has bigger range(65 digits) than .NET decimal.
 
-## Similar projects
-The project is based on [mysql-binlog-connector-java](https://github.com/shyiko/mysql-binlog-connector-java) library, [MariaDB](https://mariadb.com/kb/en/replication-protocol/) and MySQL documentation.
-- Rust: https://github.com/rusuly/mysql_cdc
-- Java: https://github.com/shyiko/mysql-binlog-connector-java
-- PHP: https://github.com/krowinski/php-mysql-replication
-- Python: https://github.com/noplay/python-mysql-replication
-
 ## Supported versions
 MySqlCdc supports both MariaDB & MySQL server.
 

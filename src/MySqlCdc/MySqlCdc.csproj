@@ -17,6 +17,7 @@ This version includes following changes:
 1)Targets .NET 8
 2)Separated Header from BinlogEvent.
 3)Events are now declared as records.
+4)Added RandEvent.
     </PackageReleaseNotes>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
