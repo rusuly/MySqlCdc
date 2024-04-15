@@ -210,25 +210,45 @@ internal class ColumnParser
 
     public TimeSpan ParseTime2(ref PacketReader reader, int metadata)
     {
-        int value = reader.ReadIntBigEndian(3);
-        int millisecond = ParseFractionalPart(ref reader, metadata) / 1000;
+        // On disk we convert from signed representation to unsigned
+        // representation using TIMEF_OFS, so all values become binary comparable.
 
-        bool negative = ((value >> 23) & 1) == 0;
+        //#define TIMEF_OFS 0x800000000000LL
+        //#define TIMEF_INT_OFS 0x800000LL
+
+        const long TIMEF_INT_OFS = 0x800000;
+
+        long value = reader.ReadIntBigEndian(3);
+        value -= TIMEF_INT_OFS;
+        int frac = ParseFractionalPart(ref reader, metadata);
+
+        bool negative = value < 0;
         if (negative)
         {
+            if (frac != 0)
+            {
+                value++;
+                frac = 0x100 - frac;
+            }
+
+            value *= (-1);
             // It looks like other similar clients don't parse TIME2 values properly
             // In negative time values both TIME and FSP are stored in reverse order
             // See https://github.com/mysql/mysql-server/blob/ea7d2e2d16ac03afdd9cb72a972a95981107bf51/sql/log_event.cc#L2022
             // See https://github.com/mysql/mysql-server/blob/ea7d2e2d16ac03afdd9cb72a972a95981107bf51/mysys/my_time.cc#L1784
-            throw new NotSupportedException("Parsing negative TIME values is not supported in this version");
+            //throw new NotSupportedException("Parsing negative TIME values is not supported in this version");
         }
 
-        // 1 bit sign. 1 bit unused. 10 bits hour. 6 bits minute. 6 bits second.
-        int hour = (value >> 12) % (1 << 10);
-        int minute = (value >> 6) % (1 << 6);
-        int second = value % (1 << 6);
+        int millisecond = frac / 1000;
 
-        return new TimeSpan(0, hour, minute, second, millisecond);
+        // 1 bit sign. 1 bit unused. 10 bits hour. 6 bits minute. 6 bits second.
+        // -01:05:10.20
+        long hour = (value >> 12) % (1 << 10);
+        long minute = (value >> 6) % (1 << 6);
+        long second = value % (1 << 6);
+
+        TimeSpan ts = new TimeSpan(0, (int)hour, (int)minute, (int)second, millisecond);
+        return negative ? ts.Negate() : ts;
     }
 
     public DateTimeOffset ParseTimeStamp2(ref PacketReader reader, int metadata)
