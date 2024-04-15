@@ -211,12 +211,10 @@ namespace MySqlCdc.Columns
 
         public TimeSpan ParseTime2(ref PacketReader reader, int metadata)
         {
-            // On disk we convert from signed representation to unsigned
-            // representation using TIMEF_OFS, so all values become binary comparable.
 
-            //#define TIMEF_OFS 0x800000000000LL
-            //#define TIMEF_INT_OFS 0x800000LL
-
+            // see MySQL server, my_time.cc
+            // #define TIMEF_INT_OFS 0x800000LL
+            // https://github.com/mysql/mysql-server/blob/ea7d2e2d16ac03afdd9cb72a972a95981107bf51/mysys/my_time.cc#L1734
             const long TIMEF_INT_OFS = 0x800000;
             
             long value = reader.ReadIntBigEndian(3);
