@@ -282,7 +282,47 @@ namespace MySqlCdc.Tests.Providers
             Assert.Equal(4, reader.Consumed);
         }
 
-        [Fact(Skip = "See ParseTime2 method implementation")]
+        [Fact]
+        public void Test_Time2_Positive_Len4()
+        {
+            // time(2), column = '15:22:33.1234'
+            byte[] payload = new byte[] { 128, 245, 161, 4, 210 };
+            var reader = new PacketReader(payload);
+            int metadata = 4;
+
+            var expected = new TimeSpan(0, 15, 22, 33);
+            expected = expected.Add(TimeSpan.FromMilliseconds(123.4));
+            Assert.Equal(expected, _columnParser.ParseTime2(ref reader, metadata));
+            Assert.Equal(5, reader.Consumed);
+        }
+
+        [Fact]
+        public void Test_Time2_Positive_Len6()
+        {
+            // time(2), column = '15:22:33.123456'
+            byte[] payload = new byte[] { 128, 245, 161, 1, 226, 64};
+            var reader = new PacketReader(payload);
+            int metadata = 6;
+
+            var expected = new TimeSpan(0, 15, 22, 33);
+            expected = expected.Add(TimeSpan.FromMilliseconds(123.456));
+            Assert.Equal(expected, _columnParser.ParseTime2(ref reader, metadata));
+            Assert.Equal(6, reader.Consumed);
+        }
+
+        [Fact]
+        public void Test_Time2_Negative_without_fraction()
+        {
+            // time(2), column = '-11:05:10'
+            byte[] payload = new byte[] { 127, 78, 182 };
+            var reader = new PacketReader(payload);
+            int metadata = 0;
+
+            Assert.Equal(new TimeSpan(0, 11, 05, 10, 0).Negate(), _columnParser.ParseTime2(ref reader, metadata));
+            Assert.Equal(3, reader.Consumed);
+        }
+
+        [Fact]
         public void Test_Time2_Negative()
         {
             // time(2), column = '-15:22:33.67'
@@ -290,8 +330,64 @@ namespace MySqlCdc.Tests.Providers
             var reader = new PacketReader(payload);
             int metadata = 2;
 
-            Assert.Equal(new TimeSpan(0, -15, 22, 33, 67), _columnParser.ParseTime2(ref reader, metadata));
+            Assert.Equal(new TimeSpan(0, 15, 22, 33, 670).Negate(), _columnParser.ParseTime2(ref reader, metadata));
             Assert.Equal(4, reader.Consumed);
+        }
+
+        [Fact]
+        public void Test_Time2_Negative_Len_3()
+        {
+            // time(2), column = '-15:22:33.123'
+            byte[] payload = new byte[] { 127, 10, 94, 251, 50 };
+            var reader = new PacketReader(payload);
+            int metadata = 4;
+
+            var expected = new TimeSpan(0, 15, 22, 33);
+            expected = expected.Add(TimeSpan.FromMilliseconds(123));
+            Assert.Equal(expected.Negate(), _columnParser.ParseTime2(ref reader, metadata));
+            Assert.Equal(5, reader.Consumed);
+        }
+
+        [Fact]
+        public void Test_Time2_Negative_Len_4()
+        {
+            // time(2), column = '-15:22:33.1234'
+            byte[] payload = new byte[] { 127, 10, 94, 251, 46 };
+            var reader = new PacketReader(payload);
+            int metadata = 4;
+
+            var expected = new TimeSpan(0, 15, 22, 33);
+            expected = expected.Add(TimeSpan.FromMilliseconds(123.4));
+            Assert.Equal(expected.Negate(), _columnParser.ParseTime2(ref reader, metadata));
+            Assert.Equal(5, reader.Consumed);
+        }
+
+        [Fact]
+        public void Test_Time2_Negative_Len_5()
+        {
+            // time(2), column = '-15:22:33.12345'
+            byte[] payload = new byte[] { 127, 10, 94, 254, 29, 198 };
+            var reader = new PacketReader(payload);
+            int metadata = 6;
+
+            var expected = new TimeSpan(0, 15, 22, 33);
+            expected = expected.Add(TimeSpan.FromMilliseconds(123.45));
+            Assert.Equal(expected.Negate(), _columnParser.ParseTime2(ref reader, metadata));
+            Assert.Equal(6, reader.Consumed);
+        }
+
+        [Fact]
+        public void Test_Time2_Negative_Len_6()
+        {
+            // time(2), column = '-15:22:33.123456'
+            byte[] payload = new byte[] { 127, 10, 94, 254, 29, 192 };
+            var reader = new PacketReader(payload);
+            int metadata = 6;
+
+            var expected = new TimeSpan(0, 15, 22, 33);
+            expected = expected.Add(TimeSpan.FromMilliseconds(123.456));
+            Assert.Equal(expected.Negate(), _columnParser.ParseTime2(ref reader, metadata));
+            Assert.Equal(6, reader.Consumed);
         }
 
         [Fact]
@@ -344,7 +440,7 @@ namespace MySqlCdc.Tests.Providers
             Assert.Equal(3, reader.Consumed);
         }
 
-        [Fact(Skip = "See ParseTime method implementation")]
+        [Fact]
         public void Test_Time_Negative()
         {
             // time, column = '-14:12:13'

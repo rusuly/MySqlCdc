@@ -211,49 +211,65 @@ namespace MySqlCdc.Columns
 
         public TimeSpan ParseTime2(ref PacketReader reader, int metadata)
         {
-
+            if(metadata > 6)
+                throw new NotSupportedException($"Len > 6 is not supported in MySQL. Got {metadata}");
+            
             // see MySQL server, my_time.cc
-            // #define TIMEF_INT_OFS 0x800000LL
             // https://github.com/mysql/mysql-server/blob/ea7d2e2d16ac03afdd9cb72a972a95981107bf51/mysys/my_time.cc#L1734
             const long TIMEF_INT_OFS = 0x800000;
-            
-            long value = reader.ReadIntBigEndian(3);
-            value -= TIMEF_INT_OFS;
-            int frac = ParseFractionalPart(ref reader, metadata);
+            const long TIMEF_OFS = 0x800000000000;
+
+            int length = metadata <= 4 ? 3 : 6;
+            long value = reader.ReadLongBigEndian(length);
+
+            if(metadata <= 4)
+                value -= TIMEF_INT_OFS;
+            else // 5 and 6
+                value -= TIMEF_OFS;
 
             bool negative = value < 0;
-            if (negative)
-            {
-                if (frac != 0)
-                {
-                    value++;
-                    frac = 0x100 - frac;
-                }
 
-                value *= (-1);
-                // It looks like other similar clients don't parse TIME2 values properly
+            long frac;
+            if(metadata <= 4)
+                frac = ParseFractionalPart(ref reader, metadata, negative);
+            else // 5 and 6
+            {
+                if (negative)
+                    value *= (-1);
+                frac = value % (1L << 24);
+                value = (value >> 24);
+            }
+
+            if (negative && frac != 0 && metadata >= 1 && metadata <= 4)
+            {
                 // In negative time values both TIME and FSP are stored in reverse order
                 // See https://github.com/mysql/mysql-server/blob/ea7d2e2d16ac03afdd9cb72a972a95981107bf51/sql/log_event.cc#L2022
                 // See https://github.com/mysql/mysql-server/blob/ea7d2e2d16ac03afdd9cb72a972a95981107bf51/mysys/my_time.cc#L1784
-                //throw new NotSupportedException("Parsing negative TIME values is not supported in this version");
+                value++;
+                value *= (-1);
+            }
+            else if (negative && metadata == 0)
+            {
+                value *= (-1);
             }
 
-            int millisecond = frac / 1000;
-            
+            double millisecond = frac / 1000D;
+
             // 1 bit sign. 1 bit unused. 10 bits hour. 6 bits minute. 6 bits second.
-            // -01:05:10.20
+            // '-15:22:33.67'
             long hour = (value >> 12) % (1 << 10);
             long minute = (value >> 6) % (1 << 6);
             long second = value % (1 << 6);
 
-            TimeSpan ts = new TimeSpan(0, (int)hour, (int)minute, (int)second, millisecond);
+            TimeSpan ts = new TimeSpan(0, (int)hour, (int)minute, (int)second, 0);
+            ts = ts.Add(TimeSpan.FromMilliseconds(millisecond));
             return negative ? ts.Negate() : ts;
         }
 
         public DateTimeOffset ParseTimeStamp2(ref PacketReader reader, int metadata)
         {
             long seconds = reader.ReadUInt32BigEndian();
-            int millisecond = ParseFractionalPart(ref reader, metadata) / 1000;
+            int millisecond = (int)ParseFractionalPart(ref reader, metadata) / 1000;
             long timestamp = seconds * 1000 + millisecond;
 
             return DateTimeOffset.FromUnixTimeMilliseconds(timestamp);
@@ -262,7 +278,7 @@ namespace MySqlCdc.Columns
         public DateTime? ParseDateTime2(ref PacketReader reader, int metadata)
         {
             long value = reader.ReadLongBigEndian(5);
-            int millisecond = ParseFractionalPart(ref reader, metadata) / 1000;
+            int millisecond = (int)ParseFractionalPart(ref reader, metadata) / 1000;
 
             // 1 bit sign(always true). 17 bits year*13+month. 5 bits day. 5 bits hour. 6 bits minute. 6 bits second.
             int yearMonth = (int)((value >> 22) % (1 << 17));
@@ -279,13 +295,21 @@ namespace MySqlCdc.Columns
             return new DateTime(year, month, day, hour, minute, second, millisecond);
         }
 
-        private int ParseFractionalPart(ref PacketReader reader, int metadata)
+        private long ParseFractionalPart(ref PacketReader reader, int metadata, bool negative = false)
         {
             int length = (metadata + 1) / 2;
             if (length == 0)
                 return 0;
 
-            int fraction = reader.ReadIntBigEndian(length);
+            long fraction = reader.ReadLongBigEndian(length);
+            if (negative && metadata <= 2)
+            {
+                fraction = (256 - fraction);
+            }
+            else if (negative && metadata <= 4)
+            {
+                fraction = (65536 - fraction);
+            }
             return fraction * (int)Math.Pow(100, 3 - length);
         }
     }
