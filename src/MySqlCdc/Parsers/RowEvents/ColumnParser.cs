@@ -210,24 +210,28 @@ internal class ColumnParser
 
     public TimeSpan ParseTime2(ref PacketReader reader, int metadata)
     {
+        if (metadata < 0)
+            throw new NotSupportedException($"Len < 0 is not supported in MySQL. Got {metadata}");
         if (metadata > 6)
             throw new NotSupportedException($"Len > 6 is not supported in MySQL. Got {metadata}");
-
-        // see MySQL server, my_time.cc
-        // https://github.com/mysql/mysql-server/blob/ea7d2e2d16ac03afdd9cb72a972a95981107bf51/mysys/my_time.cc#L1734
-        const long TIMEF_INT_OFS = 0x800000;
-        const long TIMEF_OFS = 0x800000000000;
 
         int length = metadata <= 4 ? 3 : 6;
         long value = reader.ReadLongBigEndian(length);
 
+        // see MySQL server, my_time.cc for constant values
+        // https://github.com/mysql/mysql-server/blob/ea7d2e2d16ac03afdd9cb72a972a95981107bf51/mysys/my_time.cc#L1734
         if (metadata <= 4)
+        {
+            const long TIMEF_INT_OFS = 0x800000;
             value -= TIMEF_INT_OFS;
+        }
         else // 5 and 6
+        {
+            const long TIMEF_OFS = 0x800000000000;
             value -= TIMEF_OFS;
+        }
 
         bool negative = value < 0;
-
         long frac;
         if (metadata <= 4)
             frac = ParseFractionalPart(ref reader, metadata, negative);
@@ -245,12 +249,10 @@ internal class ColumnParser
             // See https://github.com/mysql/mysql-server/blob/ea7d2e2d16ac03afdd9cb72a972a95981107bf51/sql/log_event.cc#L2022
             // See https://github.com/mysql/mysql-server/blob/ea7d2e2d16ac03afdd9cb72a972a95981107bf51/mysys/my_time.cc#L1784
             value++;
-            value *= (-1);
         }
-        else if (negative && metadata == 0)
-        {
+
+        if (negative && metadata <= 4)
             value *= (-1);
-        }
 
         double millisecond = frac / 1000D;
 
@@ -301,11 +303,11 @@ internal class ColumnParser
             return 0;
 
         long fraction = reader.ReadLongBigEndian(length);
-        if (negative && metadata <= 2)
+        if (negative && metadata <= 2 && fraction > 0)
         {
             fraction = (256 - fraction);
         }
-        else if (negative && metadata <= 4)
+        else if (negative && metadata <= 4 && fraction > 0)
         {
             fraction = (65536 - fraction);
         }

@@ -309,6 +309,20 @@ public class ColumnParserTests
     }
 
     [Fact]
+    public void Test_Time2_Positive_Len4_with_frac_zero()
+    {
+        // time(2), column = '15:22:33.0000'
+        byte[] payload = new byte[] { 128, 245, 161, 0, 0 };
+        var reader = new PacketReader(payload);
+        int metadata = 4;
+
+        var expected = new TimeSpan(0, 15, 22, 33);
+        expected = expected.Add(TimeSpan.FromMilliseconds(000.0));
+        Assert.Equal(expected, _columnParser.ParseTime2(ref reader, metadata));
+        Assert.Equal(5, reader.Consumed);
+    }
+
+    [Fact]
     public void Test_Time2_Negative_without_fraction()
     {
         // time(2), column = '-11:05:10'
@@ -356,6 +370,20 @@ public class ColumnParserTests
 
         var expected = new TimeSpan(0, 15, 22, 33);
         expected = expected.Add(TimeSpan.FromMilliseconds(123.4));
+        Assert.Equal(expected.Negate(), _columnParser.ParseTime2(ref reader, metadata));
+        Assert.Equal(5, reader.Consumed);
+    }
+
+    [Fact]
+    public void Test_Time2_Negative_Len_4_with_frac_zero()
+    {
+        // time(2), column = '-15:22:33.0000'
+        byte[] payload = new byte[] { 127, 10, 95, 0, 0 };
+        var reader = new PacketReader(payload);
+        int metadata = 4;
+
+        var expected = new TimeSpan(0, 15, 22, 33);
+        expected = expected.Add(TimeSpan.FromMilliseconds(000.0));
         Assert.Equal(expected.Negate(), _columnParser.ParseTime2(ref reader, metadata));
         Assert.Equal(5, reader.Consumed);
     }
