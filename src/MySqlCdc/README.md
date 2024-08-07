@@ -166,30 +166,30 @@ using (Stream stream = File.OpenRead("mysql-bin.000001"))
 
 ## Type mapping notes
 
-  | MySQL Type         | .NET type            |
-  | ------------------ | -------------------- |
-  | BLOB types         | byte[]               |
-  | GEOMETRY           | byte[]               |
-  | JSON (MySQL)       | byte[], see below    |
-  | JSON (MariaDB)     | byte[], see below    |
-  | BIT                | bool[]               |
-  | TINYINT            | byte                 |
-  | SMALLINT           | short                |
-  | MEDIUMINT          | int(3), see below    |
-  | INT                | int                  |
-  | BIGING             | long                 |
-  | FLOAT              | float                |
-  | DOUBLE             | double               |
-  | DECIMAL            | string               |
-  | VARCHAR, VARBINARY | string               |
-  | CHAR               | string               |
-  | ENUM               | int                  |
-  | SET                | long                 |
-  | YEAR               | int                  |
+  | MySQL Type         | .NET type                |
+  | ------------------ |--------------------------|
+  | BLOB types         | byte[]                   |
+  | GEOMETRY           | byte[]                   |
+  | JSON (MySQL)       | byte[], see below        |
+  | JSON (MariaDB)     | byte[], see below        |
+  | BIT                | bool[]                   |
+  | TINYINT            | byte                     |
+  | SMALLINT           | short                    |
+  | MEDIUMINT          | int(3), see below        |
+  | INT                | int                      |
+  | BIGING             | long                     |
+  | FLOAT              | float                    |
+  | DOUBLE             | double                   |
+  | DECIMAL            | string                   |
+  | VARCHAR, VARBINARY | byte[]                   |
+  | CHAR               | byte[]                   |
+  | ENUM               | int                      |
+  | SET                | long                     |
+  | YEAR               | int                      |
   | DATE               | Nullable&lt;DateOnly&gt; |
   | DATETIME           | Nullable&lt;DateTime&gt; |
-  | TIME               | TimeSpan             |
-  | TIMESTAMP          | DateTimeOffset       |
+  | TIME               | TimeSpan                 |
+  | TIMESTAMP          | DateTimeOffset           |
 
 - Invalid DATE, DATETIME values(0000-00-00) are parsed as DateOnly and DateTime `null` respectively.
 - TIME, DATETIME, TIMESTAMP (MySQL 5.6.4+) will lose microseconds when converted to .NET types as MySQL types have bigger fractional part than corresponding .NET types can store.
@@ -215,6 +215,7 @@ using (Stream stream = File.OpenRead("mysql-bin.000001"))
 
 - GEOMETRY type is read as `byte[]` but there is no parser that constructs .NET objects.
 - DECIMAL type is parsed to string as MySql decimal has bigger range(65 digits) than .NET decimal.
+- VARCHAR and VARBINARY are read as `byte[]` because we don't know the encoding. For example, a character set of `utf8mb3` will not always be parsed correctly by .net's UTF8 encoding.
 
 ## Supported versions
 MySqlCdc supports both MariaDB & MySQL server.

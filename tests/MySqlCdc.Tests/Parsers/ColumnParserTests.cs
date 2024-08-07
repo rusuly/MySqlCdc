@@ -160,7 +160,7 @@ public class ColumnParserTests
         int metadata = 120; // 30 * sizeof(utf8mb4)
         var reader = new PacketReader(payload);
 
-        Assert.Equal(TestString, _columnParser.ParseString(ref reader, metadata));
+        Assert.Equal(TestString, System.Text.Encoding.UTF8.GetString(_columnParser.ParseString(ref reader, metadata)));
         Assert.Equal(sizeof(byte) + TestString.Length, reader.Consumed);
     }
 
@@ -172,7 +172,7 @@ public class ColumnParserTests
         int metadata = 400; // 100 * sizeof(utf8mb4)
         var reader = new PacketReader(payload);
 
-        Assert.Equal(TestString, _columnParser.ParseString(ref reader, metadata));
+        Assert.Equal(TestString, System.Text.Encoding.UTF8.GetString(_columnParser.ParseString(ref reader, metadata)));
         Assert.Equal(sizeof(short) + TestString.Length, reader.Consumed);
     }
 
