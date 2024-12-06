@@ -14,7 +14,7 @@ public record UpdateRowsEvent(
     int ColumnsNumber,
     bool[] ColumnsPresentBeforeUpdate,
     bool[] ColumnsPresentAfterUpdate,
-    IReadOnlyList<UpdateRowData> Rows) : IBinlogEvent
+    IReadOnlyList<UpdateRowData> Rows) : IBinlogRowsEvent
 {
     /// <summary>
     /// Gets id of the table where rows were updated
