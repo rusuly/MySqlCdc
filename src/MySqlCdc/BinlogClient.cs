@@ -44,10 +44,16 @@ public class BinlogClient
     public BinlogOptions State => _options.Binlog;
 
     /// <summary>
-    /// Replicates binlog events from the server
+    /// Replicates binlog events from the server.
+    /// <br/>
+    /// If an exception is thrown, it is safe to call this method again on the same binlog client to resume replication,
+    /// with one exception: if row-based logging is used and the exception occurs while processing a transaction (a
+    /// sequence of table-map and rows events before the transaction finish "xid" event), the replication will resume at
+    /// the first table-map event, meaning some events will be streamed twice.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Task completed when last event is read in non-blocking mode</returns>
+    /// <returns>Task completed when last event is read in non-blocking mode. This can also happen under certain
+    /// conditions in blocking mode, so prepare to resume replication if the stream ends.</returns>
     public async IAsyncEnumerable<(EventHeader, IBinlogEvent)> Replicate(
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
