@@ -99,7 +99,7 @@ public class BinlogClient
             else if (packet is ErrorPacket error)
                 throw new InvalidOperationException($"Event stream error. {error.ToString()}");
             else
-                throw new InvalidOperationException($"Event stream unexpected error.");
+                throw new InvalidOperationException($"Event stream unexpected packet error. {packet.ToString()}");
         }
     }
 
