@@ -6,6 +6,13 @@ using MySqlCdc.Packets;
 
 namespace MySqlCdc;
 
+internal enum RowBasedTxState
+{
+    NotInTx,
+    HandlingTableMaps,
+    HandlingRowsEvents
+}
+
 /// <summary>
 /// MySql replication client streaming binlog events in real-time.
 /// </summary>
@@ -15,6 +22,8 @@ public class BinlogClient
 
     private IGtid? _gtid;
     private bool _transaction;
+    private RowBasedTxState _txState;
+    private (string, long)? _reconnectPosition;
 
     /// <summary>
     /// Creates a new <see cref="BinlogClient"/>.
@@ -25,7 +34,8 @@ public class BinlogClient
         configureOptions(_options);
 
         if (_options.SslMode == SslMode.RequireVerifyCa || _options.SslMode == SslMode.RequireVerifyFull)
-            throw new NotSupportedException($"{nameof(SslMode.RequireVerifyCa)} and {nameof(SslMode.RequireVerifyFull)} ssl modes are not supported");
+            throw new NotSupportedException(
+                $"{nameof(SslMode.RequireVerifyCa)} and {nameof(SslMode.RequireVerifyFull)} ssl modes are not supported");
     }
 
     /// <summary>
@@ -34,18 +44,32 @@ public class BinlogClient
     public BinlogOptions State => _options.Binlog;
 
     /// <summary>
-    /// Replicates binlog events from the server
+    /// Replicates binlog events from the server.
+    /// <br/>
+    /// If an exception is thrown, it is safe to call this method again on the same binlog client to resume replication,
+    /// with one exception: if row-based logging is used and the exception occurs while processing a transaction (a
+    /// sequence of table-map and rows events before the transaction finish "xid" event), the replication will resume at
+    /// the first table-map event, meaning some events will be streamed twice.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Task completed when last event is read in non-blocking mode</returns>
+    /// <returns>Task completed when last event is read in non-blocking mode. This can also happen under certain
+    /// conditions in blocking mode, so prepare to resume replication if the stream ends.</returns>
     public async IAsyncEnumerable<(EventHeader, IBinlogEvent)> Replicate(
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        if (_reconnectPosition != null)
+        {
+            _options.Binlog.Filename = _reconnectPosition.Value.Item1;
+            _options.Binlog.Position = _reconnectPosition.Value.Item2;
+            _reconnectPosition = null;
+        }
+
         var (connection, databaseProvider) = await new Connector(_options).ConnectAsync(cancellationToken);
 
         // Clear on reconnect
         _gtid = null;
         _transaction = false;
+        _txState = RowBasedTxState.NotInTx;
 
         var configurator = new Configurator(_options, connection, databaseProvider);
         await configurator.AdjustStartingPosition(cancellationToken);
@@ -58,7 +82,7 @@ public class BinlogClient
         var timeout = _options.HeartbeatInterval.Add(TimeSpan.FromMilliseconds(TimeoutConstants.Delta));
 
         await foreach (var packet in channel.ReadPacketAsync(timeout, cancellationToken)
-            .WithCancellation(cancellationToken))
+                           .WithCancellation(cancellationToken))
         {
             if (packet is HeaderWithEvent binlogEvent)
             {
@@ -75,7 +99,7 @@ public class BinlogClient
             else if (packet is ErrorPacket error)
                 throw new InvalidOperationException($"Event stream error. {error.ToString()}");
             else
-                throw new InvalidOperationException($"Event stream unexpected error.");
+                throw new InvalidOperationException($"Event stream unexpected packet error. {packet.ToString()}");
         }
     }
 
@@ -124,9 +148,30 @@ public class BinlogClient
     {
         // Rows event depends on preceding TableMapEvent & we change the position
         // after we read them atomically to prevent missing mapping on reconnect.
-        // Figure out something better as TableMapEvent can be followed by several row events.
-        if (binlogEvent is TableMapEvent tableMapEvent)
-            return;
+        switch (_txState, binlogEvent)
+        {
+            // We only allow reconnecting at the first of a set of table map events
+            case (RowBasedTxState.NotInTx, TableMapEvent):
+            case (RowBasedTxState.HandlingRowsEvents, TableMapEvent):
+                _txState = RowBasedTxState.HandlingTableMaps;
+                _reconnectPosition = (_options.Binlog.Filename, _options.Binlog.Position);
+                break;
+            case (RowBasedTxState.NotInTx, IBinlogRowsEvent):
+                throw new InvalidOperationException("Unexpected row event without TableMapEvent.");
+            // More table map events might come after a set of rows events
+            case (RowBasedTxState.HandlingTableMaps, IBinlogRowsEvent):
+                _txState = RowBasedTxState.HandlingRowsEvents;
+                break;
+            // Multiple table map or rows events can come in a row, and all of them except the first table map event are
+            // invalid positions to reconnect
+            case (RowBasedTxState.HandlingTableMaps, TableMapEvent):
+            case (RowBasedTxState.HandlingRowsEvents, IBinlogRowsEvent):
+                break;
+            default:
+                _txState = RowBasedTxState.NotInTx;
+                _reconnectPosition = null;
+                break;
+        }
 
         if (binlogEvent is RotateEvent rotateEvent)
         {

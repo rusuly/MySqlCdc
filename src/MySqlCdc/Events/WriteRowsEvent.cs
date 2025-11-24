@@ -12,7 +12,7 @@ public record WriteRowsEvent(
     int Flags,
     int ColumnsNumber,
     bool[] ColumnsPresent,
-    IReadOnlyList<RowData> Rows) : IBinlogEvent
+    IReadOnlyList<RowData> Rows) : IBinlogRowsEvent
 {
     /// <summary>
     /// Gets id of the table where rows were inserted

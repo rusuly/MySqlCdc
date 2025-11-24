@@ -116,10 +116,10 @@ internal class ColumnParser
         return BitConverter.Int64BitsToDouble(reader.ReadInt64LittleEndian());
     }
 
-    public string ParseString(ref PacketReader reader, int metadata)
+    public byte[] ParseString(ref PacketReader reader, int metadata)
     {
         int length = metadata < 256 ? reader.ReadByte() : reader.ReadUInt16LittleEndian();
-        return reader.ReadString(length);
+        return reader.ReadByteArraySlow(length);
     }
 
     public byte[] ParseBlob(ref PacketReader reader, int metadata)
