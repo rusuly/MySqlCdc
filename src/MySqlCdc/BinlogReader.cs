@@ -24,7 +24,7 @@ public class BinlogReader
     public BinlogReader(EventDeserializer eventDeserializer, Stream stream)
     {
         byte[] header = new byte[EventConstants.FirstEventPosition];
-        stream.Read(header, 0, EventConstants.FirstEventPosition);
+        stream.ReadExactly(header);
 
         if (!header.SequenceEqual(MagicNumber))
             throw new InvalidOperationException("Invalid binary log file header");

@@ -58,12 +58,12 @@ internal class Connection
     public async Task<(byte[], byte)> ReadPacketAsync(CancellationToken cancellationToken = default)
     {
         byte[] header = new byte[PacketConstants.HeaderSize];
-        await Stream.ReadAsync(header, 0, header.Length, cancellationToken);
+        await Stream.ReadExactlyAsync(header, cancellationToken);
 
         // We don't care about packet splitting in handshake flow
         var bodySize = header[0] + (header[1] << 8) + (header[2] << 16);
         byte[] body = new byte[bodySize];
-        await Stream.ReadAsync(body, 0, body.Length, cancellationToken);
+        await Stream.ReadExactlyAsync(body, cancellationToken);
 
         return (body, header[3]);
     }
