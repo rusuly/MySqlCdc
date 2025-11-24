@@ -12,7 +12,7 @@ internal class Connector
 {
     private readonly ReplicaOptions _options;
     private readonly Connection _connection;
-    
+
     private readonly List<string> _allowedAuthPlugins = new()
     {
         AuthPluginNames.MySqlNativePassword,
@@ -24,7 +24,7 @@ internal class Connector
         _options = options;
         _connection = new Connection(_options);
     }
-    
+
     public async Task<(Connection, IDatabaseProvider)> ConnectAsync(CancellationToken cancellationToken = default)
     {
         var (packet, seqNum) = await _connection.ReadPacketAsync(cancellationToken);
@@ -33,8 +33,11 @@ internal class Connector
 
         CheckAuthPlugin(handshake.AuthPluginName);
 
-        IDatabaseProvider databaseProvider = handshake.ServerVersion.Contains("MariaDB") ? new MariaDbProvider() : new MySqlProvider();
-        await AuthenticateAsync(handshake, (byte) (seqNum+1), cancellationToken);
+        IDatabaseProvider databaseProvider = handshake.ServerVersion.Contains("MariaDB")
+            ? new MariaDbProvider(handshake.ServerVersion)
+            : new MySqlProvider(handshake.ServerVersion);
+
+        await AuthenticateAsync(handshake, (byte)(seqNum + 1), cancellationToken);
         return (_connection, databaseProvider);
     }
 
@@ -68,14 +71,14 @@ internal class Connector
         if (packet[0] == (byte)ResponseType.AuthPluginSwitch)
         {
             var authSwitchPacket = new AuthPluginSwitchPacket(packet[1..]);
-            await HandleAuthPluginSwitch(authSwitchPacket, (byte) (seqNum+1), useSsl, cancellationToken);
+            await HandleAuthPluginSwitch(authSwitchPacket, (byte)(seqNum + 1), useSsl, cancellationToken);
         }
         else
         {
-            await AuthenticateSha256Async(packet, handshake.Scramble, (byte) (seqNum+1), useSsl, cancellationToken);
+            await AuthenticateSha256Async(packet, handshake.Scramble, (byte)(seqNum + 1), useSsl, cancellationToken);
         }
     }
-    
+
     private async Task HandleAuthPluginSwitch(AuthPluginSwitchPacket authSwitchPacket, byte seqNum, bool useSsl, CancellationToken cancellationToken = default)
     {
         CheckAuthPlugin(authSwitchPacket.AuthPluginName);
@@ -87,7 +90,7 @@ internal class Connector
 
         if (authSwitchPacket.AuthPluginName == AuthPluginNames.CachingSha2Password)
         {
-            await AuthenticateSha256Async(packet, authSwitchPacket.AuthPluginData, (byte) (seqNum+1), useSsl, cancellationToken);
+            await AuthenticateSha256Async(packet, authSwitchPacket.AuthPluginData, (byte)(seqNum + 1), useSsl, cancellationToken);
         }
     }
 
@@ -112,7 +115,7 @@ internal class Connector
         }
 
         // Request public key.
-        await _connection.WritePacketAsync(new byte[] {0x02}, seqNum, cancellationToken);
+        await _connection.WritePacketAsync(new byte[] { 0x02 }, seqNum, cancellationToken);
         (packet, seqNum) = await _connection.ReadPacketAsync(cancellationToken);
         Extensions.ThrowIfErrorPacket(packet, "Requesting caching_sha2_password public key.");
 

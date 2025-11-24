@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <PackageId>MySqlCdc</PackageId>
-    <Version>5.0.0-preview1</Version>
+    <Version>5.0.0-preview2</Version>
     <Authors>Ruslan Ulianets</Authors>
     <PackageTags>MySQL;MariaDB;Binlog;CDC;Change Data Capture;Replication;Streaming</PackageTags>
     <Description>MySQL/MariaDB binlog change data capture (CDC) connector for .NET</Description>
@@ -17,6 +17,7 @@ This version includes following changes:
 1)Targets .NET 10
 2)String values are parsed as byte array because of different possible encodings
 3)Negative Time2 parsing is added
+4)Support MySQL 8.4
     </PackageReleaseNotes>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>

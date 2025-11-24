@@ -29,8 +29,7 @@ internal class Configurator
         if (_options.Binlog.Filename != string.Empty)
             return;
 
-        var command = new QueryCommand("show master status");
-        await _connection.WritePacketAsync(command.Serialize(), 0, cancellationToken);
+        await _databaseProvider.ShowBinlogStatus(_connection, cancellationToken);
 
         var resultSet = await ReadResultSet(cancellationToken);
         if (resultSet.Count != 1)

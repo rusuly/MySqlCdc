@@ -9,6 +9,12 @@ namespace MySqlCdc.Providers;
 internal class MariaDbProvider : IDatabaseProvider
 {
     public EventDeserializer Deserializer { get; } = new MariaDbEventDeserializer();
+    public string ServerVersion { get; }
+
+    public MariaDbProvider(string serverVersion)
+    {
+        ServerVersion = serverVersion;
+    }
 
     public async Task DumpBinlogAsync(Connection channel, ReplicaOptions options, CancellationToken cancellationToken = default)
     {
@@ -25,6 +31,12 @@ internal class MariaDbProvider : IDatabaseProvider
         long serverId = options.Blocking ? options.ServerId : 0;
         command = new DumpBinlogCommand(serverId, options.Binlog.Filename, options.Binlog.Position);
         await channel.WritePacketAsync(command.Serialize(), 0, cancellationToken);
+    }
+
+    public Task ShowBinlogStatus(Connection channel, CancellationToken cancellationToken = default)
+    {
+        var command = new QueryCommand("show master status");
+        return channel.WritePacketAsync(command.Serialize(), 0, cancellationToken);
     }
 
     private async Task RegisterGtidSlave(Connection channel, ReplicaOptions options, CancellationToken cancellationToken = default)
